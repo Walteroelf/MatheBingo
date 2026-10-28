@@ -16,6 +16,9 @@ Ein Würfel mit Sprachausgabe für Mathe-Bingo im Unterricht. Es läuft im Brows
   Gewürfelte Ergebnisse werden automatisch blau markiert, unter jeder Zahl steht die gestellte Aufgabe.
   Damit lässt sich ein „Bingo!“ schnell überprüfen.
 - **Bingokarten**: Druckbare Karten (2 × 2 bis 5 × 5) passend zu den Einstellungen, auf Wunsch der Größe nach sortiert.
+- **Lottoscheine**: „Lotto-Schein von ____“ mit allen möglichen Ergebnissen der Reihe nach, drei Scheine pro A4-Seite
+  (bei 0–20 wie gewohnt 7 × 3 Kästchen). Bingokarten und Lottoscheine lassen sich für die aktuelle Einstellung
+  oder für jede Vorlage drucken, ohne das Spiel umzustellen.
 - **Einstellungen**:
   - Rechenart: Plus, Minus, Mal, Geteilt oder gemischt
   - Zahlenraum frei von 2 bis 100, Zehnerübergang an oder aus, Null erlaubt oder nicht

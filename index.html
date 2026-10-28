@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#1f5fa8">
   <title>Mathe-Bingo</title>
-  <link rel="stylesheet" href="style.css?v=9">
+  <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
   <header class="top no-print">
@@ -13,7 +13,7 @@
     <nav class="tabs" role="tablist">
       <button class="tab" role="tab" data-view="start" aria-selected="true">🏠 Start</button>
       <button class="tab" role="tab" data-view="notar" aria-selected="false">✅ Notar</button>
-      <button class="tab" role="tab" data-view="karten" aria-selected="false">🖨️ Bingokarten</button>
+      <button class="tab" role="tab" data-view="karten" aria-selected="false">🖨️ Bingo & Lotto</button>
       <button class="tab" role="tab" data-view="einstellungen" aria-selected="false">⚙️ Einstellungen</button>
     </nav>
   </header>
@@ -42,10 +42,17 @@
       <div class="notar-grid schrift" id="notarGrid"></div>
     </section>
 
-    <!-- Bingokarten -->
+    <!-- Bingokarten und Lottoscheine -->
     <section id="view-karten" class="view">
       <div class="card-controls no-print">
-        <label>Größe
+        <div class="seg" id="printKind" role="radiogroup">
+          <button type="button" data-kind="bingo" class="on">Bingokarten</button>
+          <button type="button" data-kind="lotto">Lottoscheine</button>
+        </div>
+        <label>Für welche Spielart? <select id="printFor"></select></label>
+      </div>
+      <div class="card-controls no-print">
+        <label class="bingo-only">Größe
           <select id="cardSize">
             <option value="2">2 × 2</option>
             <option value="3" selected>3 × 3</option>
@@ -54,8 +61,8 @@
           </select>
         </label>
         <label>Anzahl <input id="cardCount" type="number" min="1" max="40" value="6"></label>
-        <label class="check"><input id="cardSorted" type="checkbox" checked> Zahlen der Größe nach</label>
-        <button id="cardGen" class="primary">Karten erstellen</button>
+        <label class="check bingo-only"><input id="cardSorted" type="checkbox" checked> Zahlen der Größe nach</label>
+        <button id="cardGen" class="primary">Erstellen</button>
         <button id="cardPrint" class="secondary" disabled>🖨️ Drucken</button>
       </div>
       <p class="status no-print" id="cardStatus"></p>
@@ -202,7 +209,7 @@
         </div>
         <div class="btnrow">
           <button id="btnFullscreen" class="sbtn light">⛶ Vollbild</button>
-          <button id="btnMenu" class="sbtn">☰ Hauptmenü: Spielart, Notar, Bingokarten</button>
+          <button id="btnMenu" class="sbtn">☰ Hauptmenü: Spielart, Notar, Bingo & Lotto</button>
         </div>
       </div>
     </div>
@@ -216,6 +223,6 @@
     </div>
   </dialog>
 
-  <script src="app.js?v=9"></script>
+  <script src="app.js?v=12"></script>
 </body>
 </html>

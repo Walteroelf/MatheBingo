@@ -552,11 +552,68 @@ function shuffle(arr) {
   return a;
 }
 
+let printKind = 'bingo';
+
+// Ausdrucke gehen für die aktuelle Einstellung oder für jede Vorlage, ohne das Spiel umzustellen
+function printSettings() {
+  const v = $('#printFor').value;
+  return v === 'current' || v === '' ? S : { ...S, ...PRESETS[+v].s };
+}
+
+function fillPrintFor() {
+  const sel = $('#printFor');
+  const keep = sel.value || 'current';
+  sel.innerHTML = `<option value="current">Aktuelle Einstellung: ${describe(S)}</option>`
+    + PRESETS.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
+  sel.value = [...sel.options].some((o) => o.value === keep) ? keep : 'current';
+}
+
+function setPrintKind(kind) {
+  printKind = kind;
+  for (const b of $$('#printKind [data-kind]')) b.classList.toggle('on', b.dataset.kind === kind);
+  for (const el of $$('.bingo-only')) el.hidden = kind !== 'bingo';
+  $('#cards').innerHTML = '';
+  $('#cardStatus').textContent = '';
+  $('#cardPrint').disabled = true;
+}
+
+// Spaltenzahl wie in der Vorlage: 0–20 ergibt 7 × 3, große Zahlenräume 10 pro Reihe
+function lottoCols(n) {
+  if (n <= 10) return n;
+  if (n <= 24) return Math.ceil(n / 3);
+  return 10;
+}
+
+function makeLotto() {
+  const s = printSettings();
+  const results = buildPool(s).results;
+  const count = Math.min(40, Math.max(1, +$('#cardCount').value || 1));
+  if (!results.length) {
+    $('#cardStatus').textContent = 'Mit dieser Spielart gibt es keine Zahlen.';
+    $('#cards').innerHTML = '';
+    $('#cardPrint').disabled = true;
+    return;
+  }
+  const cols = lottoCols(results.length);
+  const sheet = `<div class="lotto-sheet">
+      <div class="lotto-head"><span class="lotto-title">Lotto-Schein von <span class="line"></span></span>
+        <span class="lotto-sub">${describe(s)}</span></div>
+      <div class="lotto-grid schrift" style="--cols:${cols}">${results.map((x) => `<div>${x}</div>`).join('')}</div>
+    </div>`;
+  $('#cards').classList.add('lotto');
+  $('#cards').innerHTML = sheet.repeat(count);
+  $('#cardStatus').textContent = `${count} Lottoscheine mit allen ${results.length} möglichen Ergebnissen erstellt.`;
+  $('#cardPrint').disabled = false;
+}
+
 function makeCards() {
+  if (printKind === 'lotto') { makeLotto(); return; }
+  $('#cards').classList.remove('lotto');
+  const s = printSettings();
   const n = +$('#cardSize').value;
   const count = Math.min(40, Math.max(1, +$('#cardCount').value || 1));
   const cells = n * n;
-  const results = pool.results;
+  const results = buildPool(s).results;
   if (results.length < cells) {
     $('#cardStatus').textContent = `Für ${n} × ${n} braucht man ${cells} verschiedene Zahlen, es gibt aber nur ${results.length}. `
       + 'Bitte kleinere Karten wählen oder den Zahlenraum vergrößern.';
@@ -571,12 +628,12 @@ function makeCards() {
     if (sorted) nums.sort((a, b) => a - b);
     html += `<div class="bingo-card">
       <div class="title">Mathe-Bingo</div>
-      <div class="sub">${describe(S)}</div>
+      <div class="sub">${describe(s)}</div>
       <div class="card-grid schrift" style="--n:${n}">${nums.map((x) => `<div>${x}</div>`).join('')}</div>
     </div>`;
   }
   $('#cards').innerHTML = html;
-  $('#cardStatus').textContent = `${count} Karten mit je ${cells} Zahlen erstellt. Bei jedem Klick auf „Karten erstellen“ werden sie neu gemischt.`;
+  $('#cardStatus').textContent = `${count} Karten mit je ${cells} Zahlen erstellt. Bei jedem Klick auf „Erstellen“ werden sie neu gemischt.`;
   $('#cardPrint').disabled = false;
 }
 
@@ -759,6 +816,7 @@ function showView(name) {
   for (const v of $$('.view')) v.classList.toggle('active', v.id === `view-${name}`);
   if (name === 'notar') renderNotar();
   if (name === 'start') renderStart();
+  if (name === 'karten') fillPrintFor();
 }
 
 function bind() {
@@ -816,6 +874,15 @@ function bind() {
   });
 
   $('#cardGen').addEventListener('click', makeCards);
+  $('#printKind').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-kind]');
+    if (b) setPrintKind(b.dataset.kind);
+  });
+  $('#printFor').addEventListener('change', () => {
+    $('#cards').innerHTML = '';
+    $('#cardStatus').textContent = '';
+    $('#cardPrint').disabled = true;
+  });
   $('#cardPrint').addEventListener('click', () => window.print());
 
   $('#settings').addEventListener('change', () => applySettings(readForm()));

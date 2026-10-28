@@ -315,7 +315,26 @@ body.in-game .top, body.in-game main { display: none; }
 .cell.on { background: var(--on); border-color: var(--on); color: var(--on-text); }
 .cell.on .src { color: var(--on-text); }
 
-/* Bingokarten */
+/* Bingokarten und Lottoscheine */
+.seg { display: inline-flex; gap: 0; border: 2px solid var(--primary); border-radius: 12px; overflow: hidden; }
+.seg button { border: none; border-radius: 0; background: var(--surface); color: var(--primary); font-weight: 700; }
+.seg button.on { background: var(--primary); color: var(--primary-text); }
+.card-controls select#printFor { max-width: min(100%, 520px); }
+.card-controls [hidden] { display: none !important; }
+.cards.lotto { grid-template-columns: 1fr; gap: 16px; }
+.lotto-sheet { container-type: inline-size; background: #fff; color: #111; border: 3px solid #222; padding: 2.4cqw 3cqw 3cqw; break-inside: avoid; }
+.lotto-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin-bottom: 2cqw; }
+.lotto-title { font-weight: 800; font-size: max(1.1rem, 3.4cqw); }
+.lotto-title .line { display: inline-block; width: 18em; max-width: 45cqw; border-bottom: 2px solid #222; height: 1em; vertical-align: baseline; }
+.lotto-sub { font-size: max(0.75rem, 1.7cqw); color: #555; }
+.lotto-grid { display: grid; grid-template-columns: repeat(var(--cols), 1fr); gap: 1.4cqw; }
+.lotto-grid div {
+  aspect-ratio: 1.45;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #222;
+  font-size: calc(40cqw / var(--cols));
+  line-height: 1;
+}
 .card-controls { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; margin-bottom: 8px; }
 .card-controls input[type="number"] { width: 5em; padding: 0.4em; border-radius: 8px; border: 2px solid var(--border); background: var(--surface); }
 .card-controls select { padding: 0.4em; border-radius: 8px; border: 2px solid var(--border); background: var(--surface); }
@@ -380,4 +399,6 @@ dialog p { margin: 0 0 16px; font-size: 1.1rem; }
   #view-karten { display: block !important; }
   main { padding: 0; max-width: none; }
   .cards { grid-template-columns: 1fr 1fr; gap: 12mm; }
+  .cards.lotto { grid-template-columns: 1fr; gap: 5mm; }
+  @page { margin: 12mm; }
 }
