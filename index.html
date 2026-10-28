@@ -1,1 +1,221 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1f5fa8">
+  <title>Mathe-Bingo</title>
+  <link rel="stylesheet" href="style.css?v=9">
+</head>
+<body>
+  <header class="top no-print">
+    <h1>Mathe-Bingo</h1>
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" data-view="start" aria-selected="true">🏠 Start</button>
+      <button class="tab" role="tab" data-view="notar" aria-selected="false">✅ Notar</button>
+      <button class="tab" role="tab" data-view="karten" aria-selected="false">🖨️ Bingokarten</button>
+      <button class="tab" role="tab" data-view="einstellungen" aria-selected="false">⚙️ Einstellungen</button>
+    </nav>
+  </header>
 
+  <main>
+    <!-- Start -->
+    <section id="view-start" class="view active">
+      <div class="continue" id="continueBox" hidden>
+        <button id="continueBtn" class="big primary">▶ Weiterspielen</button>
+        <p id="continueInfo"></p>
+      </div>
+      <h2 class="start-title">Was wird heute gerechnet?</h2>
+      <div class="start-grid" id="startGrid"></div>
+      <p class="help">Ein Klick auf eine Kachel startet das Spiel im Vollbild.
+        Über ⚙️ unten links kommst du jederzeit hierher zurück.</p>
+    </section>
+
+    <!-- Notar -->
+    <section id="view-notar" class="view">
+      <div class="row-between">
+        <p class="notar-count" id="notarCount"></p>
+        <button id="notarReset" class="secondary">Alles zurücksetzen</button>
+      </div>
+      <p class="help">Antippen färbt ein Feld grün, nochmal antippen macht es wieder weiß.
+        Unter der Zahl steht die Aufgabe, die dazu gestellt wurde.</p>
+      <div class="notar-grid schrift" id="notarGrid"></div>
+    </section>
+
+    <!-- Bingokarten -->
+    <section id="view-karten" class="view">
+      <div class="card-controls no-print">
+        <label>Größe
+          <select id="cardSize">
+            <option value="2">2 × 2</option>
+            <option value="3" selected>3 × 3</option>
+            <option value="4">4 × 4</option>
+            <option value="5">5 × 5</option>
+          </select>
+        </label>
+        <label>Anzahl <input id="cardCount" type="number" min="1" max="40" value="6"></label>
+        <label class="check"><input id="cardSorted" type="checkbox" checked> Zahlen der Größe nach</label>
+        <button id="cardGen" class="primary">Karten erstellen</button>
+        <button id="cardPrint" class="secondary" disabled>🖨️ Drucken</button>
+      </div>
+      <p class="status no-print" id="cardStatus"></p>
+      <div id="cards" class="cards"></div>
+    </section>
+
+    <!-- Einstellungen -->
+    <section id="view-einstellungen" class="view">
+      <h2>Schnellstart</h2>
+      <div class="presets" id="presets"></div>
+
+      <form id="settings" class="settings" onsubmit="return false">
+        <fieldset>
+          <legend>Rechenart</legend>
+          <label>Was wird gerechnet?
+            <select data-key="mode">
+              <option value="plus">Plus</option>
+              <option value="minus">Minus</option>
+              <option value="plusminus">Plus und Minus gemischt</option>
+              <option value="mal">Mal</option>
+              <option value="geteilt">Geteilt</option>
+              <option value="malgeteilt">Mal und Geteilt gemischt</option>
+            </select>
+          </label>
+          <label class="check"><input type="checkbox" data-key="zero"> Null darf vorkommen (z. B. 5 + 0, 4 − 4)</label>
+        </fieldset>
+
+        <fieldset id="fsAdd">
+          <legend>Plus und Minus</legend>
+          <label>Zahlenraum bis
+            <input type="number" data-key="max" min="2" max="100" step="1">
+          </label>
+          <div class="quick" id="maxQuick">
+            <button type="button" data-max="5">5</button>
+            <button type="button" data-max="10">10</button>
+            <button type="button" data-max="20">20</button>
+            <button type="button" data-max="30">30</button>
+            <button type="button" data-max="50">50</button>
+            <button type="button" data-max="100">100</button>
+          </div>
+          <label class="check"><input type="checkbox" data-key="crossing"> Zehnerübergang erlaubt (z. B. 8 + 5, 13 − 6)</label>
+        </fieldset>
+
+        <fieldset id="fsMul">
+          <legend>Mal und Geteilt</legend>
+          <p class="label-text">Welche Reihen?</p>
+          <div class="rows" id="rowBoxes"></div>
+          <div class="quick">
+            <button type="button" id="rowsCore">Kernreihen 1, 2, 5, 10</button>
+            <button type="button" id="rowsAll">Alle</button>
+            <button type="button" id="rowsNone">Keine</button>
+          </div>
+          <label class="check"><input type="checkbox" data-key="squares"> Quadrataufgaben dazu (3 · 3, 4 · 4 …)</label>
+          <label class="check"><input type="checkbox" data-key="swap"> Tauschaufgaben (3 · 5 und 5 · 3)</label>
+          <label>Größter Faktor
+            <select data-key="factorMax">
+              <option value="5">5</option>
+              <option value="10">10</option>
+            </select>
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Auslosen</legend>
+          <label>Was soll gleich oft vorkommen?
+            <select data-key="fair">
+              <option value="ergebnis">Jedes Ergebnis gleich oft (gut für Bingo)</option>
+              <option value="aufgabe">Jede Aufgabe gleich oft</option>
+            </select>
+          </label>
+          <label class="check"><input type="checkbox" data-key="noRepeat"> Nichts doppelt, bis alles einmal dran war</label>
+          <label class="check"><input type="checkbox" data-key="autoMark"> Gewürfelte Ergebnisse im Notar automatisch markieren</label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Anzeige und Ton</legend>
+          <label class="check"><input type="checkbox" data-key="speech"> Aufgabe vorlesen</label>
+          <label>Stimme <select data-key="voice" id="voiceSelect"><option value="">Standard</option></select></label>
+          <label>Sprechtempo <input type="range" data-key="rate" min="0.5" max="1.3" step="0.05"> <output id="rateOut"></output></label>
+          <label>Pause zwischen den Wörtern <input type="range" data-key="gap" min="0" max="2" step="0.1"> <output id="gapOut"></output></label>
+          <label>Lautstärke <input type="range" data-key="volume" min="0.1" max="1" step="0.05"> <output id="volOut"></output></label>
+          <button type="button" id="testSpeech" class="secondary small">🔊 Probe hören</button>
+          <label class="check"><input type="checkbox" data-key="dots"> Punktebild zur Aufgabe zeigen</label>
+          <label class="check"><input type="checkbox" data-key="animation"> Würfel-Animation</label>
+          <label class="check"><input type="checkbox" data-key="fxDrum"> Trommelwirbel beim Würfeln</label>
+          <label class="check"><input type="checkbox" data-key="fxConfetti"> Konfetti beim Ergebnis</label>
+        </fieldset>
+      </form>
+      <p class="summary" id="summary"></p>
+      <button id="startCustom" class="big primary">▶ Mit diesen Einstellungen spielen</button>
+    </section>
+  </main>
+
+  <!-- Spielansicht (Vollbild), aufgebaut wie das ABC-Bingo -->
+  <div id="game" class="no-print" hidden>
+    <div id="screenTouch" class="screen">
+      <button id="btnTouch" aria-label="Aufgabe würfeln"></button>
+      <p id="touchCount" class="touch-count" hidden></p>
+      <h1>Bitte berühren</h1>
+      <p>Tippe, um eine Aufgabe zu würfeln</p>
+    </div>
+
+    <div id="screenTask" class="screen" hidden>
+      <div id="task" class="task schrift" aria-live="polite"></div>
+      <div id="dots" class="dots"></div>
+    </div>
+
+    <div id="screenDone" class="screen" hidden>
+      <div id="doneTitle">Alle Aufgaben wurden gewürfelt! 🎉</div>
+      <span id="doneHint">Drücke „Weiter“, um neu zu starten.</span>
+    </div>
+
+    <div id="repeatHint">🔊 Nochmal</div>
+    <canvas id="confetti" hidden></canvas>
+    <button id="btnWeiter" hidden>Weiter</button>
+    <button id="btnGear" aria-label="Spiel-Menü">⚙️</button>
+
+    <div id="drawer" hidden>
+      <div id="drawerInner">
+        <button id="btnCloseDrawer">✕ Schließen</button>
+        <h2>⚙️ Spiel</h2>
+        <p id="drawerMode" class="tiny"></p>
+        <div class="srow">
+          <div class="drawn-header">
+            <span class="lbl">🎲 Bisher gewürfelt</span>
+            <div class="btnrow">
+              <button id="btnUndo" class="sbtn light">↶ Letzte zurücknehmen</button>
+              <button id="btnReset" class="sbtn dark">↺ Neue Runde</button>
+            </div>
+          </div>
+          <div class="tiny">In der Reihenfolge, in der sie gewürfelt wurden. Ergebnis in Klammern.</div>
+          <div id="drawnTasks" class="schrift"></div>
+        </div>
+        <div class="srow">
+          <span class="lbl">✨ Anzeige und Ton</span>
+          <label class="check"><input type="checkbox" data-fx="speech"> Aufgabe vorlesen</label>
+          <label class="check"><input type="checkbox" data-fx="dots"> Punktebild zeigen</label>
+          <label class="check"><input type="checkbox" data-fx="fxDrum"> Trommelwirbel beim Würfeln</label>
+          <label class="check"><input type="checkbox" data-fx="fxConfetti"> Konfetti beim Ergebnis</label>
+        </div>
+        <div class="srow">
+          <label for="fxVolume" class="lbl">🔈 Lautstärke</label>
+          <input id="fxVolume" type="range" data-fx="volume" min="0.1" max="1" step="0.05">
+        </div>
+        <div class="btnrow">
+          <button id="btnFullscreen" class="sbtn light">⛶ Vollbild</button>
+          <button id="btnMenu" class="sbtn">☰ Hauptmenü: Spielart, Notar, Bingokarten</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <dialog id="confirmDlg" class="no-print">
+    <p id="confirmText"></p>
+    <div class="dlg-actions">
+      <button type="button" id="confirmNo" class="secondary">Abbrechen</button>
+      <button type="button" id="confirmYes" class="primary">Ja, weiter</button>
+    </div>
+  </dialog>
+
+  <script src="app.js?v=9"></script>
+</body>
+</html>
