@@ -26,7 +26,7 @@ Aufgebaut wie beim ABC-Bingo, mit vier Reitern. Der zuletzt geöffnete Reiter wi
 - **🧮 Aufgaben**: Schnellwahl (Plus bis 10 … 1×1 Kernaufgaben, Ganzes 1×1, Geteilt Kernaufgaben),
   Rechenart, Zahlenraum bis 5 … 100, Zehnerübergang, Einmaleins-Reihen, Quadrataufgaben.
   Eine Änderung hier startet ein neues Spiel.
-- **📱 Dieses iPad**: Vorlesen, Lautstärke, Sprechtempo, Stimme, Punktebild, Trommelwirbel, Konfetti, Vollbild.
+- **📱 Dieses iPad**: Vorlesen, Lautstärke, Stimmprobe, Punktebild, Trommelwirbel, Konfetti, Vollbild.
 - **➕ Mehr**: Bingokarten und Lottoscheine, Anleitung.
 
 ## Bingokarten und Lottoscheine
@@ -38,10 +38,20 @@ also genau die Zahlen, die auch gewürfelt werden.
 - **Lottoscheine** „Lotto-Schein von ____“ mit allen Zahlen aus dem Topf der Reihe nach,
   drei Scheine pro A4-Seite (0–20 als 7 × 3, große Zahlenräume 10 pro Reihe).
 
-## Vorlesen
+## Vorlesen: Stimme „Thorsten“
 
-Die App nutzt die eingebaute Sprachausgabe des Browsers. Wie die Stimme klingt, hängt vom Gerät ab.
-Unter ⚙️ lässt sich eine andere deutsche Stimme wählen.
+Die Aufgaben spricht **Thorsten**, die freie deutsche Stimme von Thorsten Müller
+([Thorsten-Voice](https://github.com/thorstenMueller/Thorsten-Voice), Daten CC0), erzeugt mit
+[Piper](https://github.com/OHF-Voice/piper1-gpl) (Stimme `de_DE-thorsten-high`).
+Die Ansagen liegen als fertige Tondateien im Ordner `audio/` – wie beim ABC-Bingo. Sie klingen deshalb
+auf jedem Gerät gleich und brauchen keine Internet-Stimme.
+
+- `n_plus`, `n_minus`, `n_mal`, `n_durch`: erste Zahl mit Rechenzeichen in einem Zug („sieben plus“)
+- `n`: die zweite Zahl („drei“), wird nahtlos angehängt
+
+Laden die Dateien einmal nicht, liest ersatzweise die Stimme des Browsers vor.
+Neu erzeugen: `tools/thorsten_audio.py` (Anleitung im Skript), danach die WAV-Dateien mit
+`afconvert -f m4af -d aac -b 40000` nach `audio/*.m4a` umwandeln.
 
 ## Dateien
 
@@ -49,6 +59,8 @@ Unter ⚙️ lässt sich eine andere deutsche Stimme wählen.
 - `druck.html`, `druck.js`: Bingokarten und Lottoscheine
 - `core.js`: gemeinsame Grundlage (Aufgaben, Zahlen-Topf, Speichern)
 - `style.css`: Gestaltung
+- `audio/`: Ansagen mit der Stimme Thorsten (415 kleine m4a-Dateien)
+- `tools/thorsten_audio.py`: erzeugt die Ansagen mit Piper
 - `fonts/`: Leselern-Schrift **Andika** von SIL International (SIL Open Font License, siehe `fonts/OFL.txt`)
 
 Einstellungen und Spielstand werden im Browser des jeweiligen Geräts gespeichert.

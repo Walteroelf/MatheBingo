@@ -4,7 +4,6 @@
 
 // Abstände der Würfel-Bilder in ms: erst schnell, dann langsamer
 const ROLL_MS = [28, 54, 82, 112, 144, 178, 214, 252, 292, 334, 378, 424];
-const SPEECH_GAP_MS = 450;
 const CONFETTI_COLORS = ['#f0c020', '#ffffff', '#4dabf7', '#ff6b6b', '#7bd389'];
 
 const stored = loadStore();
@@ -35,56 +34,79 @@ function draw() {
   return { t: pick(pool.byResult.get(pick(left))) };
 }
 
-// ---------- Ton: Sprachausgabe und Trommel ----------
+// ---------- Ton: Thorsten-Stimme, Ersatzstimme, Trommel ----------
 
-const hasSpeech = 'speechSynthesis' in window;
+// Thorsten (Piper-Stimme von Thorsten Müller, CC0): vorab erzeugte Tondateien in audio/.
+// Erster Teil mit Rechenzeichen in einem Zug („7_plus“), zweite Zahl nahtlos dahinter („3“).
+const OP_FILE = { '+': 'plus', '-': 'minus', '*': 'mal', '/': 'durch' };
+const clipCache = new Map();
+let voiceSources = [];
 let speechRun = 0;
 
-function germanVoices() {
-  if (!hasSpeech) return [];
-  return speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith('de'));
+function loadClip(name) {
+  if (!clipCache.has(name)) {
+    const p = fetch(`audio/${name}.m4a`)
+      .then((r) => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+      .then((data) => new Promise((res, rej) => audioCtx.decodeAudioData(data, res, rej)));
+    p.catch(() => clipCache.delete(name));
+    clipCache.set(name, p);
+  }
+  return clipCache.get(name);
 }
 
-function speakOne(text) {
-  return new Promise((resolve) => {
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'de-DE';
-    const voice = germanVoices().find((v) => v.name === S.voice);
-    if (voice) u.voice = voice;
-    u.rate = S.rate;
-    u.volume = S.volume;
-    let done = false;
-    // Manche Browser melden das Ende nicht zuverlässig – dann nach geschätzter Zeit weiter
-    const timer = setTimeout(() => finish(), 1500 + (text.length * 160) / S.rate);
-    function finish() {
-      if (done) return;
-      done = true;
-      clearTimeout(timer);
-      resolve();
-    }
-    u.onend = finish;
-    u.onerror = finish;
-    speechSynthesis.speak(u);
+const clipsFor = (t) => [`${t.a}_${OP_FILE[t.op]}`, `${t.b}`];
+
+// Schon beim Würfeln laden, damit die Ansage nach dem Rollen sofort kommt
+function preloadVoice(t) {
+  if (audioCtx) for (const n of clipsFor(t)) loadClip(n).catch(() => {});
+}
+
+async function playThorsten(t, run) {
+  if (!audioCtx) return false;
+  let bufs;
+  try { bufs = await Promise.all(clipsFor(t).map(loadClip)); } catch { return false; }
+  if (run !== speechRun) return true; // inzwischen abgebrochen
+  const gain = audioCtx.createGain();
+  gain.gain.value = S.volume;
+  gain.connect(audioCtx.destination);
+  let at = audioCtx.currentTime + 0.05;
+  voiceSources = bufs.map((buf) => {
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    src.connect(gain);
+    src.start(at);
+    at += buf.duration;
+    return src;
   });
+  return true;
+}
+
+// Ersatz, falls die Tondateien nicht laden: Stimme des Browsers
+const hasSpeech = 'speechSynthesis' in window;
+
+function speakFallback(text) {
+  if (!hasSpeech) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'de-DE';
+  u.rate = 0.9;
+  u.volume = S.volume;
+  speechSynthesis.speak(u);
 }
 
 function stopSpeech() {
   speechRun++;
+  for (const src of voiceSources) { try { src.stop(); } catch { /* schon zu Ende */ } }
+  voiceSources = [];
   if (hasSpeech) speechSynthesis.cancel();
 }
 
-async function speak(words) {
-  if (!S.speech || !hasSpeech) return;
+async function announce(t) {
+  if (!S.speech) return;
   stopSpeech();
   const run = speechRun;
-  for (let i = 0; i < words.length; i++) {
-    if (run !== speechRun) return; // abgebrochen, z. B. durch „Weiter“
-    await speakOne(words[i]);
-    if (i < words.length - 1) await sleep(SPEECH_GAP_MS);
-  }
+  if (await playThorsten(t, run)) return;
+  if (run === speechRun) speakFallback(`${t.a} ${OPS[t.op].word} ${t.b}`);
 }
-
-const announce = (t) => speak([String(t.a), OPS[t.op].word, String(t.b)]);
 
 let audioCtx = null;
 let noiseBuf = null;
@@ -266,6 +288,7 @@ async function roll() {
   // Beim ersten Tippen ins Vollbild (geht nur als Reaktion auf einen Tipp)
   if (!triedFullscreen) { triedFullscreen = true; requestFullscreen(); }
   const d = draw();
+  if (d && d.t) preloadVoice(d.t);
   if (!d) {
     showDone('Keine Zahlen im Topf.', 'Über ⚙️ unten links Zahlen in den Topf legen.');
     return;
@@ -464,16 +487,7 @@ function renderDrawer() {
     else el.value = v;
   }
   $('#volVal').textContent = `${Math.round(S.volume * 100)} %`;
-  $('#rateVal').textContent = S.rate < 0.8 ? 'langsam' : S.rate > 1.05 ? 'schnell' : 'normal';
   $('#rowFullscreen').hidden = !canFullscreen || isFullscreen();
-}
-
-function fillVoices() {
-  const sel = $('#voiceSelect');
-  const voices = germanVoices();
-  sel.innerHTML = '<option value="">Standard</option>'
-    + voices.map((v) => `<option value="${v.name.replace(/"/g, '&quot;')}">${v.name}</option>`).join('');
-  sel.value = voices.some((v) => v.name === S.voice) ? S.voice : '';
 }
 
 function openDrawer() { renderDrawer(); $('#drawer').hidden = false; }
@@ -574,7 +588,7 @@ function bind() {
     const read = () => (el.type === 'checkbox' ? el.checked : el.type === 'range' ? Number(el.value) : el.value);
     el.addEventListener(el.type === 'range' ? 'input' : 'change', () => setOption(key, read()));
   }
-  $('#btnTestVoice').addEventListener('click', () => { initAudio(); speak(['3', 'plus', '4']); });
+  $('#btnTestVoice').addEventListener('click', () => { initAudio(); announce({ a: 7, op: '+', b: 3 }); });
   $('#btnFullscreen').addEventListener('click', () => { requestFullscreen(); closeDrawer(); });
   document.addEventListener('fullscreenchange', renderDrawer);
   document.addEventListener('webkitfullscreenchange', renderDrawer);
@@ -582,8 +596,6 @@ function bind() {
 
 // ---------- Start ----------
 
-fillVoices();
-if (hasSpeech) speechSynthesis.onvoiceschanged = fillVoices;
 bind();
 renderTouchCount();
 showScreen('touch');

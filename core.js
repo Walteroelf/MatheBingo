@@ -11,7 +11,7 @@ const DEFAULTS = {
   max: 20, crossing: true,
   rows: CORE_ROWS, squares: true,
   excluded: [],          // aus dem Topf genommene Ergebnisse
-  speech: true, voice: '', rate: 0.85, volume: 1,
+  speech: true, volume: 1,
   dots: true, fxDrum: true, fxConfetti: true,
   settingsTab: 'spiel',   // zuletzt geöffneter Reiter in ⚙️
 };
