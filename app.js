@@ -1,198 +1,49 @@
 'use strict';
 
-// ---------- Grunddaten ----------
+// Würfel im Stil des ABC-Bingos; Grundlagen (Topf, Aufgaben, Speicher) stehen in core.js
 
-const STORE = 'rechenbingo-v1';
-const ALL_ROWS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-const CORE_ROWS = [1, 2, 5, 10];
-// Abstände der Würfel-Bilder in ms: erst schnell, dann langsamer (wie beim ABC-Bingo)
+// Abstände der Würfel-Bilder in ms: erst schnell, dann langsamer
 const ROLL_MS = [28, 54, 82, 112, 144, 178, 214, 252, 292, 334, 378, 424];
-
-const DEFAULTS = {
-  mode: 'plus', zero: false,
-  max: 10, crossing: true,
-  rows: CORE_ROWS, squares: true, swap: true, factorMax: 10,
-  fair: 'ergebnis', noRepeat: true, autoMark: true,
-  speech: true, voice: '', rate: 0.85, gap: 0.5, volume: 1,
-  dots: true, animation: true, fxDrum: true, fxConfetti: true,
-};
-
-// Änderungen an diesen Einstellungen ergeben andere Aufgaben -> neue Runde
-const POOL_KEYS = ['mode', 'zero', 'max', 'crossing', 'rows', 'squares', 'swap', 'factorMax', 'fair'];
-
-const PRESETS = [
-  { name: 'Plus bis 5', s: { mode: 'plus', max: 5, zero: false, crossing: true } },
-  { name: 'Plus bis 10', s: { mode: 'plus', max: 10, zero: false, crossing: true } },
-  { name: 'Minus bis 10', s: { mode: 'minus', max: 10, zero: false, crossing: true } },
-  { name: 'Plus & Minus bis 10', s: { mode: 'plusminus', max: 10, zero: false, crossing: true } },
-  { name: 'Plus & Minus bis 20 ohne Zehnerübergang', s: { mode: 'plusminus', max: 20, zero: false, crossing: false } },
-  { name: 'Plus & Minus bis 20', s: { mode: 'plusminus', max: 20, zero: false, crossing: true } },
-  { name: 'Plus & Minus bis 30', s: { mode: 'plusminus', max: 30, zero: true, crossing: true } },
-  { name: '1×1 Kernaufgaben', s: { mode: 'mal', rows: CORE_ROWS, squares: true, swap: true, factorMax: 10, zero: false } },
-  { name: 'Ganzes 1×1', s: { mode: 'mal', rows: ALL_ROWS, squares: false, swap: true, factorMax: 10, zero: false } },
-  { name: 'Geteilt Kernaufgaben', s: { mode: 'geteilt', rows: CORE_ROWS, squares: true, swap: false, factorMax: 10, zero: false } },
-];
-
-const OPS = {
-  '+': { sym: '+', word: 'plus' },
-  '-': { sym: '−', word: 'minus' },
-  '*': { sym: '·', word: 'mal' },
-  '/': { sym: ':', word: 'geteilt durch' },
-};
-const MODES = {
-  plus: ['+'], minus: ['-'], plusminus: ['+', '-'],
-  mal: ['*'], geteilt: ['/'], malgeteilt: ['*', '/'],
-};
-const MODE_NAMES = {
-  plus: 'Plus', minus: 'Minus', plusminus: 'Plus und Minus',
-  mal: 'Mal', geteilt: 'Geteilt', malgeteilt: 'Mal und Geteilt',
-};
+const SPEECH_GAP_MS = 450;
 const CONFETTI_COLORS = ['#f0c020', '#ffffff', '#4dabf7', '#ff6b6b', '#7bd389'];
 
-const $ = (sel) => document.querySelector(sel);
-const $$ = (sel) => [...document.querySelectorAll(sel)];
-const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const fmt = (t) => `${t.a} ${OPS[t.op].sym} ${t.b}`;
-
-// ---------- Speicher ----------
-
-function load() {
-  try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch { return {}; }
-}
-function save() {
-  try {
-    localStorage.setItem(STORE, JSON.stringify({
-      settings: S, history: state.history, marked: [...state.marked], used: [...state.used],
-    }));
-  } catch { /* privates Fenster o. Ä. – dann eben ohne Speichern */ }
-}
-
-const saved = load();
-let S = { ...DEFAULTS, ...(saved.settings || {}) };
+const stored = loadStore();
+let S = stored.settings;
 const state = {
-  history: saved.history || [],
-  marked: new Set(saved.marked || []),
-  used: new Set(saved.used || []),
-  current: null,
+  history: stored.history,
+  used: new Set(stored.used),   // Ergebnisse, die in dieser Runde schon dran waren
+  current: stored.history[stored.history.length - 1] || null,
   rolling: false,
+  drawnSort: 'order',
 };
-state.current = state.history[state.history.length - 1] || null;
 let pool = buildPool(S);
 
-// ---------- Aufgaben erzeugen ----------
-
-// Zehnerübergang: der Zehner ändert sich, ohne genau auf einem Zehner zu landen bzw. zu starten
-function crosses(a, b, op) {
-  const r = op === '+' ? a + b : a - b;
-  if (Math.floor(a / 10) === Math.floor(r / 10)) return false;
-  return op === '+' ? r % 10 !== 0 : a % 10 !== 0;
+function save() {
+  saveStore({ settings: S, history: state.history, used: [...state.used] });
 }
 
-function buildPool(s) {
-  const tasks = new Map();
-  const lo = s.zero ? 0 : 1;
-  const ops = MODES[s.mode];
-  const add = (a, op, b, r) => {
-    if (!s.zero && (a === 0 || b === 0 || r === 0)) return;
-    const key = `${a}${op}${b}`;
-    tasks.set(key, { a, op, b, r, key });
-  };
+// ---------- Auslosen: jedes Ergebnis im Topf einmal pro Runde ----------
 
-  if (ops.includes('+')) {
-    for (let a = lo; a <= s.max; a++)
-      for (let b = lo; a + b <= s.max; b++)
-        if (s.crossing || !crosses(a, b, '+')) add(a, '+', b, a + b);
-  }
-  if (ops.includes('-')) {
-    for (let a = lo; a <= s.max; a++)
-      for (let b = lo; b <= a; b++)
-        if (s.crossing || !crosses(a, b, '-')) add(a, '-', b, a - b);
-  }
+const leftInTopf = () => pool.topf.filter((r) => !state.used.has(r));
+const doneInTopf = () => pool.topf.filter((r) => state.used.has(r)).length;
+const countText = () => `Bereits gewürfelt: ${doneInTopf()} von ${pool.topf.length}`;
 
-  const pairs = [];
-  for (const r of s.rows) {
-    for (let k = lo; k <= s.factorMax; k++) {
-      pairs.push([r, k]);
-      if (s.swap) pairs.push([k, r]);
-    }
-  }
-  if (s.squares) for (let n = 1; n <= s.factorMax; n++) pairs.push([n, n]);
-
-  if (ops.includes('*')) for (const [x, y] of pairs) add(x, '*', y, x * y);
-  if (ops.includes('/')) for (const [x, y] of pairs) if (x !== 0) add(x * y, '/', x, y);
-
-  const list = [...tasks.values()];
-  const byResult = new Map();
-  for (const t of list) {
-    if (!byResult.has(t.r)) byResult.set(t.r, []);
-    byResult.get(t.r).push(t);
-  }
-  const results = [...byResult.keys()].sort((a, b) => a - b);
-  return { tasks: list, results, byResult };
-}
-
-function describe(s) {
-  const ops = MODES[s.mode];
-  const parts = [MODE_NAMES[s.mode]];
-  if (ops.includes('+') || ops.includes('-')) {
-    parts[0] += ` bis ${s.max}`;
-    if (!s.crossing) parts.push('ohne Zehnerübergang');
-  }
-  if (ops.includes('*') || ops.includes('/')) {
-    const rows = s.rows.length === 10 ? 'alle Reihen'
-      : s.rows.length ? `Reihen ${s.rows.join(', ')}` : 'keine Reihe';
-    parts.push(rows + (s.squares ? ' + Quadrataufgaben' : ''));
-  }
-  if (s.zero) parts.push('mit Null');
-  return parts.join(' · ');
-}
-
-// ---------- Auslosen ----------
-
-const usedKey = (t) => (S.fair === 'ergebnis' ? 'r' + t.r : t.key);
-
-// Liefert { t } oder { done: true }, wenn bei "nichts doppelt" alles dran war, oder null ohne Aufgaben
 function draw() {
-  const { tasks, results, byResult } = pool;
-  if (!tasks.length) return null;
-  const notLast = (cand, same) => (cand.length > 1 && state.current ? cand.filter((x) => !same(x)) : cand);
-
-  if (S.fair === 'ergebnis') {
-    let cand = results;
-    if (S.noRepeat) {
-      cand = results.filter((r) => !state.used.has('r' + r));
-      if (!cand.length) return { done: true };
-    }
-    cand = notLast(cand, (r) => r === state.current.r);
-    return { t: pick(byResult.get(pick(cand))) };
-  }
-
-  let cand = tasks;
-  if (S.noRepeat) {
-    cand = tasks.filter((t) => !state.used.has(t.key));
-    if (!cand.length) return { done: true };
-  }
-  cand = notLast(cand, (t) => t.key === state.current.key);
-  return { t: pick(cand) };
+  if (!pool.topf.length) return null;
+  const left = leftInTopf();
+  if (!left.length) return { done: true };
+  return { t: pick(pool.byResult.get(pick(left))) };
 }
 
-function countText() {
-  if (!S.noRepeat) return `Bereits gewürfelt: ${state.history.length}`;
-  const total = S.fair === 'ergebnis' ? pool.results.length : pool.tasks.length;
-  return `Bereits gewürfelt: ${state.used.size} von ${total}`;
-}
-
-// ---------- Ton: Sprachausgabe, Trommel ----------
+// ---------- Ton: Sprachausgabe und Trommel ----------
 
 const hasSpeech = 'speechSynthesis' in window;
+let speechRun = 0;
 
 function germanVoices() {
   if (!hasSpeech) return [];
   return speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith('de'));
 }
-
-let speechRun = 0;
 
 function speakOne(text) {
   return new Promise((resolve) => {
@@ -226,11 +77,10 @@ async function speak(words) {
   if (!S.speech || !hasSpeech) return;
   stopSpeech();
   const run = speechRun;
-  if (S.gap <= 0) { await speakOne(words.join(' ')); return; }
   for (let i = 0; i < words.length; i++) {
     if (run !== speechRun) return; // abgebrochen, z. B. durch „Weiter“
     await speakOne(words[i]);
-    if (i < words.length - 1) await sleep(S.gap * 1000);
+    if (i < words.length - 1) await sleep(SPEECH_GAP_MS);
   }
 }
 
@@ -299,12 +149,11 @@ function confetti() {
   const w = cv.width = innerWidth;
   const h = cv.height = innerHeight;
   const g = cv.getContext('2d');
-  const palette = CONFETTI_COLORS;
   const parts = Array.from({ length: 90 }, () => ({
     x: w / 2 + (Math.random() - 0.5) * w * 0.3, y: h * 0.45,
     vx: (Math.random() - 0.5) * 14, vy: -Math.random() * 14 - 4,
     s: 6 + Math.random() * 8, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.4,
-    c: pick(palette),
+    c: pick(CONFETTI_COLORS),
   }));
   const id = ++confettiRun;
   const t0 = performance.now();
@@ -323,162 +172,6 @@ function confetti() {
     else stopConfetti();
   })(t0);
 }
-
-// ---------- Spielansicht ----------
-
-function taskHtml(t) {
-  const opCls = t.op === '*' ? 'op mul' : 'op';
-  return `<span class="n">${t.a}</span><span class="${opCls}">${OPS[t.op].sym}</span><span class="n">${t.b}</span>`;
-}
-
-function showScreen(name) {
-  $('#screenTouch').hidden = name !== 'touch';
-  $('#screenTask').hidden = name !== 'task';
-  $('#screenDone').hidden = name !== 'done';
-}
-
-function renderTouchCount() {
-  const el = $('#touchCount');
-  el.textContent = countText();
-  el.hidden = state.history.length === 0;
-}
-
-function rollAnimation(el) {
-  return new Promise((resolve) => {
-    let idx = 0;
-    const t0 = performance.now();
-    (function frame(now) {
-      if (now - t0 >= ROLL_MS[idx]) {
-        el.innerHTML = taskHtml(pick(pool.tasks));
-        drumTick(0.5 + (0.5 * idx) / ROLL_MS.length);
-        idx++;
-      }
-      if (idx < ROLL_MS.length) requestAnimationFrame(frame);
-      else setTimeout(resolve, 120);
-    })(t0);
-  });
-}
-
-function showDone(title, hint) {
-  $('#doneTitle').textContent = title;
-  $('#doneHint').textContent = hint;
-  showScreen('done');
-  $('#btnWeiter').hidden = false;
-}
-
-async function roll() {
-  if (state.rolling) return;
-  initAudio();
-  const d = draw();
-  if (!d) {
-    showDone('Mit diesen Einstellungen gibt es keine Aufgaben.', 'Über ⚙️ → Hauptmenü eine andere Spielart wählen.');
-    return;
-  }
-  if (d.done) {
-    showDone('Alle Aufgaben wurden gewürfelt! 🎉', 'Drücke „Weiter“, um neu zu starten.');
-    return;
-  }
-
-  state.rolling = true;
-  stopSpeech();
-  stopConfetti();
-  showScreen('task');
-  $('#btnWeiter').hidden = true;
-  const el = $('#task');
-  $('#dots').innerHTML = '';
-  if (S.animation) {
-    el.classList.add('rolling');
-    await rollAnimation(el);
-    el.classList.remove('rolling');
-  }
-
-  const t = d.t;
-  state.current = t;
-  state.history.push(t);
-  if (S.noRepeat) state.used.add(usedKey(t));
-  if (S.autoMark) state.marked.add(t.r);
-  save();
-
-  el.innerHTML = taskHtml(t);
-  $('#dots').innerHTML = dotsHtml(t);
-  state.rolling = false;
-  $('#btnWeiter').hidden = false;
-  renderTouchCount();
-  confetti();
-  announce(t);
-}
-
-function repeatCurrent() {
-  if (state.rolling || !state.current) return;
-  announce(state.current);
-  const h = $('#repeatHint');
-  h.classList.add('show');
-  clearTimeout(repeatCurrent.tm);
-  repeatCurrent.tm = setTimeout(() => h.classList.remove('show'), 800);
-}
-
-async function weiter() {
-  if (state.rolling) return;
-  stopSpeech();
-  stopConfetti();
-  $('#btnWeiter').hidden = true;
-  if (!$('#screenDone').hidden && pool.tasks.length) newRound();
-  renderTouchCount();
-  showScreen('touch');
-}
-
-function newRound() {
-  state.history = [];
-  state.marked.clear();
-  state.used.clear();
-  state.current = null;
-  stopSpeech();
-  save();
-  renderTouchCount();
-  renderDrawer();
-  renderNotar();
-}
-
-// Letzte Aufgabe zurücknehmen: aus Verlauf, "schon dran" und Notar entfernen
-function undoLast() {
-  const t = state.history.pop();
-  if (!t) return;
-  state.used.delete(usedKey(t));
-  if (!state.history.some((h) => h.r === t.r)) state.marked.delete(t.r);
-  state.current = state.history[state.history.length - 1] || null;
-  save();
-  stopSpeech();
-  stopConfetti();
-  $('#btnWeiter').hidden = true;
-  showScreen('touch');
-  renderTouchCount();
-  renderDrawer();
-}
-
-// ---------- Schublade im Spiel ----------
-
-function renderDrawer() {
-  $('#drawerMode').textContent = `${describe(S)} · ${countText()}`;
-  const box = $('#drawnTasks');
-  if (!state.history.length) {
-    box.innerHTML = '<span class="drawn-empty">Noch nichts gewürfelt.</span>';
-  } else {
-    const last = state.history.length - 1;
-    box.innerHTML = state.history
-      .map((t, i) => `<span class="chip ${i === last ? 'last' : ''}">${fmt(t)} <small>(${t.r})</small></span>`)
-      .join('');
-  }
-  $('#btnUndo').disabled = !state.history.length;
-  for (const el of $$('[data-fx]')) {
-    const v = S[el.dataset.fx];
-    if (el.type === 'checkbox') el.checked = !!v;
-    else el.value = v;
-  }
-  $('#btnFullscreen').hidden = !canFullscreen || isFullscreen();
-}
-
-function openDrawer() { renderDrawer(); $('#drawer').hidden = false; }
-function closeDrawer() { $('#drawer').hidden = true; }
 
 // ---------- Punktebilder ----------
 
@@ -519,167 +212,141 @@ function dotsHtml(t) {
     if (t.a > 20) return '';
     return framesHtml(t.a, '', t.b);
   }
-  if (t.op === '*') {
-    if (!t.a || !t.b) return '';
-    return arrayHtml(t.a, t.b);
-  }
+  if (t.op === '*') return arrayHtml(t.a, t.b);
   return ''; // Geteilt: kein Bild, das würde das Ergebnis verraten
 }
 
-// ---------- Notar ----------
+// ---------- Bildschirme und Ablauf ----------
 
-function renderNotar() {
-  const source = new Map();
-  for (const t of state.history) source.set(t.r, t);
-  $('#notarGrid').innerHTML = pool.results.map((r) => {
-    const on = state.marked.has(r);
-    const src = source.has(r) ? fmt(source.get(r)) : '';
-    return `<button class="cell ${on ? 'on' : ''}" data-r="${r}" aria-pressed="${on}">
-      <span class="num">${r}</span><span class="src">${src}</span></button>`;
-  }).join('');
-  const marked = pool.results.filter((r) => state.marked.has(r)).length;
-  $('#notarCount').textContent = `${marked} von ${pool.results.length} Zahlen markiert`;
+function taskHtml(t) {
+  const opCls = t.op === '*' ? 'op mul' : 'op';
+  return `<span class="n">${t.a}</span><span class="${opCls}">${OPS[t.op].sym}</span><span class="n">${t.b}</span>`;
 }
 
-// ---------- Bingokarten ----------
-
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
+function showScreen(name) {
+  $('#screenTouch').hidden = name !== 'touch';
+  $('#screenTask').hidden = name !== 'task';
+  $('#screenDone').hidden = name !== 'done';
 }
 
-let printKind = 'bingo';
-
-// Ausdrucke gehen für die aktuelle Einstellung oder für jede Vorlage, ohne das Spiel umzustellen
-function printSettings() {
-  const v = $('#printFor').value;
-  return v === 'current' || v === '' ? S : { ...S, ...PRESETS[+v].s };
+function renderTouchCount() {
+  const el = $('#touchCount');
+  el.textContent = countText();
+  el.hidden = doneInTopf() === 0;
 }
 
-function fillPrintFor() {
-  const sel = $('#printFor');
-  const keep = sel.value || 'current';
-  sel.innerHTML = `<option value="current">Aktuelle Einstellung: ${describe(S)}</option>`
-    + PRESETS.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
-  sel.value = [...sel.options].some((o) => o.value === keep) ? keep : 'current';
+function rollAnimation(el) {
+  return new Promise((resolve) => {
+    let idx = 0;
+    const t0 = performance.now();
+    (function frame(now) {
+      if (now - t0 >= ROLL_MS[idx]) {
+        el.innerHTML = taskHtml(pick(pool.tasks));
+        drumTick(0.5 + (0.5 * idx) / ROLL_MS.length);
+        idx++;
+      }
+      if (idx < ROLL_MS.length) requestAnimationFrame(frame);
+      else setTimeout(resolve, 120);
+    })(t0);
+  });
 }
 
-function setPrintKind(kind) {
-  printKind = kind;
-  for (const b of $$('#printKind [data-kind]')) b.classList.toggle('on', b.dataset.kind === kind);
-  for (const el of $$('.bingo-only')) el.hidden = kind !== 'bingo';
-  $('#cards').innerHTML = '';
-  $('#cardStatus').textContent = '';
-  $('#cardPrint').disabled = true;
+function showDone(title, hint) {
+  $('#doneTitle').textContent = title;
+  $('#doneHint').textContent = hint;
+  showScreen('done');
+  $('#btnWeiter').hidden = false;
 }
 
-// Spaltenzahl wie in der Vorlage: 0–20 ergibt 7 × 3, große Zahlenräume 10 pro Reihe
-function lottoCols(n) {
-  if (n <= 10) return n;
-  if (n <= 24) return Math.ceil(n / 3);
-  return 10;
-}
+let triedFullscreen = false;
 
-function makeLotto() {
-  const s = printSettings();
-  const results = buildPool(s).results;
-  const count = Math.min(40, Math.max(1, +$('#cardCount').value || 1));
-  if (!results.length) {
-    $('#cardStatus').textContent = 'Mit dieser Spielart gibt es keine Zahlen.';
-    $('#cards').innerHTML = '';
-    $('#cardPrint').disabled = true;
+async function roll() {
+  if (state.rolling) return;
+  initAudio();
+  // Beim ersten Tippen ins Vollbild (geht nur als Reaktion auf einen Tipp)
+  if (!triedFullscreen) { triedFullscreen = true; requestFullscreen(); }
+  const d = draw();
+  if (!d) {
+    showDone('Keine Zahlen im Topf.', 'Über ⚙️ unten links Zahlen in den Topf legen.');
     return;
   }
-  const cols = lottoCols(results.length);
-  const sheet = `<div class="lotto-sheet">
-      <div class="lotto-head"><span class="lotto-title">Lotto-Schein von <span class="line"></span></span>
-        <span class="lotto-sub">${describe(s)}</span></div>
-      <div class="lotto-grid schrift" style="--cols:${cols}">${results.map((x) => `<div>${x}</div>`).join('')}</div>
-    </div>`;
-  $('#cards').classList.add('lotto');
-  $('#cards').innerHTML = sheet.repeat(count);
-  $('#cardStatus').textContent = `${count} Lottoscheine mit allen ${results.length} möglichen Ergebnissen erstellt.`;
-  $('#cardPrint').disabled = false;
-}
-
-function makeCards() {
-  if (printKind === 'lotto') { makeLotto(); return; }
-  $('#cards').classList.remove('lotto');
-  const s = printSettings();
-  const n = +$('#cardSize').value;
-  const count = Math.min(40, Math.max(1, +$('#cardCount').value || 1));
-  const cells = n * n;
-  const results = buildPool(s).results;
-  if (results.length < cells) {
-    $('#cardStatus').textContent = `Für ${n} × ${n} braucht man ${cells} verschiedene Zahlen, es gibt aber nur ${results.length}. `
-      + 'Bitte kleinere Karten wählen oder den Zahlenraum vergrößern.';
-    $('#cards').innerHTML = '';
-    $('#cardPrint').disabled = true;
+  if (d.done) {
+    showDone('Alle Aufgaben wurden gewürfelt! 🎉', 'Drücke „Weiter“, um neu zu starten.');
     return;
   }
-  const sorted = $('#cardSorted').checked;
-  let html = '';
-  for (let c = 0; c < count; c++) {
-    const nums = shuffle(results).slice(0, cells);
-    if (sorted) nums.sort((a, b) => a - b);
-    html += `<div class="bingo-card">
-      <div class="title">Mathe-Bingo</div>
-      <div class="sub">${describe(s)}</div>
-      <div class="card-grid schrift" style="--n:${n}">${nums.map((x) => `<div>${x}</div>`).join('')}</div>
-    </div>`;
-  }
-  $('#cards').innerHTML = html;
-  $('#cardStatus').textContent = `${count} Karten mit je ${cells} Zahlen erstellt. Bei jedem Klick auf „Erstellen“ werden sie neu gemischt.`;
-  $('#cardPrint').disabled = false;
+
+  state.rolling = true;
+  stopSpeech();
+  stopConfetti();
+  showScreen('task');
+  $('#btnWeiter').hidden = true;
+  const el = $('#task');
+  $('#dots').innerHTML = '';
+  el.classList.add('rolling');
+  await rollAnimation(el);
+  el.classList.remove('rolling');
+
+  const t = d.t;
+  state.current = t;
+  state.history.push(t);
+  state.used.add(t.r);
+  save();
+
+  el.innerHTML = taskHtml(t);
+  $('#dots').innerHTML = dotsHtml(t);
+  state.rolling = false;
+  $('#btnWeiter').hidden = false;
+  renderTouchCount();
+  confetti();
+  announce(t);
 }
 
-// ---------- Einstellungen ----------
-
-function buildSettingsUi() {
-  $('#rowBoxes').innerHTML = ALL_ROWS.map((r) =>
-    `<label class="check"><input type="checkbox" class="row-cb" value="${r}"> ${r}er</label>`).join('');
-  $('#presets').innerHTML = PRESETS.map((p, i) =>
-    `<button type="button" data-preset="${i}">${p.name}</button>`).join('');
-  fillVoices();
-  if (hasSpeech) speechSynthesis.onvoiceschanged = fillVoices;
+function repeatCurrent() {
+  if (state.rolling || !state.current) return;
+  announce(state.current);
+  const h = $('#repeatHint');
+  h.classList.add('show');
+  clearTimeout(repeatCurrent.tm);
+  repeatCurrent.tm = setTimeout(() => h.classList.remove('show'), 800);
 }
 
-function fillVoices() {
-  const sel = $('#voiceSelect');
-  const voices = germanVoices();
-  sel.innerHTML = '<option value="">Standard</option>'
-    + voices.map((v) => `<option value="${v.name.replace(/"/g, '&quot;')}">${v.name}</option>`).join('');
-  sel.value = voices.some((v) => v.name === S.voice) ? S.voice : '';
+function weiter() {
+  if (state.rolling) return;
+  stopSpeech();
+  stopConfetti();
+  $('#btnWeiter').hidden = true;
+  if (!$('#screenDone').hidden && pool.topf.length) newRound();
+  renderTouchCount();
+  showScreen('touch');
 }
 
-function writeForm() {
-  for (const el of $$('[data-key]')) {
-    const v = S[el.dataset.key];
-    if (el.type === 'checkbox') el.checked = !!v;
-    else el.value = v;
-  }
-  for (const el of $$('.row-cb')) el.checked = S.rows.includes(+el.value);
-  refreshSettingsView();
+function backToTouch() {
+  stopSpeech();
+  stopConfetti();
+  $('#btnWeiter').hidden = true;
+  showScreen('touch');
+  renderTouchCount();
 }
 
-function readForm() {
-  const s = { ...S };
-  for (const el of $$('[data-key]')) {
-    const k = el.dataset.key;
-    if (el.type === 'checkbox') s[k] = el.checked;
-    else if (typeof DEFAULTS[k] === 'number') s[k] = Number(el.value);
-    else s[k] = el.value;
-  }
-  s.max = Math.min(100, Math.max(2, Math.round(s.max) || DEFAULTS.max));
-  s.rows = $$('.row-cb:checked').map((el) => +el.value);
-  return s;
+function newRound() {
+  state.history = [];
+  state.used.clear();
+  state.current = null;
+  save();
 }
 
-function sameValue(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+// Letzte Aufgabe zurücknehmen: aus Verlauf und "schon dran" entfernen
+function undoLast() {
+  const t = state.history.pop();
+  if (!t) return;
+  if (!state.history.some((h) => h.r === t.r)) state.used.delete(t.r);
+  state.current = state.history[state.history.length - 1] || null;
+  save();
+  backToTouch();
+  renderDrawer();
+}
+
+// ---------- Einstellungen ändern ----------
 
 // Eigene Rückfrage statt confirm(): manche Browser (Kiosk-Modus, eingebettete Ansichten)
 // unterdrücken confirm() und liefern sofort "Abbrechen".
@@ -701,127 +368,127 @@ function askConfirm(text) {
   });
 }
 
-async function applySettings(next) {
-  const poolChanged = POOL_KEYS.some((k) => !sameValue(next[k], S[k]));
-  if (poolChanged && state.history.length
-      && !(await askConfirm('Mit den neuen Einstellungen beginnt eine neue Runde. Bisher gestellte Aufgaben und Markierungen werden gelöscht.'))) {
-    writeForm();
-    return false;
+// Andere Rechenart, anderer Zahlenraum oder andere Reihen ergeben andere Aufgaben:
+// dann beginnt eine neue Runde. Aus dem Topf genommen bleibt nur die 0.
+async function changeGame(patch) {
+  const next = { ...S, ...patch };
+  if (JSON.stringify(next) === JSON.stringify(S)) return;
+  if (state.history.length
+      && !(await askConfirm('Damit beginnt eine neue Runde. Die bisher gewürfelten Aufgaben werden gelöscht.'))) {
+    renderDrawer();
+    return;
   }
-  S = next;
-  if (poolChanged) {
-    pool = buildPool(S);
-    newRound();
-  }
+  S = { ...next, excluded: S.excluded.filter((r) => r === 0) };
+  pool = buildPool(S);
+  newRound();
+  backToTouch();
+  renderDrawer();
+}
+
+// Zahlen im Topf ändern: die Runde läuft weiter, wie beim ABC-Bingo
+function setExcluded(list) {
+  S.excluded = [...new Set(list)].sort((a, b) => a - b);
+  pool = buildPool(S);
   save();
-  writeForm();
-  return true;
+  renderTouchCount();
+  renderDrawer();
 }
 
-function refreshSettingsView() {
-  const ops = MODES[S.mode];
-  $('#fsAdd').hidden = !(ops.includes('+') || ops.includes('-'));
-  $('#fsMul').hidden = !(ops.includes('*') || ops.includes('/'));
-  $('#rateOut').textContent = S.rate.toFixed(2).replace('.', ',');
-  $('#gapOut').textContent = `${S.gap.toFixed(1).replace('.', ',')} s`;
-  $('#volOut').textContent = `${Math.round(S.volume * 100)} %`;
-  for (const b of $$('[data-preset]')) {
-    const p = PRESETS[+b.dataset.preset].s;
-    b.classList.toggle('active', Object.keys(p).every((k) => sameValue(p[k], S[k])));
-  }
-  for (const b of $$('[data-max]')) b.classList.toggle('primary', +b.dataset.max === S.max);
-  const sum = $('#summary');
-  if (!pool.tasks.length) {
-    sum.textContent = 'Mit diesen Einstellungen gibt es keine Aufgaben.';
-    sum.classList.add('warn');
+function setOption(key, value) {
+  S[key] = value;
+  save();
+  if (key === 'dots' && state.current && !$('#screenTask').hidden) $('#dots').innerHTML = dotsHtml(state.current);
+  renderDrawer();
+}
+
+// ---------- Schublade ----------
+
+function toggleGridHtml(items, isOn, label = (x) => x) {
+  return items.map((x) =>
+    `<button data-val="${x}" class="${isOn(x) ? '' : 'off'}" aria-pressed="${isOn(x)}">${label(x)}</button>`).join('');
+}
+
+function renderDrawer() {
+  $('#drawerMode').textContent = `${describe(S)} · ${countText()}`;
+
+  // Bisher gewürfelt
+  const box = $('#drawnTasks');
+  if (!state.history.length) {
+    box.innerHTML = '<span class="drawn-empty">Noch nichts gewürfelt.</span>';
   } else {
-    sum.textContent = `${pool.tasks.length} verschiedene Aufgaben · ${pool.results.length} verschiedene Ergebnisse`;
-    sum.classList.remove('warn');
+    const last = state.history[state.history.length - 1];
+    const list = state.drawnSort === 'size'
+      ? [...state.history].sort((a, b) => a.r - b.r)
+      : state.history;
+    box.innerHTML = list.map((t) => (state.drawnSort === 'size'
+      ? `<span class="chip ${t === last ? 'last' : ''}">${t.r}<small>${fmt(t)}</small></span>`
+      : `<span class="chip ${t === last ? 'last' : ''}">${fmt(t)}<small>= ${t.r}</small></span>`)).join('');
   }
+  for (const b of $$('#drawnSort [data-sort]')) b.classList.toggle('on', b.dataset.sort === state.drawnSort);
+  $('#btnUndo').disabled = !state.history.length;
+  $('#btnReset').disabled = !state.history.length;
+
+  // Schnellwahl, Rechenart, Zahlenraum, Reihen
+  $('#presets').innerHTML = PRESETS.map((p, i) => {
+    const on = Object.keys(p.s).every((k) => JSON.stringify(p.s[k]) === JSON.stringify(S[k]));
+    return `<button class="sbtn ${on ? '' : 'light'}" data-preset="${i}">${p.name}</button>`;
+  }).join('');
+  for (const b of $$('#modeSeg [data-mode]')) b.classList.toggle('on', b.dataset.mode === S.mode);
+  $('#rowAdd').hidden = !hasAddSub(S);
+  $('#rowMul').hidden = !hasMulDiv(S);
+  for (const b of $$('#maxSeg [data-max]')) b.classList.toggle('on', +b.dataset.max === S.max);
+  $('#chkCrossing').checked = S.crossing;
+  $('#rowGrid').innerHTML = toggleGridHtml(ALL_ROWS, (r) => S.rows.includes(r), (r) => `${r}er`);
+  $('#chkSquares').checked = S.squares;
+
+  // Topf
+  const ex = new Set(S.excluded);
+  $('#topfGrid').innerHTML = toggleGridHtml(pool.results, (r) => !ex.has(r) && pool.byResult.has(r));
+  $('#topfInfo').textContent = `${pool.topf.length} von ${pool.results.length} Zahlen im Topf. `
+    + 'Antippen, um eine Zahl heraus- oder hineinzunehmen.';
+  $('#btnTopfNoZero').hidden = !pool.results.includes(0);
+  $('#btnTopfNoZero').classList.toggle('light', !ex.has(0));
+
+  // Anzeige, Ton
+  for (const el of $$('[data-opt]')) {
+    const v = S[el.dataset.opt];
+    if (el.type === 'checkbox') el.checked = !!v;
+    else el.value = v;
+  }
+  $('#volVal').textContent = `Lautstärke: ${Math.round(S.volume * 100)} %`;
+  $('#rateVal').textContent = S.rate < 0.8 ? 'langsam' : S.rate > 1.05 ? 'schnell' : 'normal';
+  $('#rowFullscreen').hidden = !canFullscreen || isFullscreen();
 }
 
-// ---------- Start und Vollbild ----------
-
-function renderStart() {
-  $('#startGrid').innerHTML = PRESETS.map((p, i) => {
-    const pp = buildPool({ ...S, ...p.s });
-    const example = pp.tasks[Math.floor(pp.tasks.length * 0.6)];
-    return `<button class="start-tile" data-start="${i}">
-      <span class="tile-name">${p.name}</span>
-      <span class="tile-sub">z. B. ${fmt(example)}<br>${pp.results.length} Zahlen im Bingo</span>
-    </button>`;
-  }).join('')
-    + `<button class="start-tile custom" data-start="custom">
-      <span class="tile-name">⚙️ Eigene Einstellung</span>
-      <span class="tile-sub">Zahlenraum, Reihen, Schwierigkeit selbst festlegen</span>
-    </button>`;
-  const running = state.history.length > 0;
-  $('#continueBox').hidden = !running;
-  if (running) $('#continueInfo').textContent = `${describe(S)} · ${countText()}`;
+function fillVoices() {
+  const sel = $('#voiceSelect');
+  const voices = germanVoices();
+  sel.innerHTML = '<option value="">Stimme: Standard</option>'
+    + voices.map((v) => `<option value="${v.name.replace(/"/g, '&quot;')}">Stimme: ${v.name}</option>`).join('');
+  sel.value = voices.some((v) => v.name === S.voice) ? S.voice : '';
 }
 
-async function startWith(next) {
-  if (!(await applySettings(next))) return;
-  enterGame();
-}
+function openDrawer() { renderDrawer(); $('#drawer').hidden = false; }
+function closeDrawer() { $('#drawer').hidden = true; }
+
+// ---------- Vollbild ----------
 
 const fsTarget = document.documentElement;
 const canFullscreen = !!(fsTarget.requestFullscreen || fsTarget.webkitRequestFullscreen);
 const isFullscreen = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
 
 function requestFullscreen() {
+  if (!canFullscreen || isFullscreen()) return;
   try {
     const req = fsTarget.requestFullscreen || fsTarget.webkitRequestFullscreen;
-    const p = req && req.call(fsTarget);
+    const p = req.call(fsTarget);
     if (p && p.catch) p.catch(() => {});
   } catch { /* Vollbild nicht erlaubt – dann eben im Fenster */ }
 }
 
-function exitFullscreen() {
-  if (!isFullscreen()) return;
-  const exit = document.exitFullscreen || document.webkitExitFullscreen;
-  try {
-    const p = exit && exit.call(document);
-    if (p && p.catch) p.catch(() => {});
-  } catch { /* egal */ }
-}
-
-function enterGame() {
-  initAudio();
-  closeDrawer();
-  $('#btnWeiter').hidden = true;
-  renderTouchCount();
-  showScreen('touch');
-  $('#game').hidden = false;
-  document.body.classList.add('in-game');
-  requestFullscreen();
-}
-
-function exitGame() {
-  stopSpeech();
-  stopConfetti();
-  closeDrawer();
-  $('#game').hidden = true;
-  document.body.classList.remove('in-game');
-  exitFullscreen();
-  showView('start');
-}
-
-const inGame = () => !$('#game').hidden;
-
-// ---------- Navigation und Ereignisse ----------
-
-function showView(name) {
-  for (const t of $$('.tab')) t.setAttribute('aria-selected', String(t.dataset.view === name));
-  for (const v of $$('.view')) v.classList.toggle('active', v.id === `view-${name}`);
-  if (name === 'notar') renderNotar();
-  if (name === 'start') renderStart();
-  if (name === 'karten') fillPrintFor();
-}
+// ---------- Ereignisse ----------
 
 function bind() {
-  for (const t of $$('.tab')) t.addEventListener('click', () => showView(t.dataset.view));
-
   // Spiel: Berühren würfelt, Tippen auf die Aufgabe wiederholt die Ansage
   $('#btnTouch').addEventListener('click', roll);
   $('#screenTask').addEventListener('click', repeatCurrent);
@@ -829,93 +496,77 @@ function bind() {
   $('#btnGear').addEventListener('click', openDrawer);
   $('#btnCloseDrawer').addEventListener('click', closeDrawer);
   $('#drawer').addEventListener('click', (e) => { if (e.target.id === 'drawer') closeDrawer(); });
-  $('#btnMenu').addEventListener('click', exitGame);
-  $('#btnFullscreen').addEventListener('click', () => { requestFullscreen(); closeDrawer(); });
-  $('#btnUndo').addEventListener('click', undoLast);
-  $('#btnReset').addEventListener('click', async () => {
-    if (!(await askConfirm('Neue Runde starten? Bisher gewürfelte Aufgaben und Markierungen im Notar werden gelöscht.'))) return;
-    newRound();
-    stopConfetti();
-    $('#btnWeiter').hidden = true;
-    showScreen('touch');
-    closeDrawer();
-  });
-  $('#drawer').addEventListener('change', (e) => {
-    const k = e.target.dataset.fx;
-    if (!k) return;
-    S[k] = e.target.type === 'checkbox' ? e.target.checked : Number(e.target.value);
-    if (k === 'dots' && state.current && !$('#screenTask').hidden) $('#dots').innerHTML = dotsHtml(state.current);
-    save();
-    writeForm();
-  });
 
-  // Tastatur im Spiel: Leertaste/Enter würfelt bzw. drückt „Weiter“
+  // Tastatur: Leertaste/Enter würfelt bzw. drückt „Weiter“
   document.addEventListener('keydown', (e) => {
-    if (!inGame() || !$('#drawer').hidden || $('#confirmDlg').open) return;
+    if (!$('#drawer').hidden || $('#confirmDlg').open) return;
     if (e.code !== 'Space' && e.code !== 'Enter') return;
     e.preventDefault();
     if (!$('#btnWeiter').hidden) weiter();
     else if (!$('#screenTouch').hidden) roll();
   });
 
-  $('#notarGrid').addEventListener('click', (e) => {
-    const cell = e.target.closest('.cell');
-    if (!cell) return;
-    const r = +cell.dataset.r;
-    if (state.marked.has(r)) state.marked.delete(r); else state.marked.add(r);
-    save();
-    renderNotar();
+  // Schublade
+  $('#btnUndo').addEventListener('click', undoLast);
+  $('#btnReset').addEventListener('click', async () => {
+    if (!(await askConfirm('Zurücksetzen? Die bisher gewürfelten Aufgaben werden gelöscht.'))) return;
+    newRound();
+    backToTouch();
+    renderDrawer();
   });
-  $('#notarReset').addEventListener('click', async () => {
-    if (!(await askConfirm('Alle Markierungen im Notar löschen?'))) return;
-    state.marked.clear();
-    save();
-    renderNotar();
-  });
-
-  $('#cardGen').addEventListener('click', makeCards);
-  $('#printKind').addEventListener('click', (e) => {
-    const b = e.target.closest('[data-kind]');
-    if (b) setPrintKind(b.dataset.kind);
-  });
-  $('#printFor').addEventListener('change', () => {
-    $('#cards').innerHTML = '';
-    $('#cardStatus').textContent = '';
-    $('#cardPrint').disabled = true;
-  });
-  $('#cardPrint').addEventListener('click', () => window.print());
-
-  $('#settings').addEventListener('change', () => applySettings(readForm()));
-  $('#settings').addEventListener('input', (e) => {
-    if (e.target.type === 'range') { S = readForm(); save(); refreshSettingsView(); }
+  $('#drawnSort').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-sort]');
+    if (b) { state.drawnSort = b.dataset.sort; renderDrawer(); }
   });
   $('#presets').addEventListener('click', (e) => {
     const b = e.target.closest('[data-preset]');
-    if (b) applySettings({ ...S, ...PRESETS[+b.dataset.preset].s });
+    if (b) changeGame(PRESETS[+b.dataset.preset].s);
   });
-  $('#maxQuick').addEventListener('click', (e) => {
+  $('#modeSeg').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-mode]');
+    if (b) changeGame({ mode: b.dataset.mode });
+  });
+  $('#maxSeg').addEventListener('click', (e) => {
     const b = e.target.closest('[data-max]');
-    if (b) applySettings({ ...S, max: +b.dataset.max });
+    if (b) changeGame({ max: +b.dataset.max });
   });
-  $('#rowsCore').addEventListener('click', () => applySettings({ ...S, rows: CORE_ROWS }));
-  $('#rowsAll').addEventListener('click', () => applySettings({ ...S, rows: ALL_ROWS }));
-  $('#rowsNone').addEventListener('click', () => applySettings({ ...S, rows: [] }));
-  $('#testSpeech').addEventListener('click', () => speak(['3', 'plus', '4']));
-
-  $('#startGrid').addEventListener('click', (e) => {
-    const b = e.target.closest('[data-start]');
+  $('#chkCrossing').addEventListener('change', (e) => changeGame({ crossing: e.target.checked }));
+  $('#chkSquares').addEventListener('change', (e) => changeGame({ squares: e.target.checked }));
+  $('#rowGrid').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-val]');
     if (!b) return;
-    if (b.dataset.start === 'custom') showView('einstellungen');
-    else startWith({ ...S, ...PRESETS[+b.dataset.start].s });
+    const r = +b.dataset.val;
+    const rows = S.rows.includes(r) ? S.rows.filter((x) => x !== r) : [...S.rows, r].sort((a, c) => a - c);
+    changeGame({ rows });
   });
-  $('#continueBtn').addEventListener('click', enterGame);
-  $('#startCustom').addEventListener('click', enterGame);
+  $('#btnRowsCore').addEventListener('click', () => changeGame({ rows: CORE_ROWS }));
+  $('#btnRowsAll').addEventListener('click', () => changeGame({ rows: ALL_ROWS }));
+
+  $('#topfGrid').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-val]');
+    if (!b) return;
+    const r = +b.dataset.val;
+    setExcluded(S.excluded.includes(r) ? S.excluded.filter((x) => x !== r) : [...S.excluded, r]);
+  });
+  $('#btnTopfAll').addEventListener('click', () => setExcluded([]));
+  $('#btnTopfNoZero').addEventListener('click', () =>
+    setExcluded(S.excluded.includes(0) ? S.excluded.filter((x) => x !== 0) : [...S.excluded, 0]));
+
+  for (const el of $$('[data-opt]')) {
+    const key = el.dataset.opt;
+    const read = () => (el.type === 'checkbox' ? el.checked : el.type === 'range' ? Number(el.value) : el.value);
+    el.addEventListener(el.type === 'range' ? 'input' : 'change', () => setOption(key, read()));
+  }
+  $('#btnTestVoice').addEventListener('click', () => { initAudio(); speak(['3', 'plus', '4']); });
+  $('#btnFullscreen').addEventListener('click', () => { requestFullscreen(); closeDrawer(); });
+  document.addEventListener('fullscreenchange', renderDrawer);
+  document.addEventListener('webkitfullscreenchange', renderDrawer);
 }
 
 // ---------- Start ----------
 
-buildSettingsUi();
-writeForm();
+fillVoices();
+if (hasSpeech) speechSynthesis.onvoiceschanged = fillVoices;
 bind();
-renderNotar();
-showView('start');
+renderTouchCount();
+showScreen('touch');

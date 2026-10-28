@@ -8,122 +8,30 @@
   src: url("fonts/andika-latin-700.woff2") format("woff2");
 }
 
+/* Mathe ist blau: Berühren-Bildschirm hell, Aufgaben-Bildschirm dunkel */
 :root {
-  --bg: #f4f6fb;
-  --surface: #ffffff;
-  --text: #1d2433;
-  --muted: #5b6475;
-  --border: #d5dbe7;
-  --primary: #1f5fa8;
-  --primary-text: #ffffff;
-  --accent: #f0c020;
-  --on: #1f5fa8;
-  --on-text: #ffffff;
-  /* Mathe ist blau: Berühren-Bildschirm hell, Aufgaben-Bildschirm dunkel */
   --blue: #1f5fa8;
   --blue-dark: #123a6b;
-  --radius: 16px;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  color-scheme: light;
+  --yellow: #f0c020;
+  --panel: #f6f8fa;
+  --text: #1d2433;
+  --muted: #555;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #141821;
-    --surface: #1e2430;
-    --text: #eef1f7;
-    --muted: #a3acbd;
-    --border: #364055;
-    --primary: #5b93f5;
-    --primary-text: #0d1220;
-    --on: #5b93f5;
-    --on-text: #0d1220;
-    color-scheme: dark;
-  }
-}
-
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-size: 18px;
-  line-height: 1.45;
-}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--text); }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
+[hidden] { display: none !important; }
 
 .schrift { font-family: "Andika", system-ui, sans-serif; font-weight: 700; }
 
-button, input, select { font: inherit; color: inherit; }
-
-button {
-  cursor: pointer;
-  border-radius: 12px;
-  border: 2px solid var(--border);
-  background: var(--surface);
-  padding: 0.55em 1em;
-  min-height: 48px;
-}
-button:disabled { opacity: 0.45; cursor: not-allowed; }
-button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-
-.primary { background: var(--primary); border-color: var(--primary); color: var(--primary-text); font-weight: 600; }
-.secondary { background: var(--surface); }
-.small { min-height: 40px; padding: 0.35em 0.8em; font-size: 0.9em; }
-.big { font-size: 1.6rem; padding: 0.6em 1.6em; min-height: 72px; border-radius: 20px; }
-
-/* Kopf */
-.top {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
-  background: var(--blue);
-  color: #fff;
-}
-.top h1 { font-size: 1.5rem; font-weight: 900; margin: 0; }
-.tabs { display: flex; flex-wrap: wrap; gap: 8px; }
-.tab { border-color: transparent; background: transparent; color: #fff; }
-.tab[aria-selected="true"] { background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.45); font-weight: 700; }
-
-main { max-width: 1100px; margin: 0 auto; padding: 16px; }
-.view { display: none; }
-.view.active { display: block; }
-.help { color: var(--muted); }
-.status { text-align: center; color: var(--muted); min-height: 1.5em; }
-
-/* Start */
-.continue { text-align: center; margin: 8px 0 24px; }
-.continue p { color: var(--muted); margin: 8px 0 0; }
-.start-title { text-align: center; font-size: 1.6rem; margin: 8px 0 16px; }
-.start-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
-.start-tile {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 4px;
-  text-align: left;
-  min-height: 110px;
-  padding: 14px 18px;
-  border-radius: 20px;
-  border-width: 3px;
-}
-.start-tile:hover { border-color: var(--blue); }
-.start-tile .tile-name { font-size: 1.35rem; font-weight: 800; }
-.start-tile .tile-sub { font-size: 0.9rem; color: var(--muted); }
-.start-tile.custom { border-style: dashed; }
-#startCustom { display: block; margin: 20px auto 0; }
-
-/* ---------- Spielansicht im Stil des ABC-Bingos ---------- */
-body.in-game { overflow: hidden; }
-body.in-game .top, body.in-game main { display: none; }
-
-#game[hidden] { display: none; }
-#game {
-  position: fixed; inset: 0; z-index: 50;
+/* ---------- Spiel ---------- */
+body.game {
+  width: 100%; height: 100%;
+  overflow: hidden;
   -webkit-user-select: none; user-select: none;
   touch-action: manipulation;
   overscroll-behavior: none;
@@ -133,7 +41,6 @@ body.in-game .top, body.in-game main { display: none; }
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
 }
-.screen[hidden] { display: none; }
 
 #screenTouch { background: var(--blue); color: #fff; }
 #screenTouch h1 {
@@ -151,10 +58,9 @@ body.in-game .top, body.in-game main { display: none; }
   position: absolute; top: calc(1.2rem + env(safe-area-inset-top)); left: 0; right: 0;
   margin: 0; font-size: clamp(0.9rem, 2.8vw, 1.4rem);
 }
-#screenTouch .touch-count[hidden] { display: none; }
 #btnTouch {
   position: absolute; inset: 0;
-  background: transparent; border: none; border-radius: 0; cursor: pointer;
+  background: transparent; border: none;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -169,7 +75,7 @@ body.in-game .top, body.in-game main { display: none; }
   transition: opacity 0.1s;
 }
 #screenTask .task.rolling { opacity: 0.2; }
-#screenTask .op { color: var(--accent); }
+#screenTask .op { color: var(--yellow); }
 #screenTask .op.mul { font-size: 1.05em; line-height: 0.5; }
 
 #screenDone {
@@ -183,7 +89,6 @@ body.in-game .top, body.in-game main { display: none; }
   position: fixed;
   right: calc(1rem + env(safe-area-inset-right)); bottom: calc(1rem + env(safe-area-inset-bottom));
   width: clamp(80px, 18vw, 110px); height: clamp(80px, 18vw, 110px);
-  padding: 0;
   border-radius: 20px;
   background: linear-gradient(180deg, #3a86e0, #174a86);
   color: #fff; border: 4px solid #fff;
@@ -192,13 +97,11 @@ body.in-game .top, body.in-game main { display: none; }
   z-index: 60;
   -webkit-tap-highlight-color: transparent;
 }
-#btnWeiter[hidden] { display: none; }
 
 #btnGear {
   position: fixed;
   left: calc(1rem + env(safe-area-inset-left)); bottom: calc(1rem + env(safe-area-inset-bottom));
   width: clamp(64px, 14vw, 84px); height: clamp(64px, 14vw, 84px);
-  padding: 0;
   border-radius: 16px; background: rgba(0, 0, 0, 0.3);
   color: #fff; border: 3px solid rgba(255, 255, 255, 0.3);
   font-size: clamp(1.4rem, 4vw, 2rem);
@@ -218,12 +121,11 @@ body.in-game .top, body.in-game main { display: none; }
 #repeatHint.show { opacity: 1; }
 
 #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 58; }
-#confetti[hidden] { display: none; }
 
-/* Punktebilder auf Grün */
+/* Punktebilder */
 .dots { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2.5vmin; pointer-events: none; }
 .dots:empty { display: none; }
-.dots .sign { font-size: 5vmin; font-weight: 800; color: var(--accent); }
+.dots .sign { font-size: 5vmin; font-weight: 800; color: var(--yellow); }
 .frames { display: flex; flex-wrap: wrap; gap: 1.5vmin; justify-content: center; }
 .frame {
   --d: clamp(16px, 3.6vmin, 38px);
@@ -237,12 +139,12 @@ body.in-game .top, body.in-game main { display: none; }
 .frame .dot { width: var(--d); height: var(--d); }
 .dot { border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.35); }
 .dot.on { background: #fff; border-color: #fff; }
-.b .dot.on { background: var(--accent); border-color: var(--accent); }
+.b .dot.on { background: var(--yellow); border-color: var(--yellow); }
 .dot.gone { background: transparent; border: 2px dashed rgba(255, 255, 255, 0.7); position: relative; }
 .dot.gone::after {
   content: "";
   position: absolute; left: -3px; right: -3px; top: 50%;
-  border-top: 3px solid var(--accent);
+  border-top: 3px solid var(--yellow);
   transform: rotate(-45deg);
 }
 .array { --d: clamp(12px, 2.8vmin, 30px); display: grid; gap: calc(var(--d) / 4); }
@@ -250,96 +152,96 @@ body.in-game .top, body.in-game main { display: none; }
 .array .dot.col5 { margin-right: calc(var(--d) / 2); }
 .array .dot.row5 { margin-bottom: calc(var(--d) / 2); }
 
-/* Schublade im Spiel */
+/* ---------- Schublade (wie im ABC-Bingo) ---------- */
 #drawer {
   position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5);
   z-index: 70; display: flex; align-items: flex-end;
-  color: #1d2433;
 }
-#drawer[hidden] { display: none; }
 #drawerInner {
-  width: 100%; background: #f6f8fa;
+  width: 100%; background: var(--panel);
   border-radius: 22px 22px 0 0;
   padding: 1.4rem 1.4rem calc(2.6rem + env(safe-area-inset-bottom));
   display: flex; flex-direction: column; gap: 1.2rem;
   max-height: 82vh; overflow-y: auto;
-  -webkit-user-select: none; user-select: none;
 }
 #drawerInner > * { flex-shrink: 0; } /* sonst wird bei wenig Höhe gequetscht statt gescrollt */
 #drawerInner h2 { font-size: 1.2rem; font-weight: 800; margin: 0; }
 #btnCloseDrawer {
-  align-self: flex-end; padding: 10px 20px; min-height: 0;
+  align-self: flex-end; padding: 10px 20px;
   border-radius: 12px; border: none;
   background: var(--blue); color: #fff; font-weight: 700;
 }
-.srow { display: flex; flex-direction: column; gap: 0.35rem; }
-.srow .lbl { font-weight: 700; font-size: 1rem; }
-.tiny { font-size: 0.85rem; color: #555; margin: 0; }
+.srow { display: flex; flex-direction: column; gap: 0.45rem; }
+.lbl { font-weight: 700; font-size: 1rem; }
+.tiny { font-size: 0.85rem; color: var(--muted); margin: 0; }
 .drawn-header { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; justify-content: space-between; }
-.btnrow { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.btnrow { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.check { display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; }
+.check input { width: 1.4rem; height: 1.4rem; flex: none; }
+input[type="range"] { width: 100%; max-width: 420px; }
+select { padding: 9px 12px; border-radius: 10px; border: 2px solid #ccc; background: #fff; color: var(--text); max-width: 100%; }
+
 .sbtn {
-  padding: 10px 16px; min-height: 0; border-radius: 10px; border: none;
-  background: #1f5fa8; color: #fff; font-weight: 700;
+  display: inline-block;
+  padding: 10px 16px; border-radius: 10px; border: none;
+  background: var(--blue); color: #fff; font-weight: 700;
+  text-decoration: none; align-self: flex-start;
 }
 .sbtn.light { background: #ddd; color: #333; }
 .sbtn.dark { background: var(--blue-dark); color: #fff; }
-.sbtn[hidden] { display: none; }
+
+.seg { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.seg button {
+  flex: 1; min-width: 3.2rem; padding: 10px 6px; border-radius: 10px;
+  border: 2px solid var(--blue); background: #fff; color: var(--blue); font-size: 1.3rem;
+}
+.seg button.on { background: var(--blue); color: #fff; }
+.seg.small button { flex: 0 1 auto; font-size: 0.95rem; padding: 6px 12px; font-weight: 700; }
+
+.toggle-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(3.2rem, 1fr)); gap: 0.4rem; }
+.toggle-grid button {
+  height: 2.8rem; border-radius: 10px; border: 2px solid var(--blue);
+  background: var(--blue); color: #fff; font-size: 1.25rem; padding: 0;
+}
+.toggle-grid button.off { background: #fff; color: #aaa; border-color: #ccc; text-decoration: line-through; }
+
 #drawnTasks { display: flex; flex-wrap: wrap; gap: 0.4rem; min-height: 2.4rem; }
 .chip {
   background: var(--blue-dark); color: #fff;
-  height: 2.3rem; padding: 0 0.6rem; border-radius: 10px;
-  display: inline-flex; align-items: center; gap: 0.3em;
+  height: 2.4rem; padding: 0 0.6rem; border-radius: 10px;
+  display: inline-flex; align-items: center; gap: 0.35em;
   font-size: 1.15rem;
 }
-.chip small { font-size: 0.75em; opacity: 0.8; }
-.chip.last { box-shadow: 0 0 0 3px var(--accent); }
+.chip small { font-size: 0.72em; opacity: 0.8; font-weight: 400; }
+.chip.last { box-shadow: 0 0 0 3px var(--yellow); }
 .drawn-empty { font-size: 0.85rem; color: #999; align-self: center; }
-#drawer .check { display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; }
-#drawer .check input { width: 1.4rem; height: 1.4rem; }
 
-/* Notar */
-.row-between { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
-.notar-count { font-size: 1.3rem; font-weight: 600; margin: 0; }
-.notar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; }
-.cell {
-  min-height: 84px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-width: 3px;
-  padding: 6px;
+dialog {
+  border: none; border-radius: 20px; padding: 20px;
+  max-width: min(460px, calc(100vw - 32px));
+  color: var(--text);
 }
-.cell .num { font-size: 2.1rem; line-height: 1.1; }
-.cell .src { font-size: 0.85rem; color: var(--muted); min-height: 1.2em; font-weight: 400; }
-.cell.on { background: var(--on); border-color: var(--on); color: var(--on-text); }
-.cell.on .src { color: var(--on-text); }
+dialog::backdrop { background: rgb(0 0 0 / 0.5); }
+dialog p { margin: 0 0 16px; font-size: 1.1rem; }
+.dlg-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
 
-/* Bingokarten und Lottoscheine */
-.seg { display: inline-flex; gap: 0; border: 2px solid var(--primary); border-radius: 12px; overflow: hidden; }
-.seg button { border: none; border-radius: 0; background: var(--surface); color: var(--primary); font-weight: 700; }
-.seg button.on { background: var(--primary); color: var(--primary-text); }
-.card-controls select#printFor { max-width: min(100%, 520px); }
-.card-controls [hidden] { display: none !important; }
-.cards.lotto { grid-template-columns: 1fr; gap: 16px; }
-.lotto-sheet { container-type: inline-size; background: #fff; color: #111; border: 3px solid #222; padding: 2.4cqw 3cqw 3cqw; break-inside: avoid; }
-.lotto-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin-bottom: 2cqw; }
-.lotto-title { font-weight: 800; font-size: max(1.1rem, 3.4cqw); }
-.lotto-title .line { display: inline-block; width: 18em; max-width: 45cqw; border-bottom: 2px solid #222; height: 1em; vertical-align: baseline; }
-.lotto-sub { font-size: max(0.75rem, 1.7cqw); color: #555; }
-.lotto-grid { display: grid; grid-template-columns: repeat(var(--cols), 1fr); gap: 1.4cqw; }
-.lotto-grid div {
-  aspect-ratio: 1.45;
-  display: flex; align-items: center; justify-content: center;
-  border: 2px solid #222;
-  font-size: calc(40cqw / var(--cols));
-  line-height: 1;
+/* ---------- Druckseite ---------- */
+body.page { background: var(--panel); }
+.top {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px;
+  padding: 12px 16px; background: var(--blue); color: #fff;
 }
-.card-controls { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; margin-bottom: 8px; }
-.card-controls input[type="number"] { width: 5em; padding: 0.4em; border-radius: 8px; border: 2px solid var(--border); background: var(--surface); }
-.card-controls select { padding: 0.4em; border-radius: 8px; border: 2px solid var(--border); background: var(--surface); }
-.card-controls .check { display: flex; align-items: center; gap: 8px; }
-.card-controls .check input { width: 22px; height: 22px; }
+.top h1 { font-size: 1.3rem; font-weight: 900; margin: 0; }
+.top .back { color: #fff; font-weight: 700; text-decoration: none; padding: 8px 12px; border-radius: 10px; background: rgba(255, 255, 255, 0.18); }
+main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+.panel { background: #fff; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+.panel .info { margin: 0; }
+.panel .seg { max-width: 420px; }
+.panel .seg button { font-size: 1.05rem; font-weight: 700; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
+.controls label { display: flex; align-items: center; gap: 8px; }
+.controls input[type="number"] { width: 5em; padding: 9px 10px; border-radius: 10px; border: 2px solid #ccc; }
+
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
 .bingo-card { container-type: inline-size; background: #fff; color: #111; border: 3px solid #222; border-radius: 14px; padding: 14px; break-inside: avoid; }
 .bingo-card .title { font-weight: 800; font-size: 1.2rem; text-align: center; }
@@ -354,51 +256,26 @@ body.in-game .top, body.in-game main { display: none; }
   line-height: 1;
 }
 
-/* Einstellungen */
-h2 { font-size: 1.2rem; }
-.presets { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-.presets button.active { background: var(--primary); border-color: var(--primary); color: var(--primary-text); }
-.settings { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
-fieldset { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px 16px; margin: 0; display: flex; flex-direction: column; gap: 10px; }
-fieldset[hidden] { display: none; }
-legend { font-weight: 700; padding: 0 6px; }
-.settings label { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.settings select, .settings input[type="number"] { padding: 0.4em; border-radius: 8px; border: 2px solid var(--border); background: var(--bg); }
-.settings input[type="number"] { width: 5em; }
-.settings .check input { width: 22px; height: 22px; flex: none; }
-.label-text { margin: 0; }
-.rows { display: flex; flex-wrap: wrap; gap: 8px; }
-.rows label { border: 2px solid var(--border); border-radius: 10px; padding: 4px 10px; gap: 6px; }
-.quick { display: flex; flex-wrap: wrap; gap: 6px; }
-.quick button { min-height: 38px; padding: 0.2em 0.8em; }
-.summary { font-weight: 600; margin-top: 16px; }
-.summary.warn { color: #c0392b; }
-
-/* Rückfrage */
-dialog {
-  border: 2px solid var(--border);
-  border-radius: 20px;
-  background: var(--surface);
-  color: var(--text);
-  padding: 20px;
-  max-width: min(460px, calc(100vw - 32px));
-}
-dialog::backdrop { background: rgb(0 0 0 / 0.4); }
-dialog p { margin: 0 0 16px; font-size: 1.1rem; }
-.dlg-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
-
-@media (max-width: 600px) {
-  body { font-size: 16px; }
-  .tab { padding: 0.4em 0.6em; }
-  .big { width: 100%; }
+.cards.lotto { grid-template-columns: 1fr; gap: 16px; }
+.lotto-sheet { container-type: inline-size; background: #fff; color: #111; border: 3px solid #222; padding: 2.4cqw 3cqw 3cqw; break-inside: avoid; }
+.lotto-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin-bottom: 2cqw; }
+.lotto-title { font-weight: 800; font-size: max(1.1rem, 3.4cqw); }
+.lotto-title .line { display: inline-block; width: 18em; max-width: 45cqw; border-bottom: 2px solid #222; height: 1em; vertical-align: baseline; }
+.lotto-sub { font-size: max(0.75rem, 1.7cqw); color: #555; }
+.lotto-grid { display: grid; grid-template-columns: repeat(var(--cols), 1fr); gap: 1.4cqw; }
+.lotto-grid div {
+  aspect-ratio: 1.45;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #222;
+  font-size: calc(40cqw / var(--cols));
+  line-height: 1;
 }
 
 @media print {
-  body { background: #fff; }
-  .no-print, .top, .view:not(#view-karten) { display: none !important; }
-  #view-karten { display: block !important; }
+  @page { margin: 12mm; }
+  body.page { background: #fff; }
+  .no-print { display: none !important; }
   main { padding: 0; max-width: none; }
   .cards { grid-template-columns: 1fr 1fr; gap: 12mm; }
   .cards.lotto { grid-template-columns: 1fr; gap: 5mm; }
-  @page { margin: 12mm; }
 }

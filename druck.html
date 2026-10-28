@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1f5fa8">
+  <title>Mathe-Bingo · Ausdrucke</title>
+  <link rel="stylesheet" href="style.css?v=13">
+</head>
+<body class="page">
+  <header class="top no-print">
+    <a class="back" href="./">← Zurück zum Würfel</a>
+    <h1>🖨️ Bingokarten und Lottoscheine</h1>
+  </header>
+
+  <main>
+    <section class="panel no-print">
+      <p class="info" id="printInfo"></p>
+      <div class="seg" id="printKind">
+        <button data-kind="bingo" class="on">Bingokarten</button>
+        <button data-kind="lotto">Lottoscheine</button>
+      </div>
+      <div class="controls">
+        <label class="bingo-only">Größe
+          <select id="cardSize">
+            <option value="2">2 × 2</option>
+            <option value="3" selected>3 × 3</option>
+            <option value="4">4 × 4</option>
+            <option value="5">5 × 5</option>
+          </select>
+        </label>
+        <label>Anzahl <input id="cardCount" type="number" min="1" max="40" value="6"></label>
+        <label class="check bingo-only"><input id="cardSorted" type="checkbox" checked> Zahlen der Größe nach</label>
+      </div>
+      <div class="btnrow">
+        <button id="cardGen" class="sbtn">Erstellen</button>
+        <button id="cardPrint" class="sbtn light" disabled>🖨️ Drucken</button>
+      </div>
+      <p class="tiny" id="cardStatus"></p>
+    </section>
+
+    <div id="cards" class="cards"></div>
+  </main>
+
+  <script src="core.js?v=13"></script>
+  <script src="druck.js?v=13"></script>
+</body>
+</html>
