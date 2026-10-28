@@ -13,6 +13,7 @@ const DEFAULTS = {
   excluded: [],          // aus dem Topf genommene Ergebnisse
   speech: true, voice: '', rate: 0.85, volume: 1,
   dots: true, fxDrum: true, fxConfetti: true,
+  settingsTab: 'spiel',   // zuletzt geöffneter Reiter in ⚙️
 };
 
 const PRESETS = [

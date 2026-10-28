@@ -16,22 +16,22 @@ ohne Installation und ohne Anmeldung: https://walteroelf.github.io/MatheBingo/
 
 ## Einstellungen (⚙️ unten links)
 
-- **Bisher gewürfelt**: in Reihenfolge oder nach Größe sortiert (zum Prüfen bei „Bingo!“),
-  letzte Aufgabe zurücknehmen, zurücksetzen.
-- **Schnellwahl**: Plus bis 10 … Plus & Minus bis 30, 1×1 Kernaufgaben, Ganzes 1×1, Geteilt Kernaufgaben.
-- **Rechenart**: + · − · + − · · · : · · :
-- **Zahlenraum** bis 5, 10, 20, 30, 50 oder 100, Zehnerübergang an oder aus.
-- **Einmaleins-Reihen** einzeln antippen, Quadrataufgaben dazu.
-- **Zahlen im Topf**: Wie die Buchstaben beim ABC-Bingo. Antippen nimmt eine Zahl heraus oder legt sie zurück.
-  Bei Plus und Minus liegt die 0 im Topf, „Ohne 0“ nimmt sie heraus (dann auch Aufgaben wie 3 + 0).
-- **Anzeige und Effekte**: Vorlesen, Punktebild, Trommelwirbel, Konfetti, Lautstärke, Sprechtempo, Stimme.
+Aufgebaut wie beim ABC-Bingo, mit vier Reitern. Der zuletzt geöffnete Reiter wird gemerkt.
 
-Ändert man Rechenart, Zahlenraum oder Reihen, beginnt eine neue Runde. Zahlen im Topf lassen sich
-auch während einer Runde herausnehmen.
+- **🎲 Spiel**
+  - *Gewürfelte Aufgaben* (x von y): neueste gelb umrandet, „Letzte zurücknehmen“, „Neues Spiel“,
+    „Nach Größe sortieren“ zum Prüfen bei „Bingo!“.
+  - *Zahlen im Topf*: wie die Buchstaben beim ABC-Bingo. Antippen nimmt eine Zahl heraus oder legt sie zurück;
+    „Alle“, „Keine“, „Ohne 0“. Bei Plus und Minus liegt die 0 im Topf; ohne 0 fallen auch Aufgaben wie 3 + 0 weg.
+- **🧮 Aufgaben**: Schnellwahl (Plus bis 10 … 1×1 Kernaufgaben, Ganzes 1×1, Geteilt Kernaufgaben),
+  Rechenart, Zahlenraum bis 5 … 100, Zehnerübergang, Einmaleins-Reihen, Quadrataufgaben.
+  Eine Änderung hier startet ein neues Spiel.
+- **📱 Dieses iPad**: Vorlesen, Lautstärke, Sprechtempo, Stimme, Punktebild, Trommelwirbel, Konfetti, Vollbild.
+- **➕ Mehr**: Bingokarten und Lottoscheine, Anleitung.
 
 ## Bingokarten und Lottoscheine
 
-Über ⚙️ → „Ausdrucke öffnen“ (Seite `druck.html`). Beide nehmen immer die **Zahlen im Topf**,
+Über ⚙️ → ➕ Mehr → „Ausdrucke öffnen“ (Seite `druck.html`). Beide nehmen immer die **Zahlen im Topf**,
 also genau die Zahlen, die auch gewürfelt werden.
 
 - **Bingokarten** 2 × 2 bis 5 × 5, auf Wunsch der Größe nach sortiert.

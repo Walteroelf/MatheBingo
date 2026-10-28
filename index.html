@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="Mathe-Bingo">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Mathe-Bingo</title>
-  <link rel="stylesheet" href="style.css?v=13">
+  <link rel="stylesheet" href="style.css?v=14">
 </head>
 <body class="game">
 
@@ -36,110 +36,143 @@
 <button id="btnGear" aria-label="Einstellungen">⚙️</button>
 
 <div id="drawer" hidden>
-  <div id="drawerInner">
-    <button id="btnCloseDrawer">✕ Schließen</button>
-    <h2>⚙️ Einstellungen</h2>
-    <p class="tiny" id="drawerMode"></p>
+  <div id="drawerInner" role="dialog" aria-label="Einstellungen">
+    <div id="drawerHead">
+      <h2>⚙️ Einstellungen</h2>
+      <button id="btnCloseDrawer">✕ Schließen</button>
+    </div>
+    <div id="drawerTabs" role="tablist">
+      <button data-tab="spiel" role="tab"><span class="ico">🎲</span>Spiel</button>
+      <button data-tab="aufgaben" role="tab"><span class="ico">🧮</span>Aufgaben</button>
+      <button data-tab="geraet" role="tab"><span class="ico">📱</span>Dieses iPad</button>
+      <button data-tab="mehr" role="tab"><span class="ico">➕</span>Mehr</button>
+    </div>
 
-    <div class="srow">
-      <div class="drawn-header">
-        <span class="lbl">🎲 Bisher gewürfelt</span>
-        <div class="btnrow">
-          <button id="btnUndo" class="sbtn light">↶ Letzte zurücknehmen</button>
-          <button id="btnReset" class="sbtn dark">↺ Zurücksetzen</button>
+    <div id="drawerBody">
+      <!-- ── Spiel ─────────────────────────────────────────── -->
+      <section data-tab="spiel">
+        <div class="scard">
+          <h3>Gewürfelte Aufgaben <span class="tiny" id="drawnCount"></span></h3>
+          <div class="tiny" id="drawnHint">In der Reihenfolge, in der sie gewürfelt wurden. Die neueste ist gelb umrandet.</div>
+          <div id="drawnTasks" class="schrift"></div>
+          <div class="btnrow">
+            <button id="btnUndo" class="sbtn light">↶ Letzte zurücknehmen</button>
+            <button id="btnReset" class="sbtn dark">↺ Neues Spiel</button>
+            <button id="btnSort" class="sbtn light">Nach Größe sortieren</button>
+          </div>
         </div>
-      </div>
-      <div class="seg small" id="drawnSort">
-        <button data-sort="order" class="on">In Reihenfolge</button>
-        <button data-sort="size">Nach Größe (zum Prüfen)</button>
-      </div>
-      <div id="drawnTasks" class="schrift"></div>
-    </div>
+        <div class="scard">
+          <h3>Zahlen im Topf <span class="tiny" id="topfCount"></span></h3>
+          <div class="tiny">Antippen, um eine Zahl heraus- oder hineinzunehmen.</div>
+          <div id="topfGrid" class="toggle-grid schrift"></div>
+          <div class="btnrow">
+            <button id="btnTopfAll" class="sbtn light">Alle</button>
+            <button id="btnTopfNone" class="sbtn light">Keine</button>
+            <button id="btnTopfNoZero" class="sbtn light">Ohne 0</button>
+          </div>
+        </div>
+      </section>
 
-    <div class="srow">
-      <span class="lbl">⚡ Schnellwahl</span>
-      <div class="btnrow" id="presets"></div>
-    </div>
+      <!-- ── Aufgaben ──────────────────────────────────────── -->
+      <section data-tab="aufgaben" hidden>
+        <div class="scard">
+          <h3>Schnellwahl</h3>
+          <div class="btnrow" id="presets"></div>
+        </div>
+        <div class="scard">
+          <div class="tiny">Eine Änderung hier startet ein neues Spiel.</div>
+          <div class="setrow">
+            <span class="lbl">Rechenart</span>
+            <div class="seg schrift" id="modeSeg">
+              <button data-mode="plus" aria-label="Plus">+</button>
+              <button data-mode="minus" aria-label="Minus">−</button>
+              <button data-mode="plusminus" aria-label="Plus und Minus">+ −</button>
+              <button data-mode="mal" aria-label="Mal">·</button>
+              <button data-mode="geteilt" aria-label="Geteilt">:</button>
+              <button data-mode="malgeteilt" aria-label="Mal und Geteilt">· :</button>
+            </div>
+          </div>
+          <div class="setrow" id="rowMax">
+            <span class="lbl">Zahlenraum bis</span>
+            <div class="seg schrift" id="maxSeg">
+              <button data-max="5">5</button>
+              <button data-max="10">10</button>
+              <button data-max="20">20</button>
+              <button data-max="30">30</button>
+              <button data-max="50">50</button>
+              <button data-max="100">100</button>
+            </div>
+          </div>
+          <div class="setrow" id="rowCrossing">
+            <label class="switch"><span class="lbl">Zehnerübergang <span class="tiny">z. B. 8 + 5, 13 − 6</span></span><input type="checkbox" id="chkCrossing"></label>
+          </div>
+          <div class="setrow col" id="rowRows">
+            <span class="lbl">Einmaleins-Reihen</span>
+            <div id="rowGrid" class="toggle-grid schrift"></div>
+            <div class="btnrow">
+              <button id="btnRowsCore" class="sbtn light">Kernreihen 1, 2, 5, 10</button>
+              <button id="btnRowsAll" class="sbtn light">Alle</button>
+            </div>
+          </div>
+          <div class="setrow" id="rowSquares">
+            <label class="switch"><span class="lbl">Quadrataufgaben <span class="tiny">3 · 3, 4 · 4 …</span></span><input type="checkbox" id="chkSquares"></label>
+          </div>
+        </div>
+      </section>
 
-    <div class="srow">
-      <span class="lbl">🧮 Rechenart</span>
-      <div class="seg schrift" id="modeSeg">
-        <button data-mode="plus" aria-label="Plus">+</button>
-        <button data-mode="minus" aria-label="Minus">−</button>
-        <button data-mode="plusminus" aria-label="Plus und Minus">+ −</button>
-        <button data-mode="mal" aria-label="Mal">·</button>
-        <button data-mode="geteilt" aria-label="Geteilt">:</button>
-        <button data-mode="malgeteilt" aria-label="Mal und Geteilt">· :</button>
-      </div>
-    </div>
+      <!-- ── Dieses iPad ───────────────────────────────────── -->
+      <section data-tab="geraet" hidden>
+        <div class="scard">
+          <div class="tiny">Diese Einstellungen gelten nur für dieses Gerät.</div>
+          <div class="setrow">
+            <label class="switch"><span class="lbl">Aufgabe vorlesen</span><input type="checkbox" data-opt="speech"></label>
+          </div>
+          <div class="setrow">
+            <label class="lbl" for="optVolume">Lautstärke</label>
+            <input id="optVolume" type="range" data-opt="volume" min="0.1" max="1" step="0.05">
+            <span class="tiny" id="volVal"></span>
+          </div>
+          <div class="setrow">
+            <label class="lbl" for="optRate">Sprechtempo</label>
+            <input id="optRate" type="range" data-opt="rate" min="0.5" max="1.3" step="0.05">
+            <span class="tiny" id="rateVal"></span>
+          </div>
+          <div class="setrow">
+            <label class="lbl" for="voiceSelect">Stimme</label>
+            <div class="btnrow">
+              <select id="voiceSelect" data-opt="voice"></select>
+              <button id="btnTestVoice" class="sbtn light">🔊 Probe</button>
+            </div>
+          </div>
+          <div class="setrow">
+            <label class="switch"><span class="lbl">Punktebild zur Aufgabe</span><input type="checkbox" data-opt="dots"></label>
+          </div>
+          <div class="setrow">
+            <label class="switch"><span class="lbl">Trommelwirbel beim Würfeln</span><input type="checkbox" data-opt="fxDrum"></label>
+          </div>
+          <div class="setrow">
+            <label class="switch"><span class="lbl">Konfetti beim Ergebnis</span><input type="checkbox" data-opt="fxConfetti"></label>
+          </div>
+          <div class="setrow" id="rowFullscreen">
+            <span class="lbl">Vollbild</span>
+            <button id="btnFullscreen" class="sbtn light">Einschalten</button>
+          </div>
+        </div>
+      </section>
 
-    <div class="srow" id="rowAdd">
-      <span class="lbl">🔢 Zahlenraum bis</span>
-      <div class="seg schrift" id="maxSeg">
-        <button data-max="5">5</button>
-        <button data-max="10">10</button>
-        <button data-max="20">20</button>
-        <button data-max="30">30</button>
-        <button data-max="50">50</button>
-        <button data-max="100">100</button>
-      </div>
-      <label class="check"><input type="checkbox" id="chkCrossing"> Zehnerübergang erlaubt (z. B. 8 + 5, 13 − 6)</label>
-    </div>
-
-    <div class="srow" id="rowMul">
-      <span class="lbl">✖️ Einmaleins-Reihen</span>
-      <div class="tiny">Antippen, um eine Reihe dazuzunehmen oder herauszunehmen.</div>
-      <div id="rowGrid" class="toggle-grid schrift"></div>
-      <div class="btnrow">
-        <button id="btnRowsCore" class="sbtn light">Kernreihen 1, 2, 5, 10</button>
-        <button id="btnRowsAll" class="sbtn light">Alle</button>
-      </div>
-      <label class="check"><input type="checkbox" id="chkSquares"> Quadrataufgaben dazu (3 · 3, 4 · 4 …)</label>
-    </div>
-
-    <div class="srow">
-      <span class="lbl">🎯 Zahlen im Topf</span>
-      <div class="tiny" id="topfInfo"></div>
-      <div id="topfGrid" class="toggle-grid schrift"></div>
-      <div class="btnrow">
-        <button id="btnTopfAll" class="sbtn light">Alle</button>
-        <button id="btnTopfNoZero" class="sbtn light">Ohne 0</button>
-      </div>
-    </div>
-
-    <div class="srow">
-      <span class="lbl">✨ Anzeige und Effekte</span>
-      <label class="check"><input type="checkbox" data-opt="speech"> Aufgabe vorlesen</label>
-      <label class="check"><input type="checkbox" data-opt="dots"> Punktebild zeigen</label>
-      <label class="check"><input type="checkbox" data-opt="fxDrum"> Trommelwirbel beim Würfeln</label>
-      <label class="check"><input type="checkbox" data-opt="fxConfetti"> Konfetti beim Ergebnis</label>
-    </div>
-
-    <div class="srow">
-      <label class="lbl" for="optVolume">🔈 Lautstärke</label>
-      <input id="optVolume" type="range" data-opt="volume" min="0.1" max="1" step="0.05">
-      <div class="tiny" id="volVal"></div>
-    </div>
-
-    <div class="srow">
-      <label class="lbl" for="optRate">🗣️ Sprechtempo</label>
-      <input id="optRate" type="range" data-opt="rate" min="0.5" max="1.3" step="0.05">
-      <div class="tiny" id="rateVal"></div>
-      <div class="btnrow">
-        <select id="voiceSelect" data-opt="voice" aria-label="Stimme"></select>
-        <button id="btnTestVoice" class="sbtn light">🔊 Probe hören</button>
-      </div>
-    </div>
-
-    <div class="srow">
-      <span class="lbl">🖨️ Bingokarten und Lottoscheine</span>
-      <div class="tiny">Zum Ausdrucken, passend zu den Zahlen im Topf.</div>
-      <a class="sbtn light" href="druck.html">Ausdrucke öffnen</a>
-    </div>
-
-    <div class="srow" id="rowFullscreen">
-      <span class="lbl">⛶ Vollbild</span>
-      <button id="btnFullscreen" class="sbtn light">Vollbild einschalten</button>
+      <!-- ── Mehr ──────────────────────────────────────────── -->
+      <section data-tab="mehr" hidden>
+        <div class="scard">
+          <h3>🖨️ Bingokarten und Lottoscheine</h3>
+          <div class="tiny">Zum Ausdrucken, mit genau den Zahlen im Topf.</div>
+          <a class="sbtn" href="druck.html">Ausdrucke öffnen</a>
+        </div>
+        <div class="scard">
+          <h3>📖 Anleitung</h3>
+          <div class="tiny">Alles zum Spielen, zu den Einstellungen und zu den Ausdrucken.</div>
+          <a class="sbtn light" href="https://github.com/Walteroelf/MatheBingo#readme" target="_blank" rel="noopener">Anleitung öffnen</a>
+        </div>
+      </section>
     </div>
   </div>
 </div>
@@ -152,7 +185,7 @@
   </div>
 </dialog>
 
-<script src="core.js?v=13"></script>
-<script src="app.js?v=13"></script>
+<script src="core.js?v=14"></script>
+<script src="app.js?v=14"></script>
 </body>
 </html>

@@ -374,7 +374,7 @@ async function changeGame(patch) {
   const next = { ...S, ...patch };
   if (JSON.stringify(next) === JSON.stringify(S)) return;
   if (state.history.length
-      && !(await askConfirm('Damit beginnt eine neue Runde. Die bisher gewürfelten Aufgaben werden gelöscht.'))) {
+      && !(await askConfirm('Damit beginnt ein neues Spiel. Die bisher gewürfelten Aufgaben werden gelöscht.'))) {
     renderDrawer();
     return;
   }
@@ -409,9 +409,18 @@ function toggleGridHtml(items, isOn, label = (x) => x) {
 }
 
 function renderDrawer() {
-  $('#drawerMode').textContent = `${describe(S)} · ${countText()}`;
+  for (const b of $$('#drawerTabs [data-tab]')) {
+    b.classList.toggle('on', b.dataset.tab === S.settingsTab);
+    b.setAttribute('aria-selected', String(b.dataset.tab === S.settingsTab));
+  }
+  for (const sec of $$('#drawerBody section')) sec.hidden = sec.dataset.tab !== S.settingsTab;
 
-  // Bisher gewürfelt
+  // Spiel: gewürfelte Aufgaben
+  $('#drawnCount').textContent = `${doneInTopf()} von ${pool.topf.length}`;
+  $('#drawnHint').textContent = state.drawnSort === 'size'
+    ? 'Nach Ergebnis sortiert, zum Prüfen bei „Bingo!“. Die neueste ist gelb umrandet.'
+    : 'In der Reihenfolge, in der sie gewürfelt wurden. Die neueste ist gelb umrandet.';
+  $('#btnSort').textContent = state.drawnSort === 'size' ? 'In Reihenfolge zeigen' : 'Nach Größe sortieren';
   const box = $('#drawnTasks');
   if (!state.history.length) {
     box.innerHTML = '<span class="drawn-empty">Noch nichts gewürfelt.</span>';
@@ -424,38 +433,37 @@ function renderDrawer() {
       ? `<span class="chip ${t === last ? 'last' : ''}">${t.r}<small>${fmt(t)}</small></span>`
       : `<span class="chip ${t === last ? 'last' : ''}">${fmt(t)}<small>= ${t.r}</small></span>`)).join('');
   }
-  for (const b of $$('#drawnSort [data-sort]')) b.classList.toggle('on', b.dataset.sort === state.drawnSort);
   $('#btnUndo').disabled = !state.history.length;
   $('#btnReset').disabled = !state.history.length;
+  $('#btnSort').hidden = state.history.length < 2;
 
-  // Schnellwahl, Rechenart, Zahlenraum, Reihen
+  // Spiel: Topf
+  const ex = new Set(S.excluded);
+  $('#topfGrid').innerHTML = toggleGridHtml(pool.results, (r) => !ex.has(r) && pool.byResult.has(r));
+  $('#topfCount').textContent = `${pool.topf.length} von ${pool.results.length}`;
+  $('#btnTopfNoZero').hidden = !pool.results.includes(0);
+  $('#btnTopfNoZero').classList.toggle('light', !ex.has(0));
+
+  // Aufgaben: Schnellwahl, Rechenart, Zahlenraum, Reihen
   $('#presets').innerHTML = PRESETS.map((p, i) => {
     const on = Object.keys(p.s).every((k) => JSON.stringify(p.s[k]) === JSON.stringify(S[k]));
     return `<button class="sbtn ${on ? '' : 'light'}" data-preset="${i}">${p.name}</button>`;
   }).join('');
   for (const b of $$('#modeSeg [data-mode]')) b.classList.toggle('on', b.dataset.mode === S.mode);
-  $('#rowAdd').hidden = !hasAddSub(S);
-  $('#rowMul').hidden = !hasMulDiv(S);
+  $('#rowMax').hidden = $('#rowCrossing').hidden = !hasAddSub(S);
+  $('#rowRows').hidden = $('#rowSquares').hidden = !hasMulDiv(S);
   for (const b of $$('#maxSeg [data-max]')) b.classList.toggle('on', +b.dataset.max === S.max);
   $('#chkCrossing').checked = S.crossing;
   $('#rowGrid').innerHTML = toggleGridHtml(ALL_ROWS, (r) => S.rows.includes(r), (r) => `${r}er`);
   $('#chkSquares').checked = S.squares;
 
-  // Topf
-  const ex = new Set(S.excluded);
-  $('#topfGrid').innerHTML = toggleGridHtml(pool.results, (r) => !ex.has(r) && pool.byResult.has(r));
-  $('#topfInfo').textContent = `${pool.topf.length} von ${pool.results.length} Zahlen im Topf. `
-    + 'Antippen, um eine Zahl heraus- oder hineinzunehmen.';
-  $('#btnTopfNoZero').hidden = !pool.results.includes(0);
-  $('#btnTopfNoZero').classList.toggle('light', !ex.has(0));
-
-  // Anzeige, Ton
+  // Dieses iPad
   for (const el of $$('[data-opt]')) {
     const v = S[el.dataset.opt];
     if (el.type === 'checkbox') el.checked = !!v;
     else el.value = v;
   }
-  $('#volVal').textContent = `Lautstärke: ${Math.round(S.volume * 100)} %`;
+  $('#volVal').textContent = `${Math.round(S.volume * 100)} %`;
   $('#rateVal').textContent = S.rate < 0.8 ? 'langsam' : S.rate > 1.05 ? 'schnell' : 'normal';
   $('#rowFullscreen').hidden = !canFullscreen || isFullscreen();
 }
@@ -463,8 +471,8 @@ function renderDrawer() {
 function fillVoices() {
   const sel = $('#voiceSelect');
   const voices = germanVoices();
-  sel.innerHTML = '<option value="">Stimme: Standard</option>'
-    + voices.map((v) => `<option value="${v.name.replace(/"/g, '&quot;')}">Stimme: ${v.name}</option>`).join('');
+  sel.innerHTML = '<option value="">Standard</option>'
+    + voices.map((v) => `<option value="${v.name.replace(/"/g, '&quot;')}">${v.name}</option>`).join('');
   sel.value = voices.some((v) => v.name === S.voice) ? S.voice : '';
 }
 
@@ -509,14 +517,22 @@ function bind() {
   // Schublade
   $('#btnUndo').addEventListener('click', undoLast);
   $('#btnReset').addEventListener('click', async () => {
-    if (!(await askConfirm('Zurücksetzen? Die bisher gewürfelten Aufgaben werden gelöscht.'))) return;
+    if (!(await askConfirm('Neues Spiel starten? Die bisher gewürfelten Aufgaben werden gelöscht.'))) return;
     newRound();
     backToTouch();
     renderDrawer();
   });
-  $('#drawnSort').addEventListener('click', (e) => {
-    const b = e.target.closest('[data-sort]');
-    if (b) { state.drawnSort = b.dataset.sort; renderDrawer(); }
+  $('#drawerTabs').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-tab]');
+    if (!b) return;
+    S.settingsTab = b.dataset.tab;
+    save();
+    renderDrawer();
+    $('#drawerBody').scrollTop = 0;
+  });
+  $('#btnSort').addEventListener('click', () => {
+    state.drawnSort = state.drawnSort === 'size' ? 'order' : 'size';
+    renderDrawer();
   });
   $('#presets').addEventListener('click', (e) => {
     const b = e.target.closest('[data-preset]');
@@ -549,6 +565,7 @@ function bind() {
     setExcluded(S.excluded.includes(r) ? S.excluded.filter((x) => x !== r) : [...S.excluded, r]);
   });
   $('#btnTopfAll').addEventListener('click', () => setExcluded([]));
+  $('#btnTopfNone').addEventListener('click', () => setExcluded(pool.results));
   $('#btnTopfNoZero').addEventListener('click', () =>
     setExcluded(S.excluded.includes(0) ? S.excluded.filter((x) => x !== 0) : [...S.excluded, 0]));
 
