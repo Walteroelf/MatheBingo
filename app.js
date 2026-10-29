@@ -39,8 +39,8 @@ function draw() {
 // Thorsten (Piper-Stimme von Thorsten Müller, CC0): vorab erzeugte Tondateien in audio/.
 // Erster Teil mit Rechenzeichen in einem Zug („7_plus“), zweite Zahl nahtlos dahinter („3“).
 const OP_FILE = { '+': 'plus', '-': 'minus', '*': 'mal', '/': 'durch' };
-const JOIN_GAP_S = 0.05;   // kurze Pause zwischen „sieben plus“ und „drei“, wie im gesprochenen Satz
-const SILENCE = 0.004;
+const JOIN_GAP_S = 0.04;   // kurze Pause zwischen „sieben plus“ und „drei“, wie im gesprochenen Satz
+const SILENCE = 0.002;   // niedrig, damit leise Anfangslaute (f, s) erhalten bleiben
 const clipCache = new Map();
 
 // Hörbaren Teil bestimmen. Schneidet auch die Stille ab, die das m4a-Format am Anfang
@@ -51,7 +51,7 @@ function audible(buf) {
   let b = d.length - 1;
   while (a < b && Math.abs(d[a]) < SILENCE) a++;
   while (b > a && Math.abs(d[b]) < SILENCE) b--;
-  const start = Math.max(0, a / buf.sampleRate - 0.01);
+  const start = Math.max(0, a / buf.sampleRate - 0.03);
   const end = Math.min(buf.duration, b / buf.sampleRate + 0.03);
   return { buf, start, dur: Math.max(0.01, end - start) };
 }

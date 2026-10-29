@@ -50,8 +50,9 @@ Die Ansagen liegen als fertige Tondateien im Ordner `audio/` – wie beim ABC-Bi
 auf jedem Gerät gleich und brauchen keine Internet-Stimme.
 
 - `n_plus`, `n_minus`, `n_mal`, `n_durch`: erste Zahl mit Rechenzeichen („sieben plus“), herausgeschnitten aus
-  einem ganzen Satz („sieben plus fünf“), damit die Satzmelodie weiterführt
-- `n`: die zweite Zahl („drei“), herausgeschnitten aus „eins plus drei“ (Melodie eines Satzendes)
+  „sieben plus, fünf“ – das Komma erzeugt eine echte Pause, in der sauber geschnitten wird
+- `n`: die zweite Zahl („drei“), herausgeschnitten aus „eins plus, drei“ (Melodie eines Satzendes,
+  sauberer Wortanfang ohne Zischlaut von „plus“)
 - Beim Abspielen wird die Stille an Anfang und Ende abgeschnitten; dazwischen bleibt eine kurze natürliche Pause.
 
 Laden die Dateien einmal nicht, liest ersatzweise die Stimme des Browsers vor.

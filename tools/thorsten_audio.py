@@ -5,10 +5,12 @@ Stimme: de_DE-thorsten-high.onnx (+ .onnx.json) von huggingface.co/rhasspy/piper
 Aufruf: venv/bin/python thorsten_audio.py <modell.onnx> <ausgabeordner> [nur diese Namen …]
 Danach: afconvert -f m4af -d aac -b 40000 x.wav audio/x.m4a
 
-Damit die Ansage natürlich klingt, spricht Thorsten immer ganze Sätze. Mit den Zeitmarken
-der Laute wird in der Pause vor dem letzten Wort geschnitten:
-  n_plus  aus „n plus 5“            -> Teil vor dem letzten Wort (weiterführende Satzmelodie)
-  n       aus „1 plus n“            -> letztes Wort (Melodie eines Satzendes)
+Damit die Ansage natürlich klingt, spricht Thorsten immer ganze Sätze mit einem Komma.
+Das Komma erzeugt eine echte kleine Pause; dort (an der leisesten Stelle) wird geschnitten:
+  n_plus  aus „n plus, 5“   -> Teil vor dem Komma (weiterführende Satzmelodie)
+  n       aus „1 plus, n“   -> Teil nach dem Komma (Melodie eines Satzendes)
+Nicht an der letzten Wortgrenze schneiden: espeak trennt z. B. „fünf|undvierzig“ intern,
+und ohne Pause verschmelzen „plus“ und „sieben“ zu einem Zischlaut.
 Dateien: n (0–100), n_plus, n_minus, n_durch (0–100), n_mal (0–10)
 """
 import os
@@ -30,23 +32,34 @@ voice = PiperVoice.load(model, espeak_data_dir="espeak-ng-data", include_alignme
 cfg = SynthesisConfig(length_scale=1.1)
 RATE = voice.config.sample_rate
 
-LEAD_S, TAIL_S, THRESH = 0.01, 0.04, 0.004
-CARRIER_END = "5"     # Wort hinter dem Rechenzeichen, wird abgeschnitten
-CARRIER_START = "1 plus"  # Satzanfang vor der zweiten Zahl, wird abgeschnitten
+LEAD_S, TAIL_S, THRESH = 0.03, 0.05, 0.002   # leise Anfangslaute (f, s) nicht abschneiden
+CARRIER_END = ", 5"     # hinter dem Rechenzeichen, wird abgeschnitten
+CARRIER_START = "1 plus,"  # Satzanfang vor der zweiten Zahl, wird abgeschnitten
 
 
 def synth(text):
-    """Audio und Schnittstelle (Mitte der Pause vor dem letzten Wort) in Samples."""
-    audio, cut, pos = [], None, 0
+    """Audio und Schnittstelle in Samples: leisester Punkt in der Pause nach dem Komma."""
+    audio, pause, pos = [], None, 0
     for chunk in voice.synthesize(text, syn_config=cfg, include_alignments=True):
         audio.append(chunk.audio_float_array)
-        for a in chunk.phoneme_alignments or []:
-            if a.phoneme == " ":
-                cut = pos + a.num_samples // 2
+        al = chunk.phoneme_alignments or []
+        for i, a in enumerate(al):
+            if a.phoneme == "," and pause is None:
+                # Pause = Komma plus folgende Leerzeichen
+                end = pos + a.num_samples
+                for b in al[i + 1:]:
+                    if b.phoneme != " ":
+                        break
+                    end += b.num_samples
+                pause = (pos, end)
             pos += a.num_samples
-    if cut is None:
-        raise RuntimeError(f"keine Wortgrenze in {text!r}")
-    return np.concatenate(audio), cut
+    if pause is None:
+        raise RuntimeError(f"kein Komma in {text!r}")
+    audio = np.concatenate(audio)
+    win = int(0.01 * RATE)
+    starts = range(pause[0], max(pause[0] + 1, pause[1] - win), win // 2)
+    cut = min(starts, key=lambda s: float(np.mean(audio[s:s + win] ** 2))) + win // 2
+    return audio, cut
 
 
 def trim(audio):
@@ -68,7 +81,7 @@ def write(audio, name):
 
 
 def prefix(text, name):
-    audio, cut = synth(f"{text} {CARRIER_END}")
+    audio, cut = synth(f"{text}{CARRIER_END}")
     write(audio[:cut], name)
 
 
