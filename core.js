@@ -12,7 +12,7 @@ const DEFAULTS = {
   rows: CORE_ROWS, squares: true,
   excluded: [],          // aus dem Topf genommene Ergebnisse
   speech: true, volume: 1,
-  dots: true, fxDrum: true, fxConfetti: true,
+  dots: true, resultBtn: false, sound: 'trommel', fxConfetti: true,
   settingsTab: 'spiel',   // zuletzt geöffneter Reiter in ⚙️
 };
 
@@ -56,8 +56,12 @@ const hasMulDiv = (s) => MODES[s.mode].some((op) => op === '*' || op === '/');
 function loadStore() {
   let data = {};
   try { data = JSON.parse(localStorage.getItem(STORE)) || {}; } catch { /* leer */ }
+  const settings = { ...DEFAULTS, ...(data.settings || {}) };
+  // frühere Einstellung „Trommelwirbel aus“ übernehmen
+  if (data.settings && data.settings.fxDrum === false && !data.settings.sound) settings.sound = 'aus';
+  delete settings.fxDrum;
   return {
-    settings: { ...DEFAULTS, ...(data.settings || {}) },
+    settings,
     history: data.history || [],
     used: data.used || [],
   };

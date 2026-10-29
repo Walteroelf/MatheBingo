@@ -8,7 +8,7 @@ ohne Installation und ohne Anmeldung: https://walteroelf.github.io/MatheBingo/
 
 - **„Bitte berühren“**: Ein Tipp irgendwo auf den Bildschirm (oder die Leertaste) würfelt.
   Beim ersten Tipp geht die App ins Vollbild.
-- Die Aufgabe rollt mit Trommelwirbel aus, erscheint groß mit Konfetti und wird vorgelesen.
+- Die Aufgabe rollt mit dem gewählten Würfel-Klang aus, erscheint groß mit Konfetti und wird vorgelesen.
   Auf Wunsch gibt es ein Punktebild (Zehnerfelder bei Plus/Minus, Punktefeld bei Mal).
 - **Tipp auf die Aufgabe**: Sie wird nochmal vorgelesen.
 - **„Weiter“** unten rechts: zurück zu „Bitte berühren“.
@@ -26,7 +26,10 @@ Aufgebaut wie beim ABC-Bingo, mit vier Reitern. Der zuletzt geöffnete Reiter wi
 - **🧮 Aufgaben**: Schnellwahl (Plus bis 10 … 1×1 Kernaufgaben, Ganzes 1×1, Geteilt Kernaufgaben),
   Rechenart, Zahlenraum bis 5 … 100, Zehnerübergang, Einmaleins-Reihen, Quadrataufgaben.
   Eine Änderung hier startet ein neues Spiel.
-- **📱 Dieses iPad**: Vorlesen, Lautstärke, Stimmprobe, Punktebild, Trommelwirbel, Konfetti, Vollbild.
+- **📱 Dieses iPad**: Vorlesen, Lautstärke, Stimmprobe, Punktebild, Ergebnis-Knopf (zeigt auf Tipp das Ergebnis
+  mittig unter der Aufgabe), Würfel-Klang, Konfetti, Vollbild.
+  Würfel-Klänge (Antippen zum Anhören und Auswählen): 🥁 Trommelwirbel, 🎺 Tusch, 🎡 Glücksrad, 🎵 Xylophon,
+  ✨ Zauberstab, 🔇 Kein Klang. Alle Klänge werden im Browser erzeugt (`sounds.js`).
 - **➕ Mehr**: Bingokarten und Lottoscheine, Anleitung.
 
 ## Bingokarten und Lottoscheine
@@ -46,8 +49,10 @@ Die Aufgaben spricht **Thorsten**, die freie deutsche Stimme von Thorsten Mülle
 Die Ansagen liegen als fertige Tondateien im Ordner `audio/` – wie beim ABC-Bingo. Sie klingen deshalb
 auf jedem Gerät gleich und brauchen keine Internet-Stimme.
 
-- `n_plus`, `n_minus`, `n_mal`, `n_durch`: erste Zahl mit Rechenzeichen in einem Zug („sieben plus“)
-- `n`: die zweite Zahl („drei“), wird nahtlos angehängt
+- `n_plus`, `n_minus`, `n_mal`, `n_durch`: erste Zahl mit Rechenzeichen („sieben plus“), herausgeschnitten aus
+  einem ganzen Satz („sieben plus fünf“), damit die Satzmelodie weiterführt
+- `n`: die zweite Zahl („drei“), herausgeschnitten aus „eins plus drei“ (Melodie eines Satzendes)
+- Beim Abspielen wird die Stille an Anfang und Ende abgeschnitten; dazwischen bleibt eine kurze natürliche Pause.
 
 Laden die Dateien einmal nicht, liest ersatzweise die Stimme des Browsers vor.
 Neu erzeugen: `tools/thorsten_audio.py` (Anleitung im Skript), danach die WAV-Dateien mit
@@ -57,6 +62,7 @@ Neu erzeugen: `tools/thorsten_audio.py` (Anleitung im Skript), danach die WAV-Da
 
 - `index.html`, `app.js`: der Würfel
 - `druck.html`, `druck.js`: Bingokarten und Lottoscheine
+- `sounds.js`: Würfel-Klänge
 - `core.js`: gemeinsame Grundlage (Aufgaben, Zahlen-Topf, Speichern)
 - `style.css`: Gestaltung
 - `audio/`: Ansagen mit der Stimme Thorsten (415 kleine m4a-Dateien)

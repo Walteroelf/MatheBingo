@@ -78,6 +78,15 @@ body.game {
 #screenTask .op { color: var(--yellow); }
 #screenTask .op.mul { font-size: 1.05em; line-height: 0.5; }
 
+/* Ergebnis-Knopf mittig unter dem Punktebild */
+.result-btn {
+  padding: 14px 30px; border-radius: 16px;
+  border: 3px solid rgba(255, 255, 255, 0.6); background: rgba(255, 255, 255, 0.12);
+  color: #fff; font-weight: 800; font-size: clamp(1.1rem, 3vw, 1.6rem);
+  -webkit-tap-highlight-color: transparent;
+}
+.result { font-size: min(12vw, 20vh); line-height: 1; color: var(--yellow); pointer-events: none; }
+
 #screenDone {
   background: var(--blue-dark); color: #fff;
   font-size: clamp(1.6rem, 6vw, 3.2rem); font-weight: 900;
@@ -243,6 +252,12 @@ select { padding: 9px 12px; border-radius: 10px; border: 2px solid #ccc; backgro
 }
 .toggle-grid button.off { background: #fff; color: #aaa; border-color: #ccc; text-decoration: line-through; }
 #rowGrid { grid-template-columns: repeat(auto-fill, minmax(3.4rem, 1fr)); }
+.sound-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr)); grid-auto-rows: min-content; align-content: start; gap: 0.4rem; flex: none; }
+.sound-list button {
+  padding: 12px 10px; border-radius: 12px; border: 2px solid var(--blue);
+  background: #fff; color: var(--blue); font-size: 1rem; font-weight: 700; text-align: left;
+}
+.sound-list button.on { background: var(--blue); color: #fff; }
 
 #drawnTasks { display: flex; flex-wrap: wrap; gap: 0.4rem; min-height: 2.4rem; }
 .chip {

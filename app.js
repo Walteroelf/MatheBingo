@@ -39,7 +39,22 @@ function draw() {
 // Thorsten (Piper-Stimme von Thorsten Müller, CC0): vorab erzeugte Tondateien in audio/.
 // Erster Teil mit Rechenzeichen in einem Zug („7_plus“), zweite Zahl nahtlos dahinter („3“).
 const OP_FILE = { '+': 'plus', '-': 'minus', '*': 'mal', '/': 'durch' };
+const JOIN_GAP_S = 0.05;   // kurze Pause zwischen „sieben plus“ und „drei“, wie im gesprochenen Satz
+const SILENCE = 0.004;
 const clipCache = new Map();
+
+// Hörbaren Teil bestimmen. Schneidet auch die Stille ab, die das m4a-Format am Anfang
+// einfügt – sonst entsteht an der Nahtstelle ein kleines Stocken.
+function audible(buf) {
+  const d = buf.getChannelData(0);
+  let a = 0;
+  let b = d.length - 1;
+  while (a < b && Math.abs(d[a]) < SILENCE) a++;
+  while (b > a && Math.abs(d[b]) < SILENCE) b--;
+  const start = Math.max(0, a / buf.sampleRate - 0.01);
+  const end = Math.min(buf.duration, b / buf.sampleRate + 0.03);
+  return { buf, start, dur: Math.max(0.01, end - start) };
+}
 let voiceSources = [];
 let speechRun = 0;
 
@@ -47,7 +62,8 @@ function loadClip(name) {
   if (!clipCache.has(name)) {
     const p = fetch(`audio/${name}.m4a`)
       .then((r) => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
-      .then((data) => new Promise((res, rej) => audioCtx.decodeAudioData(data, res, rej)));
+      .then((data) => new Promise((res, rej) => audioCtx.decodeAudioData(data, res, rej)))
+      .then(audible);
     p.catch(() => clipCache.delete(name));
     clipCache.set(name, p);
   }
@@ -61,21 +77,21 @@ function preloadVoice(t) {
   if (audioCtx) for (const n of clipsFor(t)) loadClip(n).catch(() => {});
 }
 
-async function playThorsten(t, run) {
+async function playThorsten(t, run, delay = 0) {
   if (!audioCtx) return false;
-  let bufs;
-  try { bufs = await Promise.all(clipsFor(t).map(loadClip)); } catch { return false; }
+  let clips;
+  try { clips = await Promise.all(clipsFor(t).map(loadClip)); } catch { return false; }
   if (run !== speechRun) return true; // inzwischen abgebrochen
   const gain = audioCtx.createGain();
   gain.gain.value = S.volume;
   gain.connect(audioCtx.destination);
-  let at = audioCtx.currentTime + 0.05;
-  voiceSources = bufs.map((buf) => {
+  let at = audioCtx.currentTime + 0.05 + delay;
+  voiceSources = clips.map((c) => {
     const src = audioCtx.createBufferSource();
-    src.buffer = buf;
+    src.buffer = c.buf;
     src.connect(gain);
-    src.start(at);
-    at += buf.duration;
+    src.start(at, c.start, c.dur);
+    at += c.dur + JOIN_GAP_S;
     return src;
   });
   return true;
@@ -100,16 +116,17 @@ function stopSpeech() {
   if (hasSpeech) speechSynthesis.cancel();
 }
 
-async function announce(t) {
+// delay: Sekunden Wartezeit, damit der Abschluss-Klang nicht überdeckt wird
+async function announce(t, delay = 0) {
   if (!S.speech) return;
   stopSpeech();
   const run = speechRun;
-  if (await playThorsten(t, run)) return;
+  if (await playThorsten(t, run, delay)) return;
+  if (delay) await sleep(delay * 1000);
   if (run === speechRun) speakFallback(`${t.a} ${OPS[t.op].word} ${t.b}`);
 }
 
 let audioCtx = null;
-let noiseBuf = null;
 
 // Muss in einem Tipp-Ereignis aufgerufen werden, sonst bleibt der Ton auf iPads stumm
 function initAudio() {
@@ -122,37 +139,32 @@ function initAudio() {
   if (audioCtx.state !== 'running') audioCtx.resume().catch(() => {});
 }
 
-// Trommelschlag aus Rauschen und tiefem Ton, im Browser erzeugt
-function drumTick(strength) {
-  if (!S.fxDrum || !audioCtx || audioCtx.state !== 'running') return;
-  const ctx = audioCtx;
-  if (!noiseBuf) {
-    noiseBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.15), ctx.sampleRate);
-    const d = noiseBuf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-  }
-  const t = ctx.currentTime;
-  const vol = S.volume * strength;
+// Würfel-Klang (Klänge in sounds.js): eigene Lautstärke-Stufe und ein Begrenzer gegen Übersteuern
+function soundOut() {
+  if (!audioCtx || audioCtx.state !== 'running') return null;
+  const g = audioCtx.createGain();
+  g.gain.value = 0.9 * S.volume;
+  const limit = audioCtx.createDynamicsCompressor();
+  limit.threshold.value = -8; limit.knee.value = 6; limit.ratio.value = 12;
+  limit.attack.value = 0.002; limit.release.value = 0.15;
+  g.connect(limit);
+  limit.connect(audioCtx.destination);
+  return g;
+}
 
-  const src = ctx.createBufferSource();
-  src.buffer = noiseBuf;
-  const bp = ctx.createBiquadFilter();
-  bp.type = 'bandpass'; bp.frequency.value = 1800; bp.Q.value = 0.8;
-  const env = ctx.createGain();
-  env.gain.setValueAtTime(0.0001, t);
-  env.gain.exponentialRampToValueAtTime(Math.max(0.0002, 0.5 * vol), t + 0.005);
-  env.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
-  src.connect(bp); bp.connect(env); env.connect(ctx.destination);
-  src.start(t); src.stop(t + 0.15);
+const currentSound = () => SOUNDS[S.sound] || SOUNDS.trommel;
+const rollTicks = () => ROLL_MS.map((ms) => ms / 1000);
 
-  const osc = ctx.createOscillator();
-  osc.frequency.setValueAtTime(140, t);
-  osc.frequency.exponentialRampToValueAtTime(60, t + 0.1);
-  const og = ctx.createGain();
-  og.gain.setValueAtTime(Math.max(0.0002, 0.4 * vol), t);
-  og.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
-  osc.connect(og); og.connect(ctx.destination);
-  osc.start(t); osc.stop(t + 0.13);
+// Klang einmal vorspielen: Rollen und Abschluss, wie beim Würfeln
+function previewSound(key) {
+  initAudio();
+  const out = soundOut();
+  const snd = SOUNDS[key];
+  if (!out || !snd) return;
+  const t0 = audioCtx.currentTime + 0.05;
+  const ticks = rollTicks();
+  snd.roll(audioCtx, out, t0, ticks);
+  snd.finale(audioCtx, out, t0 + ticks[ticks.length - 1] + 0.12);
 }
 
 // ---------- Konfetti ----------
@@ -264,7 +276,6 @@ function rollAnimation(el) {
     (function frame(now) {
       if (now - t0 >= ROLL_MS[idx]) {
         el.innerHTML = taskHtml(pick(pool.tasks));
-        drumTick(0.5 + (0.5 * idx) / ROLL_MS.length);
         idx++;
       }
       if (idx < ROLL_MS.length) requestAnimationFrame(frame);
@@ -302,12 +313,16 @@ async function roll() {
   stopSpeech();
   stopConfetti();
   showScreen('task');
+  showResultControls(null);
   $('#btnWeiter').hidden = true;
   const el = $('#task');
   $('#dots').innerHTML = '';
   el.classList.add('rolling');
+  const out = soundOut();
+  if (out) currentSound().roll(audioCtx, out, audioCtx.currentTime + 0.02, rollTicks());
   await rollAnimation(el);
   el.classList.remove('rolling');
+  if (out) currentSound().finale(audioCtx, out, audioCtx.currentTime + 0.01);
 
   const t = d.t;
   state.current = t;
@@ -317,11 +332,19 @@ async function roll() {
 
   el.innerHTML = taskHtml(t);
   $('#dots').innerHTML = dotsHtml(t);
+  showResultControls(t);
   state.rolling = false;
   $('#btnWeiter').hidden = false;
   renderTouchCount();
   confetti();
-  announce(t);
+  announce(t, currentSound().speechDelay);
+}
+
+// Ergebnis-Knopf (optional): erst der Knopf, nach dem Antippen das Ergebnis an seiner Stelle
+function showResultControls(t) {
+  $('#result').textContent = t ? `= ${t.r}` : '';
+  $('#result').hidden = true;
+  $('#btnResult').hidden = !(t && S.resultBtn);
 }
 
 function repeatCurrent() {
@@ -420,7 +443,9 @@ function setExcluded(list) {
 function setOption(key, value) {
   S[key] = value;
   save();
-  if (key === 'dots' && state.current && !$('#screenTask').hidden) $('#dots').innerHTML = dotsHtml(state.current);
+  const taskShown = state.current && !$('#screenTask').hidden && !state.rolling;
+  if (key === 'dots' && taskShown) $('#dots').innerHTML = dotsHtml(state.current);
+  if (key === 'resultBtn' && taskShown) showResultControls(state.current);
   renderDrawer();
 }
 
@@ -487,6 +512,8 @@ function renderDrawer() {
     else el.value = v;
   }
   $('#volVal').textContent = `${Math.round(S.volume * 100)} %`;
+  $('#soundList').innerHTML = SOUND_LIST.map((s) =>
+    `<button data-sound="${s.key}" class="${s.key === S.sound ? 'on' : ''}" aria-pressed="${s.key === S.sound}">${s.name}</button>`).join('');
   $('#rowFullscreen').hidden = !canFullscreen || isFullscreen();
 }
 
@@ -514,6 +541,11 @@ function bind() {
   // Spiel: Berühren würfelt, Tippen auf die Aufgabe wiederholt die Ansage
   $('#btnTouch').addEventListener('click', roll);
   $('#screenTask').addEventListener('click', repeatCurrent);
+  $('#btnResult').addEventListener('click', (e) => {
+    e.stopPropagation(); // nicht zusätzlich die Ansage wiederholen
+    $('#btnResult').hidden = true;
+    $('#result').hidden = false;
+  });
   $('#btnWeiter').addEventListener('click', weiter);
   $('#btnGear').addEventListener('click', openDrawer);
   $('#btnCloseDrawer').addEventListener('click', closeDrawer);
@@ -588,6 +620,14 @@ function bind() {
     const read = () => (el.type === 'checkbox' ? el.checked : el.type === 'range' ? Number(el.value) : el.value);
     el.addEventListener(el.type === 'range' ? 'input' : 'change', () => setOption(key, read()));
   }
+  $('#soundList').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-sound]');
+    if (!b) return;
+    S.sound = b.dataset.sound;
+    save();
+    renderDrawer();
+    previewSound(S.sound);
+  });
   $('#btnTestVoice').addEventListener('click', () => { initAudio(); announce({ a: 7, op: '+', b: 3 }); });
   $('#btnFullscreen').addEventListener('click', () => { requestFullscreen(); closeDrawer(); });
   document.addEventListener('fullscreenchange', renderDrawer);
