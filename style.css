@@ -64,7 +64,22 @@ body.game {
   -webkit-tap-highlight-color: transparent;
 }
 
-#screenTask { background: var(--blue-dark); color: #fff; gap: 3vh; padding: 1rem 1rem 8rem; cursor: pointer; }
+/* Obere Hälfte: Aufgabe (unten bündig), untere Hälfte: Punktebild und Ergebnis.
+   Feste Aufteilung wie auf der Tafel, damit die Aufgabe beim Aufdecken stehen bleibt.
+   Sind Punktebild und Ergebnis beide aus, steht die Aufgabe in der Mitte. */
+#screenTask {
+  background: var(--blue-dark); color: #fff; padding: 1rem 1rem 8rem; cursor: pointer;
+  display: grid; grid-template-rows: 1fr 1fr; justify-items: center;
+}
+#screenTask .task { align-self: end; padding-bottom: 3vh; }
+#taskExtras {
+  align-self: stretch; align-content: flex-start; min-height: 0; max-width: 100%; overflow: hidden;
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+  gap: 2vh 5vw; padding-top: 3vh;
+}
+#screenTask.noextras { grid-template-rows: 1fr; }
+#screenTask.noextras .task { align-self: center; padding-bottom: 0; }
+#screenTask.noextras #taskExtras { display: none; }
 #screenTask .task {
   font-size: min(22vw, 40vh);
   line-height: 1;
@@ -358,9 +373,31 @@ select { padding: 9px 12px; border-radius: 10px; border: 2px solid #ccc; backgro
   background: #1d2433; color: #fff; justify-content: flex-start;
   padding: calc(1.2rem + env(safe-area-inset-top)) 1rem 7rem;
 }
+#btnBoardFs {
+  position: fixed;
+  right: calc(1rem + env(safe-area-inset-right)); bottom: calc(1rem + env(safe-area-inset-bottom));
+  height: clamp(64px, 14vw, 84px); padding: 0 1.2rem;
+  border-radius: 16px; background: rgba(0, 0, 0, 0.3);
+  color: #fff; border: 3px solid rgba(255, 255, 255, 0.3);
+  font-weight: 800; font-size: clamp(1rem, 2.4vw, 1.3rem);
+  z-index: 60;
+  -webkit-tap-highlight-color: transparent;
+}
 #boardCount { font-size: clamp(1rem, 2.4vw, 1.8rem); opacity: 0.8; align-self: flex-start; }
+/* Obere Hälfte: Aufgabe (unten bündig), untere Hälfte: Punktebild und Ergebnis.
+   Feste Aufteilung, damit die Aufgabe beim Aufdecken stehen bleibt. */
+#boardMain { flex: 1; min-height: 0; width: 100%; display: grid; grid-template-rows: 1fr 1fr; }
+#boardExtras {
+  align-self: stretch; align-content: flex-start; min-height: 0; overflow: hidden;
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+  gap: 2vh 5vw; padding-top: 4vh;
+}
+#boardExtras .dots, #boardExtras .result { pointer-events: auto; cursor: pointer; }
+#boardExtras .frame { --d: clamp(10px, 2.6vmin, 30px); }
+#boardExtras .array { --d: clamp(7px, 1.9vmin, 22px); }
+#boardResult { font-size: min(11vw, 17vh); }
 #boardLast {
-  flex: 1; display: flex; align-items: center; justify-content: center;
+  align-self: end; display: flex; align-items: center; justify-content: center;
   font-size: min(14vw, 26vh); line-height: 1; white-space: nowrap;
 }
 #boardLast > span {

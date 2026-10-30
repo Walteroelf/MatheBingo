@@ -11,6 +11,7 @@ const DEFAULTS = {
   max: 20, crossing: true,
   rows: CORE_ROWS, squares: true,
   excluded: [],          // aus dem Topf genommene Ergebnisse
+  unique: 'result',      // was pro Runde nur einmal kommt: 'result' (Bingo) oder 'task' (Ergebnisse dürfen mehrfach kommen)
   color: 'blau',          // Farbe dieses iPads: gewürfelte Aufgaben erscheinen darin, auch auf der Tafel
   speech: true, volume: 1,
   dotsShow: 'always', resultShow: 'off',   // Punktebild und Ergebnis: off, tap (Knopf), always
@@ -66,6 +67,7 @@ const $$ = (sel) => [...document.querySelectorAll(sel)];
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const fmt = (t) => `${t.a} ${OPS[t.op].sym} ${t.b}`;
+const taskKey = (t) => `${t.a}${t.op}${t.b}`;
 const hasAddSub = (s) => MODES[s.mode].some((op) => op === '+' || op === '-');
 const hasMulDiv = (s) => MODES[s.mode].some((op) => op === '*' || op === '/');
 
@@ -85,6 +87,7 @@ function loadStore() {
   delete settings.dots;
   delete settings.resultBtn;
   if (!COLORS[settings.color]) settings.color = DEFAULTS.color;
+  if (settings.unique !== 'task') settings.unique = 'result';
   // Ältere Spielstände haben noch keine Zeitstempel: Reihenfolge beibehalten
   const history = (data.history || []).map((t, i) => ({ ts: i + 1, by: '', ...t }));
   return {
@@ -95,7 +98,7 @@ function loadStore() {
 }
 
 // Einstellungen, die bei mehreren verbundenen iPads für alle gelten
-const GAME_KEYS = ['mode', 'max', 'crossing', 'rows', 'squares', 'excluded'];
+const GAME_KEYS = ['mode', 'max', 'crossing', 'rows', 'squares', 'excluded', 'unique'];
 const gameOf = (s) => Object.fromEntries(GAME_KEYS.map((k) => [k, s[k]]));
 
 function randomId(n) {

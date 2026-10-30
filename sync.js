@@ -35,25 +35,29 @@ let sawMsg = false;
 let claim = null;       // { t, confirmed, ts, echoTs } während des Würfelns
 let qrVisible = false;
 let qrBoardVisible = false;
-const pendingBy = {};   // Gerät → { results, ts }: noch verdeckte Ergebnisse anderer iPads
+const pendingBy = {};   // Gerät → { keys, ts }: noch verdeckte Würfe anderer iPads
 
 const isOnline = () => !!(client && connected);
-const usedResults = () => new Set(state.history.map((t) => t.r));
 
-// Ergebnisse, die andere iPads gerade noch würfeln
-function hiddenResults() {
+// Was pro Runde nur einmal kommen darf: das Ergebnis (Bingo) oder die Aufgabe selbst.
+// Daran hängen Auslosen, Abgleich und gleichzeitiges Würfeln.
+const entryKey = (t) => (S.unique === 'task' ? taskKey(t) : String(t.r));
+const usedKeys = () => new Set(state.history.map(entryKey));
+
+// Würfe, die andere iPads gerade noch rollen
+function hiddenKeys() {
   const now = performance.now();
   const out = new Set();
   for (const p of Object.values(pendingBy)) {
-    if (now - p.ts < PENDING_MAX_MS) p.results.forEach((r) => out.add(r));
+    if (now - p.ts < PENDING_MAX_MS) p.keys.forEach((k) => out.add(k));
   }
   return out;
 }
 
 // Gewürfelte Aufgaben ohne die, die andere iPads noch nicht aufgedeckt haben
 function visibleHistory() {
-  const hidden = hiddenResults();
-  return state.history.filter((t) => t.by === DEVICE || !hidden.has(t.r));
+  const hidden = hiddenKeys();
+  return state.history.filter((t) => t.by === DEVICE || !hidden.has(entryKey(t)));
 }
 
 // ---------- Verbindung ----------
@@ -135,7 +139,8 @@ function publish() {
     gen: net.gen, genTs: net.genTs,
     game: gameOf(S), gameTs: net.gameTs,
     drawn: state.history,
-    pending: claim && claim.t ? [claim.t.r] : [],   // andere zeigen es erst nach dem Aufdecken
+    // andere zeigen es erst nach dem Aufdecken; Ergebnis als Zahl wie bisher, Aufgabe als Text
+    pending: claim && claim.t ? [S.unique === 'task' ? taskKey(claim.t) : claim.t.r] : [],
     by: DEVICE,
   };
   client.publish(TOPIC_PREFIX + net.code, JSON.stringify(msg), { qos: 1, retain: true });
@@ -158,6 +163,7 @@ function cleanGame(g) {
   return {
     mode: g.mode, max: g.max, crossing: !!g.crossing, squares: !!g.squares,
     rows: g.rows.filter(isNum), excluded: g.excluded.filter(isNum),
+    unique: g.unique === 'task' ? 'task' : 'result',
   };
 }
 
@@ -169,7 +175,7 @@ function adoptGame(game, ts) {
 
 // Eigene Aufgabe zu diesem Ergebnis durch die des anderen iPads ersetzen
 function replaceEntry(t) {
-  state.history = state.history.filter((h) => h.r !== t.r);
+  state.history = state.history.filter((h) => entryKey(h) !== entryKey(t));
   state.history.push(t);
 }
 
@@ -179,8 +185,9 @@ function receive(raw) {
   if (!m || typeof m.gen !== 'string' || !isNum(m.genTs) || !Array.isArray(m.drawn)) return;
   sawMsg = true;
   if (typeof m.by === 'string' && m.by !== DEVICE) {
-    const p = Array.isArray(m.pending) ? m.pending.filter(isNum) : [];
-    pendingBy[m.by] = { results: p, ts: performance.now() };
+    const p = Array.isArray(m.pending)
+      ? m.pending.filter((x) => isNum(x) || typeof x === 'string').map(String) : [];
+    pendingBy[m.by] = { keys: p, ts: performance.now() };
     if (p.length) setTimeout(() => onRemote(false), PENDING_MAX_MS + 100);
   }
   const remote = m.drawn.map(cleanTask).filter(Boolean);
@@ -198,7 +205,7 @@ function receive(raw) {
     if (game && m.gameTs > net.gameTs) adoptGame(game, m.gameTs);
     else if (game && m.gameTs < net.gameTs) differs = true;
     if (claim && claim.t) {
-      if (usedResults().has(claim.t.r) || !pool.topf.includes(claim.t.r)) repick();
+      if (usedKeys().has(entryKey(claim.t)) || !pool.topf.includes(claim.t.r)) repick();
       else {
         state.history.push(claim.t);
         claim.confirmed = false; claim.ts = performance.now(); claim.echoTs = 0;
@@ -207,7 +214,7 @@ function receive(raw) {
     }
   } else {
     if (claim && claim.t && !claim.confirmed) {
-      const theirs = remote.find((t) => t.r === claim.t.r);
+      const theirs = remote.find((t) => entryKey(t) === entryKey(claim.t));
       if (theirs && m.by === DEVICE) {
         if (!claim.echoTs) claim.echoTs = performance.now();   // Server hat unsere Wahl
       } else if (theirs && theirs.by !== DEVICE && theirs.by < DEVICE) {
@@ -217,25 +224,26 @@ function receive(raw) {
       }
     }
     // Zusammenführen: bei Uneinigkeit gilt die Aufgabe des iPads mit der kleineren Kennung
-    const mine = new Map(state.history.map((t) => [t.r, t]));
+    const mine = new Map(state.history.map((t) => [entryKey(t), t]));
     for (const t of remote) {
-      const own = mine.get(t.r);
+      const own = mine.get(entryKey(t));
       if (!own) state.history.push(t);
       else if (own.by !== t.by) {
         if (t.by < own.by) replaceEntry(t);
         else differs = true;
       }
     }
-    const remoteRs = new Set(remote.map((t) => t.r));
-    if (state.history.some((t) => !remoteRs.has(t.r))) differs = true;
+    const remoteKeys = new Set(remote.map(entryKey));
+    if (state.history.some((t) => !remoteKeys.has(entryKey(t)))) differs = true;
     if (game && m.gameTs > net.gameTs) adoptGame(game, m.gameTs);
     else if (game && m.gameTs < net.gameTs) differs = true;
   }
-  // Jedes Ergebnis nur einmal, sortiert nach Würfelzeit
+  // Jedes Ergebnis (bzw. jede Aufgabe) nur einmal, sortiert nach Würfelzeit
   const best = new Map();
   for (const t of state.history) {
-    const o = best.get(t.r);
-    if (!o || t.by < o.by) best.set(t.r, t);
+    const k = entryKey(t);
+    const o = best.get(k);
+    if (!o || t.by < o.by) best.set(k, t);
   }
   state.history = [...best.values()].sort((a, b) => a.ts - b.ts || (a.by < b.by ? -1 : a.by > b.by ? 1 : 0));
   if (differs) publish();

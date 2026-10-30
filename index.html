@@ -11,7 +11,7 @@
   <title>Mathe-Bingo</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/icon-180.png">
-  <link rel="stylesheet" href="style.css?v=24">
+  <link rel="stylesheet" href="style.css?v=28">
 </head>
 <body class="game">
 
@@ -24,10 +24,13 @@
 
 <div id="screenTask" class="screen" hidden>
   <div id="task" class="task schrift" aria-live="polite"></div>
-  <div id="dots" class="dots"></div>
-  <button id="btnDots" class="result-btn" hidden>Punktebild zeigen</button>
-  <button id="btnResult" class="result-btn" hidden>Ergebnis zeigen</button>
-  <div id="result" class="result schrift" hidden></div>
+  <!-- fester Platz unter der Aufgabe: Aufdecken verschiebt die Aufgabe nicht -->
+  <div id="taskExtras">
+    <div id="dots" class="dots"></div>
+    <button id="btnDots" class="result-btn" hidden>Punktebild zeigen</button>
+    <button id="btnResult" class="result-btn" hidden>Ergebnis zeigen</button>
+    <div id="result" class="result schrift" hidden></div>
+  </div>
 </div>
 
 <div id="screenDone" class="screen" hidden>
@@ -37,8 +40,18 @@
 
 <div id="screenBoard" class="screen" hidden>
   <div id="boardCount"></div>
-  <div id="boardLast" class="schrift" aria-live="polite"></div>
+  <div id="boardMain">
+    <div id="boardLast" class="schrift" aria-live="polite"></div>
+    <!-- fester Platz unter der Aufgabe: Aufdecken verschiebt die Aufgabe nicht -->
+    <div id="boardExtras">
+      <button id="btnBoardDots" class="result-btn" hidden>Punktebild zeigen</button>
+      <div id="boardDots" class="dots" title="Antippen zum Verstecken"></div>
+      <button id="btnBoardResult" class="result-btn" hidden>Ergebnis zeigen</button>
+      <div id="boardResult" class="result schrift" hidden title="Antippen zum Verstecken"></div>
+    </div>
+  </div>
   <div id="boardList" class="schrift"></div>
+  <button id="btnBoardFs" hidden>⛶ Vollbild</button>
 </div>
 
 <div id="syncDot" hidden></div>
@@ -92,6 +105,16 @@
         <div class="scard">
           <h3>Schnellwahl</h3>
           <div class="btnrow" id="presets"></div>
+        </div>
+        <div class="scard">
+          <h3>Was kommt nur einmal?</h3>
+          <div class="seg words" id="uniqueSeg">
+            <button data-unique="result">Jedes Ergebnis</button>
+            <button data-unique="task">Jede Aufgabe</button>
+          </div>
+          <div class="tiny"><b>Jedes Ergebnis</b>: für Bingo und Lotto, jede Zahl im Topf kommt genau einmal.
+            <b>Jede Aufgabe</b>: keine Aufgabe doppelt, aber ein Ergebnis kann mehrmals kommen (z. B. 3 + 4 und später 5 + 2).
+            Eine Änderung startet ein neues Spiel, der Topf bleibt.</div>
         </div>
         <div class="scard">
           <div class="tiny">Eine Änderung hier startet ein neues Spiel.</div>
@@ -312,11 +335,11 @@
   </div>
 </dialog>
 
-<script src="core.js?v=21"></script>
+<script src="core.js?v=22"></script>
 <script src="sounds.js?v=18"></script>
-<script src="sync.js?v=3"></script>
+<script src="sync.js?v=4"></script>
 <script src="guide.js?v=1"></script>
-<script src="app.js?v=24"></script>
+<script src="app.js?v=28"></script>
 <script>
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>

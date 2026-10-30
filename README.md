@@ -7,13 +7,17 @@ ohne Installation und ohne Anmeldung: https://walteroelf.github.io/MatheBingo/
 ## Würfeln
 
 - **„Bitte berühren“**: Ein Tipp irgendwo auf den Bildschirm würfelt, auf Wunsch auch ein Taster (siehe [Taster](#taster)).
-  Beim ersten Tipp geht die App ins Vollbild.
+  Vollbild gibt es über ⚙️ → Dieses iPad → **Vollbild** und auf der Tafel über den Knopf unten rechts.
+  Läuft die App vom Home-Bildschirm, ist sie schon ohne Safari-Leiste, dann fehlen diese Knöpfe.
 - Die Aufgabe rollt mit dem gewählten Würfel-Klang aus, erscheint groß mit Konfetti und wird vorgelesen.
   Darunter auf Wunsch Punktebild (Zehnerfelder bei Plus/Minus, Punktefeld bei Mal) und Ergebnis,
-  jeweils aus, auf Antippen (Knopf) oder immer.
+  jeweils aus, auf Antippen (Knopf) oder immer. Unter der Aufgabe ist dafür fester Platz, so bleibt die Aufgabe
+  beim Aufdecken stehen.
 - **Tipp auf die Aufgabe**: Sie wird nochmal vorgelesen.
 - **„Weiter“** unten rechts: zurück zu „Bitte berühren“. Der Knopf lässt sich abschalten, siehe [Taster](#taster).
 - Jedes Ergebnis im Topf kommt einmal pro Runde. Sind alle dran, erscheint „Alle Aufgaben wurden gewürfelt! 🎉“.
+  Wahlweise kommt stattdessen nur jede **Aufgabe** einmal und ein Ergebnis darf mehrmals kommen,
+  siehe [Was kommt nur einmal?](#was-kommt-nur-einmal).
 
 ## Einstellungen (⚙️ unten links)
 
@@ -25,7 +29,7 @@ Aufgebaut wie beim ABC-Bingo, mit fünf Reitern. Der zuletzt geöffnete Reiter w
   - *Zahlen im Topf*: wie die Buchstaben beim ABC-Bingo. Antippen nimmt eine Zahl heraus oder legt sie zurück;
     „Alle“, „Keine“, „Ohne 0“. Bei Plus und Minus liegt die 0 im Topf; ohne 0 fallen auch Aufgaben wie 3 + 0 weg.
 - **🧮 Aufgaben**: Schnellwahl (Plus bis 10 … 1×1 Kernaufgaben, Ganzes 1×1, Geteilt Kernaufgaben),
-  Rechenart, Zahlenraum bis 5 … 100, Zehnerübergang, Einmaleins-Reihen, Quadrataufgaben.
+  **Was kommt nur einmal?** (siehe unten), Rechenart, Zahlenraum bis 5 … 100, Zehnerübergang, Einmaleins-Reihen, Quadrataufgaben.
   Eine Änderung hier startet ein neues Spiel.
 - **📱 Dieses iPad**: aufgebaut wie beim ABC-Bingo. Gilt nur für dieses Gerät: **Farbe** (gewürfelte Aufgaben
   erscheinen in dieser Farbe, auch in der Liste und auf der Tafel; so sieht man, welches iPad gewürfelt hat),
@@ -36,6 +40,19 @@ Aufgebaut wie beim ABC-Bingo, mit fünf Reitern. Der zuletzt geöffnete Reiter w
   ✨ Zauberstab, 🔇 Kein Klang. Alle Klänge werden im Browser erzeugt (`sounds.js`).
 - **📡 Verbinden**: Mehrere iPads und die Tafel, siehe unten. Ein Punkt am Reiter zeigt den Verbindungsstatus.
 - **➕ Mehr**: Bingokarten und Lottoscheine, diese Anleitung (öffnet sich in der App).
+
+## Was kommt nur einmal?
+
+Unter ⚙️ → Aufgaben, gilt für alle verbundenen iPads:
+
+| Einstellung | Was passiert | Wofür |
+|---|---|---|
+| **Jedes Ergebnis** (Standard) | Jede Zahl im Topf kommt genau einmal, z. B. nach 3 + 4 kommt keine 7 mehr. Der Zähler zählt Ergebnisse. | Bingo und Lotto: Jede gewürfelte Aufgabe bringt eine neue Zahl. |
+| **Jede Aufgabe** | Keine Aufgabe kommt doppelt, ein Ergebnis aber mehrmals (3 + 4, später 5 + 2). Der Zähler zählt Aufgaben. | Rechenübung, bei der eine Zahl öfter abgehakt oder angemalt werden darf. |
+
+Auch bei „Jede Aufgabe“ wird zuerst ein Ergebnis gelost und dann eine Aufgabe dazu. So kommt die 10 nicht viel
+öfter als die 1, nur weil es mehr Aufgaben mit dem Ergebnis 10 gibt. Fürs Bingo dauert es mit „Jede Aufgabe“
+länger, bis alle Zahlen einmal dran waren. Eine Änderung startet ein neues Spiel; der Topf bleibt, wie er ist.
 
 ## Taster
 
@@ -65,7 +82,7 @@ Antippen während der Sperrzeit liest die Aufgabe nochmal vor.
    **Einem Spiel beitreten** den Spielcode eintippen.
 3. Ein grüner Punkt oben rechts heißt „verbunden“, ein oranger „gerade keine Verbindung“.
 
-Für alle verbundenen Geräte gemeinsam: gewürfelte Aufgaben (jedes Ergebnis kommt nur einmal, egal auf welchem
+Für alle verbundenen Geräte gemeinsam: gewürfelte Aufgaben (jedes Ergebnis bzw. jede Aufgabe kommt nur einmal, egal auf welchem
 iPad, und erscheint in der Farbe des iPads, das es gewürfelt hat), Aufgaben-Einstellungen und Topf, „Letzte zurücknehmen“ und „Neues Spiel“. Würfeln zwei iPads im selben
 Moment dasselbe Ergebnis, würfelt eines davon unbemerkt neu. Die Einstellungen unter „Dieses iPad“
 (Farbe, Vorlesen, Klang, Punktebild, Ergebnis …) bleiben auf jedem Gerät für sich.
@@ -85,6 +102,10 @@ Gut zu wissen:
 Verbinden → Tafel-Ansicht: **QR-Code für die Tafel** scannen, **Link kopieren** und auf dem Beamer-Rechner
 öffnen, oder **Dieses Gerät als Tafel**. Die Tafel zeigt die neueste Aufgabe groß und darunter alle bisher
 gewürfelten Aufgaben, ohne Ergebnisse, jede in der Farbe des iPads, das sie gewürfelt hat.
+Unter der neuesten Aufgabe stehen immer die Knöpfe **„Punktebild zeigen“** und **„Ergebnis zeigen“**
+(bei Geteilt nur das Ergebnis), z. B. zum gemeinsamen Nachrechnen am Smartboard. Aufgedeckt wird nur auf der
+Tafel; nochmal Antippen versteckt es wieder, bei der nächsten Aufgabe ist beides wieder zugedeckt. Die Aufgabe
+bleibt dabei an ihrem Platz. Unten rechts schaltet **⛶ Vollbild** die Tafel ins Vollbild.
 
 ## Als App auf den Home-Bildschirm
 

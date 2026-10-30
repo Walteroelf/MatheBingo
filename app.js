@@ -22,17 +22,39 @@ function save() {
   saveStore({ settings: S, history: state.history, net });
 }
 
-// ---------- Auslosen: jedes Ergebnis im Topf einmal pro Runde ----------
+// ---------- Auslosen ----------
+// „Ergebnisse nur einmal“ (Bingo): jedes Ergebnis im Topf einmal pro Runde.
+// „Aufgaben nur einmal“: jede Aufgabe einmal, Ergebnisse dürfen mehrfach kommen.
+// In beiden Fällen wird zuerst ein Ergebnis gelost, dann eine Aufgabe dazu. So kommen
+// Ergebnisse mit vielen Aufgaben (z. B. 10) nicht viel öfter als solche mit wenigen.
 
-const leftInTopf = () => { const used = usedResults(); return pool.topf.filter((r) => !used.has(r)); };
-const doneInTopf = () => { const seen = new Set(visibleHistory().map((t) => t.r)); return pool.topf.filter((r) => seen.has(r)).length; };
-const countText = () => `Bereits gewürfelt: ${doneInTopf()} von ${pool.topf.length}`;
+function openTasks(r, used) {
+  const tasks = pool.byResult.get(r);
+  return S.unique === 'task' ? tasks.filter((t) => !used.has(taskKey(t))) : tasks;
+}
+
+function leftInTopf() {
+  const used = usedKeys();
+  return S.unique === 'task'
+    ? pool.topf.filter((r) => openTasks(r, used).length)
+    : pool.topf.filter((r) => !used.has(String(r)));
+}
+
+// Zähler „x von y“: Ergebnisse bzw. Aufgaben
+function doneCount() {
+  const seen = new Set(visibleHistory().map(entryKey));
+  return S.unique === 'task'
+    ? pool.tasks.filter((t) => seen.has(taskKey(t))).length
+    : pool.topf.filter((r) => seen.has(String(r))).length;
+}
+const totalCount = () => (S.unique === 'task' ? pool.tasks.length : pool.topf.length);
+const countText = () => `Bereits gewürfelt: ${doneCount()} von ${totalCount()}`;
 
 function draw() {
   if (!pool.topf.length) return null;
   const left = leftInTopf();
   if (!left.length) return { done: true };
-  return { t: pick(pool.byResult.get(pick(left))) };
+  return { t: pick(openTasks(pick(left), usedKeys())) };
 }
 
 // ---------- Ton: Thorsten-Stimme, Ersatzstimme, Trommel ----------
@@ -272,7 +294,7 @@ function showScreen(name) {
 function renderTouchCount() {
   const el = $('#touchCount');
   el.textContent = countText();
-  el.hidden = doneInTopf() === 0;
+  el.hidden = doneCount() === 0;
 }
 
 // Rollt mindestens ROLL_MS lang, mit mehreren iPads weiter, bis der Server die Aufgabe bestätigt
@@ -301,8 +323,6 @@ function showDone(title, hint) {
   $('#btnWeiter').hidden = false;
 }
 
-let triedFullscreen = false;
-
 const showAllDone = () => showDone('Alle Aufgaben wurden gewürfelt! 🎉', net.code
   ? 'Neues Spiel über ⚙️ → Spiel → Neues Spiel.'
   : 'Drücke „Weiter“, um neu zu starten.');
@@ -310,8 +330,6 @@ const showAllDone = () => showDone('Alle Aufgaben wurden gewürfelt! 🎉', net.
 async function roll() {
   if (state.rolling || net.boardMode) return;
   initAudio();
-  // Beim ersten Tippen ins Vollbild (geht nur als Reaktion auf einen Tipp)
-  if (!triedFullscreen) { triedFullscreen = true; requestFullscreen(); }
   if (!pool.topf.length) {
     showDone('Keine Zahlen im Topf.', 'Über ⚙️ unten links Zahlen in den Topf legen.');
     return;
@@ -368,6 +386,7 @@ function showExtras(t) {
   $('#result').textContent = t ? `= ${t.r}` : '';
   $('#result').hidden = !(t && S.resultShow === 'always');
   $('#btnResult').hidden = !(t && S.resultShow === 'tap');
+  $('#screenTask').classList.toggle('noextras', S.dotsShow === 'off' && S.resultShow === 'off');
 }
 
 function repeatCurrent() {
@@ -434,6 +453,23 @@ function onRemote(roundChanged) {
 // ---------- Tafel-Ansicht ----------
 
 let boardShownLast = null;
+// Aufgedeckt auf der Tafel, gilt nur für die neueste Aufgabe und nur auf diesem Gerät
+let boardReveal = { key: '', dots: false, result: false };
+
+function renderBoardExtras(t) {
+  const dots = t ? dotsHtml(t) : '';
+  $('#btnBoardDots').hidden = !dots || boardReveal.dots;
+  $('#boardDots').innerHTML = dots && boardReveal.dots ? dots : '';
+  $('#btnBoardResult').hidden = !t || boardReveal.result;
+  $('#boardResult').hidden = !(t && boardReveal.result);
+  $('#boardResult').textContent = t ? `= ${t.r}` : '';
+}
+
+function setBoardReveal(what, on) {
+  boardReveal[what] = on;
+  const list = visibleHistory();
+  renderBoardExtras(list[list.length - 1] || null);
+}
 
 function renderBoard() {
   const list = visibleHistory();
@@ -447,6 +483,10 @@ function renderBoard() {
     lastEl.classList.add('pop');
   }
   boardShownLast = last;
+  // Neue Aufgabe: Punktebild und Ergebnis wieder zudecken
+  const key = last ? `${last.r}|${last.ts}|${last.by}` : '';
+  if (key !== boardReveal.key) boardReveal = { key, dots: false, result: false };
+  renderBoardExtras(last);
   $('#boardList').innerHTML = list.map((t) =>
     `<div class="${t === last ? 'last' : ''}" style="background:${colorOf(t)}">${fmt(t)}</div>`).join('');
 }
@@ -655,7 +695,9 @@ async function changeGame(patch) {
     renderDrawer();
     return;
   }
-  S = { ...next, excluded: S.excluded.filter((r) => r === 0) };
+  // Neue Aufgaben: Topf wieder voll (bis auf die 0). Nur „nur einmal“ geändert: Topf bleibt.
+  const onlyUnique = Object.keys(patch).every((k) => k === 'unique');
+  S = { ...next, excluded: onlyUnique ? S.excluded : S.excluded.filter((r) => r === 0) };
   pool = buildPool(S);
   net.gameTs = Date.now();
   newRound();
@@ -697,7 +739,7 @@ function renderDrawer() {
   for (const sec of $$('#drawerBody section')) sec.hidden = sec.dataset.tab !== S.settingsTab;
 
   // Spiel: gewürfelte Aufgaben
-  $('#drawnCount').textContent = `${doneInTopf()} von ${pool.topf.length}`;
+  $('#drawnCount').textContent = `${doneCount()} von ${totalCount()}`;
   $('#drawnHint').textContent = state.drawnSort === 'size'
     ? 'Nach Ergebnis sortiert, zum Prüfen bei „Bingo!“. Die neueste ist gelb umrandet.'
     : 'In der Reihenfolge, in der sie gewürfelt wurden. Die neueste ist gelb umrandet.';
@@ -738,6 +780,7 @@ function renderDrawer() {
   $('#chkCrossing').checked = S.crossing;
   $('#rowGrid').innerHTML = toggleGridHtml(ALL_ROWS, (r) => S.rows.includes(r), (r) => `${r}er`);
   $('#chkSquares').checked = S.squares;
+  for (const b of $$('#uniqueSeg [data-unique]')) b.classList.toggle('on', b.dataset.unique === S.unique);
 
   // Dieses iPad
   $('#colorRow').innerHTML = Object.entries(COLORS).map(([k, c]) =>
@@ -752,7 +795,7 @@ function renderDrawer() {
   $('#volVal').textContent = `${Math.round(S.volume * 100)} %`;
   $('#soundList').innerHTML = SOUND_LIST.map((s) =>
     `<button data-sound="${s.key}" class="${s.key === S.sound ? 'on' : ''}" aria-pressed="${s.key === S.sound}">${s.name}</button>`).join('');
-  $('#rowFullscreen').hidden = !canFullscreen || isFullscreen();
+  renderFullscreen();
 
   renderSwitch();
   renderSync();
@@ -766,6 +809,16 @@ function closeDrawer() { $('#drawer').hidden = true; }
 const fsTarget = document.documentElement;
 const canFullscreen = !!(fsTarget.requestFullscreen || fsTarget.webkitRequestFullscreen);
 const isFullscreen = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+// Vom Home-Bildschirm gestartet: läuft schon ohne Browser-Leiste, Vollbild-Knopf überflüssig
+const isHomeApp = () => navigator.standalone === true ||
+  !!(window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches);
+
+// Vollbild nur über die Knöpfe (⚙️ → Dieses iPad und auf der Tafel), nicht mehr automatisch
+function renderFullscreen() {
+  const hide = !canFullscreen || isFullscreen() || isHomeApp();
+  $('#rowFullscreen').hidden = hide;
+  $('#btnBoardFs').hidden = hide;
+}
 
 function requestFullscreen() {
   if (!canFullscreen || isFullscreen()) return;
@@ -848,6 +901,10 @@ function bind() {
     const rows = S.rows.includes(r) ? S.rows.filter((x) => x !== r) : [...S.rows, r].sort((a, c) => a - c);
     changeGame({ rows });
   });
+  $('#uniqueSeg').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-unique]');
+    if (b) changeGame({ unique: b.dataset.unique });
+  });
   $('#btnRowsCore').addEventListener('click', () => changeGame({ rows: CORE_ROWS }));
   $('#btnRowsAll').addEventListener('click', () => changeGame({ rows: ALL_ROWS }));
 
@@ -893,6 +950,11 @@ function bind() {
   });
   $('#btnTestVoice').addEventListener('click', () => { initAudio(); announce({ a: 7, op: '+', b: 3 }); });
   $('#btnFullscreen').addEventListener('click', () => { requestFullscreen(); closeDrawer(); });
+  $('#btnBoardFs').addEventListener('click', requestFullscreen);
+  $('#btnBoardDots').addEventListener('click', () => setBoardReveal('dots', true));
+  $('#btnBoardResult').addEventListener('click', () => setBoardReveal('result', true));
+  $('#boardDots').addEventListener('click', () => setBoardReveal('dots', false));
+  $('#boardResult').addEventListener('click', () => setBoardReveal('result', false));
   document.addEventListener('fullscreenchange', renderDrawer);
   document.addEventListener('webkitfullscreenchange', renderDrawer);
 }
@@ -904,6 +966,7 @@ bind();
 bindSwitch();
 bindSync();
 bindGuide();
+renderFullscreen();
 renderStartText();
 backToTouch();
 connect();
