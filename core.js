@@ -12,7 +12,8 @@ const DEFAULTS = {
   rows: CORE_ROWS, squares: true,
   excluded: [],          // aus dem Topf genommene Ergebnisse
   speech: true, volume: 1,
-  dots: true, resultBtn: false, sound: 'trommel', fxConfetti: true,
+  dotsShow: 'always', resultShow: 'off',   // Punktebild und Ergebnis: off, tap (Knopf), always
+  sound: 'trommel', fxConfetti: true,
   settingsTab: 'spiel',   // zuletzt geöffneter Reiter in ⚙️
 };
 
@@ -60,11 +61,30 @@ function loadStore() {
   // frühere Einstellung „Trommelwirbel aus“ übernehmen
   if (data.settings && data.settings.fxDrum === false && !data.settings.sound) settings.sound = 'aus';
   delete settings.fxDrum;
+  // frühere Schalter „Punktebild“ und „Ergebnis-Knopf“ übernehmen
+  const old = data.settings || {};
+  if (!old.dotsShow && typeof old.dots === 'boolean') settings.dotsShow = old.dots ? 'always' : 'off';
+  if (!old.resultShow && typeof old.resultBtn === 'boolean') settings.resultShow = old.resultBtn ? 'tap' : 'off';
+  delete settings.dots;
+  delete settings.resultBtn;
+  // Ältere Spielstände haben noch keine Zeitstempel: Reihenfolge beibehalten
+  const history = (data.history || []).map((t, i) => ({ ts: i + 1, by: '', ...t }));
   return {
     settings,
-    history: data.history || [],
-    used: data.used || [],
+    history,
+    net: { code: '', server: 0, gen: '', genTs: 0, gameTs: 0, boardMode: false, ...(data.net || {}) },
   };
+}
+
+// Einstellungen, die bei mehreren verbundenen iPads für alle gelten
+const GAME_KEYS = ['mode', 'max', 'crossing', 'rows', 'squares', 'excluded'];
+const gameOf = (s) => Object.fromEntries(GAME_KEYS.map((k) => [k, s[k]]));
+
+function randomId(n) {
+  const abc = 'abcdefghjkmnpqrstuvwxyz23456789';
+  const buf = new Uint8Array(n);
+  crypto.getRandomValues(buf);
+  return Array.from(buf, (b) => abc[b % abc.length]).join('');
 }
 
 function saveStore(data) {

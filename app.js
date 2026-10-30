@@ -9,22 +9,23 @@ const CONFETTI_COLORS = ['#f0c020', '#ffffff', '#4dabf7', '#ff6b6b', '#7bd389'];
 const stored = loadStore();
 let S = stored.settings;
 const state = {
-  history: stored.history,
-  used: new Set(stored.used),   // Ergebnisse, die in dieser Runde schon dran waren
-  current: stored.history[stored.history.length - 1] || null,
+  history: stored.history,   // gewürfelte Aufgaben dieser Runde { a, op, b, r, ts, by }
+  current: null,
   rolling: false,
   drawnSort: 'order',
 };
+const net = stored.net;      // mehrere iPads: Spielcode, Server, Runde (sync.js)
+if (!net.gen) { net.gen = randomId(10); net.genTs = Date.now(); }
 let pool = buildPool(S);
 
 function save() {
-  saveStore({ settings: S, history: state.history, used: [...state.used] });
+  saveStore({ settings: S, history: state.history, net });
 }
 
 // ---------- Auslosen: jedes Ergebnis im Topf einmal pro Runde ----------
 
-const leftInTopf = () => pool.topf.filter((r) => !state.used.has(r));
-const doneInTopf = () => pool.topf.filter((r) => state.used.has(r)).length;
+const leftInTopf = () => { const used = usedResults(); return pool.topf.filter((r) => !used.has(r)); };
+const doneInTopf = () => { const seen = new Set(visibleHistory().map((t) => t.r)); return pool.topf.filter((r) => seen.has(r)).length; };
 const countText = () => `Bereits gewürfelt: ${doneInTopf()} von ${pool.topf.length}`;
 
 function draw() {
@@ -237,7 +238,6 @@ function arrayHtml(rows, cols) {
 }
 
 function dotsHtml(t) {
-  if (!S.dots) return '';
   if (t.op === '+') {
     if (t.a > 20 || t.b > 20) return '';
     return framesHtml(t.a) + '<span class="sign">+</span>' + framesHtml(t.b, 'b');
@@ -261,6 +261,7 @@ function showScreen(name) {
   $('#screenTouch').hidden = name !== 'touch';
   $('#screenTask').hidden = name !== 'task';
   $('#screenDone').hidden = name !== 'done';
+  $('#screenBoard').hidden = name !== 'board';
 }
 
 function renderTouchCount() {
@@ -269,16 +270,20 @@ function renderTouchCount() {
   el.hidden = doneInTopf() === 0;
 }
 
+// Rollt mindestens ROLL_MS lang, mit mehreren iPads weiter, bis der Server die Aufgabe bestätigt
 function rollAnimation(el) {
   return new Promise((resolve) => {
     let idx = 0;
+    let nextAt = ROLL_MS[0];
     const t0 = performance.now();
     (function frame(now) {
-      if (now - t0 >= ROLL_MS[idx]) {
+      const elapsed = now - t0;
+      if (elapsed >= nextAt) {
         el.innerHTML = taskHtml(pick(pool.tasks));
         idx++;
+        nextAt = idx < ROLL_MS.length ? ROLL_MS[idx] : elapsed + 120;
       }
-      if (idx < ROLL_MS.length) requestAnimationFrame(frame);
+      if (idx < ROLL_MS.length || !claimSettled(now)) requestAnimationFrame(frame);
       else setTimeout(resolve, 120);
     })(t0);
   });
@@ -293,27 +298,27 @@ function showDone(title, hint) {
 
 let triedFullscreen = false;
 
+const showAllDone = () => showDone('Alle Aufgaben wurden gewürfelt! 🎉', net.code
+  ? 'Neues Spiel über ⚙️ → Spiel → Neues Spiel.'
+  : 'Drücke „Weiter“, um neu zu starten.');
+
 async function roll() {
-  if (state.rolling) return;
+  if (state.rolling || net.boardMode) return;
   initAudio();
   // Beim ersten Tippen ins Vollbild (geht nur als Reaktion auf einen Tipp)
   if (!triedFullscreen) { triedFullscreen = true; requestFullscreen(); }
-  const d = draw();
-  if (d && d.t) preloadVoice(d.t);
-  if (!d) {
+  if (!pool.topf.length) {
     showDone('Keine Zahlen im Topf.', 'Über ⚙️ unten links Zahlen in den Topf legen.');
     return;
   }
-  if (d.done) {
-    showDone('Alle Aufgaben wurden gewürfelt! 🎉', 'Drücke „Weiter“, um neu zu starten.');
-    return;
-  }
+  if (!leftInTopf().length) { showAllDone(); return; }
 
   state.rolling = true;
+  makeClaim();   // Ergebnis gleich reservieren (sync.js), aufgedeckt wird nach dem Rollen
   stopSpeech();
   stopConfetti();
   showScreen('task');
-  showResultControls(null);
+  showExtras(null);
   $('#btnWeiter').hidden = true;
   const el = $('#task');
   $('#dots').innerHTML = '';
@@ -322,17 +327,20 @@ async function roll() {
   if (out) currentSound().roll(audioCtx, out, audioCtx.currentTime + 0.02, rollTicks());
   await rollAnimation(el);
   el.classList.remove('rolling');
+  const t = releaseClaim();
+  if (!t) {
+    // Andere iPads haben inzwischen die letzten Ergebnisse gewürfelt
+    state.rolling = false;
+    showAllDone();
+    renderTouchCount();
+    return;
+  }
   if (out) currentSound().finale(audioCtx, out, audioCtx.currentTime + 0.01);
-
-  const t = d.t;
   state.current = t;
-  state.history.push(t);
-  state.used.add(t.r);
   save();
 
   el.innerHTML = taskHtml(t);
-  $('#dots').innerHTML = dotsHtml(t);
-  showResultControls(t);
+  showExtras(t);
   state.rolling = false;
   $('#btnWeiter').hidden = false;
   renderTouchCount();
@@ -340,11 +348,14 @@ async function roll() {
   announce(t, currentSound().speechDelay);
 }
 
-// Ergebnis-Knopf (optional): erst der Knopf, nach dem Antippen das Ergebnis an seiner Stelle
-function showResultControls(t) {
+// Punktebild und Ergebnis unter der Aufgabe: aus, auf Antippen (Knopf) oder immer
+function showExtras(t) {
+  const dots = t ? dotsHtml(t) : '';
+  $('#dots').innerHTML = S.dotsShow === 'always' ? dots : '';
+  $('#btnDots').hidden = !(dots && S.dotsShow === 'tap');
   $('#result').textContent = t ? `= ${t.r}` : '';
-  $('#result').hidden = true;
-  $('#btnResult').hidden = !(t && S.resultBtn);
+  $('#result').hidden = !(t && S.resultShow === 'always');
+  $('#btnResult').hidden = !(t && S.resultShow === 'tap');
 }
 
 function repeatCurrent() {
@@ -361,7 +372,9 @@ function weiter() {
   stopSpeech();
   stopConfetti();
   $('#btnWeiter').hidden = true;
-  if (!$('#screenDone').hidden && pool.topf.length) newRound();
+  // Alle gewürfelt: allein startet „Weiter“ neu. Mit mehreren iPads setzt nur die Lehrkraft
+  // über ⚙️ zurück, damit kein Kind das Spiel aller beendet.
+  if (!$('#screenDone').hidden && pool.topf.length && !net.code) newRound();
   renderTouchCount();
   showScreen('touch');
 }
@@ -369,27 +382,60 @@ function weiter() {
 function backToTouch() {
   stopSpeech();
   stopConfetti();
-  $('#btnWeiter').hidden = true;
-  showScreen('touch');
-  renderTouchCount();
-}
-
-function newRound() {
-  state.history = [];
-  state.used.clear();
   state.current = null;
-  save();
+  $('#btnWeiter').hidden = true;
+  showScreen(net.boardMode ? 'board' : 'touch');
+  renderTouchCount();
+  renderBoard();
 }
 
-// Letzte Aufgabe zurücknehmen: aus Verlauf und "schon dran" entfernen
-function undoLast() {
-  const t = state.history.pop();
-  if (!t) return;
-  if (!state.history.some((h) => h.r === t.r)) state.used.delete(t.r);
-  state.current = state.history[state.history.length - 1] || null;
+// Neue Runde: neue Rundenkennung, damit alle verbundenen iPads den Stand übernehmen
+function newRound(history = []) {
+  state.history = history;
+  state.current = null;
+  net.gen = randomId(10);
+  net.genTs = Date.now();
   save();
+  publish();
+}
+
+// Letzte Aufgabe zurücknehmen. Wie beim ABC-Bingo beginnt dafür eine neue Runde ohne diese
+// Aufgabe, sonst käme sie beim Abgleich von den anderen iPads wieder zurück.
+function undoLast() {
+  const last = visibleHistory().pop();
+  if (!last || state.rolling) return;
+  newRound(state.history.filter((t) => t !== last));
   backToTouch();
   renderDrawer();
+}
+
+// Stand von einem anderen iPad übernommen (sync.js)
+function onRemote(roundChanged) {
+  save();
+  if (roundChanged && !state.rolling) backToTouch();
+  renderTouchCount();
+  renderBoard();
+  if (!$('#drawer').hidden) renderDrawer();
+}
+
+// ---------- Tafel-Ansicht ----------
+
+let boardShownLast = null;
+
+function renderBoard() {
+  const list = visibleHistory();
+  const last = list[list.length - 1] || null;
+  $('#boardCount').textContent = net.code ? countText() : 'Nicht verbunden: ⚙️ → Verbinden';
+  const lastEl = $('#boardLast');
+  lastEl.innerHTML = last ? `<span>${taskHtml(last)}</span>` : '';
+  if (last && last !== boardShownLast && !$('#screenBoard').hidden) {
+    lastEl.classList.remove('pop');
+    void lastEl.offsetWidth;   // Animation neu starten
+    lastEl.classList.add('pop');
+  }
+  boardShownLast = last;
+  $('#boardList').innerHTML = list.map((t) =>
+    `<div class="${t === last ? 'last' : ''}">${fmt(t)}</div>`).join('');
 }
 
 // ---------- Einstellungen ändern ----------
@@ -420,12 +466,15 @@ async function changeGame(patch) {
   const next = { ...S, ...patch };
   if (JSON.stringify(next) === JSON.stringify(S)) return;
   if (state.history.length
-      && !(await askConfirm('Damit beginnt ein neues Spiel. Die bisher gewürfelten Aufgaben werden gelöscht.'))) {
+      && !(await askConfirm(net.code
+        ? 'Damit beginnt ein neues Spiel für alle verbundenen iPads. Die bisher gewürfelten Aufgaben werden gelöscht.'
+        : 'Damit beginnt ein neues Spiel. Die bisher gewürfelten Aufgaben werden gelöscht.'))) {
     renderDrawer();
     return;
   }
   S = { ...next, excluded: S.excluded.filter((r) => r === 0) };
   pool = buildPool(S);
+  net.gameTs = Date.now();
   newRound();
   backToTouch();
   renderDrawer();
@@ -435,7 +484,9 @@ async function changeGame(patch) {
 function setExcluded(list) {
   S.excluded = [...new Set(list)].sort((a, b) => a - b);
   pool = buildPool(S);
+  net.gameTs = Date.now();
   save();
+  publish();
   renderTouchCount();
   renderDrawer();
 }
@@ -444,8 +495,7 @@ function setOption(key, value) {
   S[key] = value;
   save();
   const taskShown = state.current && !$('#screenTask').hidden && !state.rolling;
-  if (key === 'dots' && taskShown) $('#dots').innerHTML = dotsHtml(state.current);
-  if (key === 'resultBtn' && taskShown) showResultControls(state.current);
+  if ((key === 'dotsShow' || key === 'resultShow') && taskShown) showExtras(state.current);
   renderDrawer();
 }
 
@@ -470,20 +520,21 @@ function renderDrawer() {
     : 'In der Reihenfolge, in der sie gewürfelt wurden. Die neueste ist gelb umrandet.';
   $('#btnSort').textContent = state.drawnSort === 'size' ? 'In Reihenfolge zeigen' : 'Nach Größe sortieren';
   const box = $('#drawnTasks');
-  if (!state.history.length) {
+  const drawn = visibleHistory();
+  if (!drawn.length) {
     box.innerHTML = '<span class="drawn-empty">Noch nichts gewürfelt.</span>';
   } else {
-    const last = state.history[state.history.length - 1];
+    const last = drawn[drawn.length - 1];
     const list = state.drawnSort === 'size'
-      ? [...state.history].sort((a, b) => a.r - b.r)
-      : state.history;
+      ? [...drawn].sort((a, b) => a.r - b.r)
+      : drawn;
     box.innerHTML = list.map((t) => (state.drawnSort === 'size'
       ? `<span class="chip ${t === last ? 'last' : ''}">${t.r}<small>${fmt(t)}</small></span>`
       : `<span class="chip ${t === last ? 'last' : ''}">${fmt(t)}<small>= ${t.r}</small></span>`)).join('');
   }
-  $('#btnUndo').disabled = !state.history.length;
+  $('#btnUndo').disabled = !drawn.length;
   $('#btnReset').disabled = !state.history.length;
-  $('#btnSort').hidden = state.history.length < 2;
+  $('#btnSort').hidden = drawn.length < 2;
 
   // Spiel: Topf
   const ex = new Set(S.excluded);
@@ -511,10 +562,14 @@ function renderDrawer() {
     if (el.type === 'checkbox') el.checked = !!v;
     else el.value = v;
   }
+  for (const b of $$('#dotsSeg [data-show]')) b.classList.toggle('on', b.dataset.show === S.dotsShow);
+  for (const b of $$('#resultSeg [data-show]')) b.classList.toggle('on', b.dataset.show === S.resultShow);
   $('#volVal').textContent = `${Math.round(S.volume * 100)} %`;
   $('#soundList').innerHTML = SOUND_LIST.map((s) =>
     `<button data-sound="${s.key}" class="${s.key === S.sound ? 'on' : ''}" aria-pressed="${s.key === S.sound}">${s.name}</button>`).join('');
   $('#rowFullscreen').hidden = !canFullscreen || isFullscreen();
+
+  renderSync();
 }
 
 function openDrawer() { renderDrawer(); $('#drawer').hidden = false; }
@@ -546,6 +601,11 @@ function bind() {
     $('#btnResult').hidden = true;
     $('#result').hidden = false;
   });
+  $('#btnDots').addEventListener('click', (e) => {
+    e.stopPropagation();
+    $('#btnDots').hidden = true;
+    if (state.current) $('#dots').innerHTML = dotsHtml(state.current);
+  });
   $('#btnWeiter').addEventListener('click', weiter);
   $('#btnGear').addEventListener('click', openDrawer);
   $('#btnCloseDrawer').addEventListener('click', closeDrawer);
@@ -553,7 +613,7 @@ function bind() {
 
   // Tastatur: Leertaste/Enter würfelt bzw. drückt „Weiter“
   document.addEventListener('keydown', (e) => {
-    if (!$('#drawer').hidden || $('#confirmDlg').open) return;
+    if (!$('#drawer').hidden || $('#confirmDlg').open || net.boardMode) return;
     if (e.code !== 'Space' && e.code !== 'Enter') return;
     e.preventDefault();
     if (!$('#btnWeiter').hidden) weiter();
@@ -561,9 +621,16 @@ function bind() {
   });
 
   // Schublade
-  $('#btnUndo').addEventListener('click', undoLast);
+  $('#btnUndo').addEventListener('click', async () => {
+    const last = visibleHistory().pop();
+    if (!last || state.rolling) return;
+    if (net.code && !(await askConfirm(`„${fmt(last)}“ für alle verbundenen iPads zurücknehmen?`))) return;
+    undoLast();
+  });
   $('#btnReset').addEventListener('click', async () => {
-    if (!(await askConfirm('Neues Spiel starten? Die bisher gewürfelten Aufgaben werden gelöscht.'))) return;
+    if (!(await askConfirm(net.code
+      ? 'Neues Spiel für alle verbundenen iPads starten? Die bisher gewürfelten Aufgaben werden gelöscht.'
+      : 'Neues Spiel starten? Die bisher gewürfelten Aufgaben werden gelöscht.'))) return;
     newRound();
     backToTouch();
     renderDrawer();
@@ -620,6 +687,14 @@ function bind() {
     const read = () => (el.type === 'checkbox' ? el.checked : el.type === 'range' ? Number(el.value) : el.value);
     el.addEventListener(el.type === 'range' ? 'input' : 'change', () => setOption(key, read()));
   }
+  $('#dotsSeg').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-show]');
+    if (b) setOption('dotsShow', b.dataset.show);
+  });
+  $('#resultSeg').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-show]');
+    if (b) setOption('resultShow', b.dataset.show);
+  });
   $('#soundList').addEventListener('click', (e) => {
     const b = e.target.closest('[data-sound]');
     if (!b) return;
@@ -636,6 +711,8 @@ function bind() {
 
 // ---------- Start ----------
 
+joinFromUrl();
 bind();
-renderTouchCount();
-showScreen('touch');
+bindSync();
+backToTouch();
+connect();

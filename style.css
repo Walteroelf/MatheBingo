@@ -182,10 +182,11 @@ body.game {
   background: var(--blue); color: #fff; font-weight: 700;
 }
 #drawerTabs {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.3rem;
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.3rem;
   margin: 0 1.2rem; padding: 0.3rem; border-radius: 14px; background: #dde2e7;
 }
 #drawerTabs button {
+  position: relative;
   padding: 0.6rem 0.2rem; border: none; border-radius: 11px;
   background: transparent; color: #333; font-size: 0.95rem; font-weight: 700;
 }
@@ -244,6 +245,7 @@ select { padding: 9px 12px; border-radius: 10px; border: 2px solid #ccc; backgro
   border: 2px solid var(--blue); background: #fff; color: var(--blue); font-size: 1.3rem;
 }
 .seg button.on { background: var(--blue); color: #fff; }
+.seg.words button { font-size: 1rem; font-weight: 700; padding: 10px 4px; }
 
 .toggle-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(2.8rem, 1fr)); gap: 0.4rem; }
 .toggle-grid button {
@@ -270,8 +272,58 @@ select { padding: 9px 12px; border-radius: 10px; border: 2px solid #ccc; backgro
 .chip.last { box-shadow: 0 0 0 3px var(--yellow); }
 .drawn-empty { font-size: 0.85rem; color: #999; align-self: center; }
 
+/* Mehrere iPads */
+#tabDot, #syncDot { border-radius: 50%; background: #f0a020; }
+#tabDot { position: absolute; top: 0.45rem; right: 0.5rem; width: 10px; height: 10px; }
+#syncDot {
+  position: fixed; top: calc(1rem + env(safe-area-inset-top)); right: calc(1rem + env(safe-area-inset-right));
+  width: 14px; height: 14px; border: 2px solid rgba(255, 255, 255, 0.8);
+  pointer-events: none; z-index: 70;
+}
+#tabDot.on, #syncDot.on { background: #3ddc5a; }
+#codeBig {
+  font-size: 1.8rem; font-weight: 800; letter-spacing: 0.12em; text-align: center;
+  padding: 0.5rem; border-radius: 12px; background: #f6f8fa; user-select: text; -webkit-user-select: text;
+}
+.bigbtn { width: 100%; padding: 14px 16px; font-size: 1.05rem; }
+#joinInput {
+  flex: 1; min-width: 10rem; padding: 10px 12px; border-radius: 10px;
+  border: 2px solid #ccc; font-size: 1.1rem; letter-spacing: 0.08em;
+  -webkit-user-select: text; user-select: text;
+}
+#joinError { color: #b22222; }
+#boardLink { word-break: break-all; user-select: text; -webkit-user-select: text; }
+.qr-box { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
+.qr { width: min(260px, 70vw); background: #fff; padding: 6px; border-radius: 10px; }
+.qr svg { display: block; width: 100%; height: auto; }
+
+/* Tafel-Ansicht für Beamer und Smartboard */
+#screenBoard {
+  background: var(--blue-dark); color: #fff; justify-content: flex-start;
+  padding: calc(1.2rem + env(safe-area-inset-top)) 1rem 7rem;
+}
+#boardCount { font-size: clamp(1rem, 2.4vw, 1.8rem); opacity: 0.8; align-self: flex-start; }
+#boardLast {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  font-size: min(14vw, 26vh); line-height: 1; white-space: nowrap;
+}
+#boardLast > span {
+  display: flex; align-items: center; gap: 0.18em;
+  border-radius: 0.12em; padding: 0.04em 0.2em; background: rgba(255, 255, 255, 0.12);
+}
+#boardLast .op { color: var(--yellow); }
+#boardLast .op.mul { font-size: 1.05em; line-height: 0.5; }
+#boardLast.pop { animation: pop 0.5s ease-out; }
+@keyframes pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+#boardList { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; max-width: 100%; }
+#boardList div {
+  background: rgba(255, 255, 255, 0.15); border-radius: 12px;
+  padding: 0.2rem 0.6rem; font-size: clamp(1.3rem, 3vw, 2.4rem); white-space: nowrap;
+}
+#boardList div.last { box-shadow: 0 0 0 4px var(--yellow); }
+
 @media (max-width: 520px) {
-  #drawerTabs button { font-size: 0.8rem; }
+  #drawerTabs button { font-size: 0.7rem; }
   .setrow .seg { min-width: 0; width: 100%; max-width: none; }
 }
 

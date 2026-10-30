@@ -9,14 +9,15 @@ ohne Installation und ohne Anmeldung: https://walteroelf.github.io/MatheBingo/
 - **„Bitte berühren“**: Ein Tipp irgendwo auf den Bildschirm (oder die Leertaste) würfelt.
   Beim ersten Tipp geht die App ins Vollbild.
 - Die Aufgabe rollt mit dem gewählten Würfel-Klang aus, erscheint groß mit Konfetti und wird vorgelesen.
-  Auf Wunsch gibt es ein Punktebild (Zehnerfelder bei Plus/Minus, Punktefeld bei Mal).
+  Darunter auf Wunsch Punktebild (Zehnerfelder bei Plus/Minus, Punktefeld bei Mal) und Ergebnis,
+  jeweils aus, auf Antippen (Knopf) oder immer.
 - **Tipp auf die Aufgabe**: Sie wird nochmal vorgelesen.
 - **„Weiter“** unten rechts: zurück zu „Bitte berühren“.
 - Jedes Ergebnis im Topf kommt einmal pro Runde. Sind alle dran, erscheint „Alle Aufgaben wurden gewürfelt! 🎉“.
 
 ## Einstellungen (⚙️ unten links)
 
-Aufgebaut wie beim ABC-Bingo, mit vier Reitern. Der zuletzt geöffnete Reiter wird gemerkt.
+Aufgebaut wie beim ABC-Bingo, mit fünf Reitern. Der zuletzt geöffnete Reiter wird gemerkt.
 
 - **🎲 Spiel**
   - *Gewürfelte Aufgaben* (x von y): neueste gelb umrandet, „Letzte zurücknehmen“, „Neues Spiel“,
@@ -26,11 +27,41 @@ Aufgebaut wie beim ABC-Bingo, mit vier Reitern. Der zuletzt geöffnete Reiter wi
 - **🧮 Aufgaben**: Schnellwahl (Plus bis 10 … 1×1 Kernaufgaben, Ganzes 1×1, Geteilt Kernaufgaben),
   Rechenart, Zahlenraum bis 5 … 100, Zehnerübergang, Einmaleins-Reihen, Quadrataufgaben.
   Eine Änderung hier startet ein neues Spiel.
-- **📱 Dieses iPad**: Vorlesen, Lautstärke, Stimmprobe, Punktebild, Ergebnis-Knopf (zeigt auf Tipp das Ergebnis
-  mittig unter der Aufgabe), Würfel-Klang, Konfetti, Vollbild.
+- **📱 Dieses iPad**: Vorlesen, Lautstärke, Stimmprobe, Punktebild und Ergebnis (je „Aus“, „Auf Antippen“,
+  „Immer“; bei „Auf Antippen“ deckt ein Knopf unter der Aufgabe es auf), Würfel-Klang, Konfetti, Vollbild.
   Würfel-Klänge (Antippen zum Anhören und Auswählen): 🥁 Trommelwirbel, 🎺 Tusch, 🎡 Glücksrad, 🎵 Xylophon,
   ✨ Zauberstab, 🔇 Kein Klang. Alle Klänge werden im Browser erzeugt (`sounds.js`).
+- **📡 Verbinden**: Mehrere iPads und die Tafel, siehe unten. Ein Punkt am Reiter zeigt den Verbindungsstatus.
 - **➕ Mehr**: Bingokarten und Lottoscheine, Anleitung.
+
+## Mehrere iPads
+
+1. Auf einem iPad: ⚙️ → Verbinden → **Gemeinsames Spiel starten**. Es erscheinen groß der Spielcode
+   (z. B. `r9j6 3qz7 h2`) und ein QR-Code.
+2. Auf jedem weiteren iPad den QR-Code mit der Kamera scannen, **oder** dort unter ⚙️ → Verbinden →
+   **Einem Spiel beitreten** den Spielcode eintippen.
+3. Ein grüner Punkt oben rechts heißt „verbunden“, ein oranger „gerade keine Verbindung“.
+
+Für alle verbundenen Geräte gemeinsam: gewürfelte Aufgaben (jedes Ergebnis kommt nur einmal, egal auf welchem
+iPad), Aufgaben-Einstellungen und Topf, „Letzte zurücknehmen“ und „Neues Spiel“. Würfeln zwei iPads im selben
+Moment dasselbe Ergebnis, würfelt eines davon unbemerkt neu. Die Einstellungen unter „Dieses iPad“
+(Vorlesen, Klang, Punktebild, Ergebnis …) bleiben auf jedem Gerät für sich.
+
+Gut zu wissen:
+
+- Der Abgleich braucht Internet. Vor dem ersten Einsatz einmal im Schul-WLAN testen: Wird der Punkt grün, klappt es.
+- Mit mehreren iPads setzt „Weiter“ nach der letzten Aufgabe das Spiel **nicht** zurück, damit kein Kind das
+  Spiel aller beendet. Neues Spiel über ⚙️ → Spiel → **Neues Spiel**.
+- Ohne Verbindung würfelt ein iPad allein weiter. Nur in diesem Fall kann ein Ergebnis doppelt kommen.
+- Die Geräte tauschen über einen öffentlichen Test-Server (HiveMQ, als Ersatz EMQX) nur Aufgaben,
+  Aufgaben-Einstellungen und einen zufälligen Spielcode aus. Keine Namen, keine Gerätedaten.
+  Mathe-Bingo und ABC-Bingo haben getrennte Spielcodes.
+
+### Tafel-Ansicht (Beamer, Smartboard)
+
+Verbinden → Tafel-Ansicht: **QR-Code für die Tafel** scannen, **Link kopieren** und auf dem Beamer-Rechner
+öffnen, oder **Dieses Gerät als Tafel**. Die Tafel zeigt die neueste Aufgabe groß und darunter alle bisher
+gewürfelten Aufgaben, ohne Ergebnisse.
 
 ## Bingokarten und Lottoscheine
 
@@ -64,6 +95,9 @@ Neu erzeugen: `tools/thorsten_audio.py` (Anleitung im Skript), danach die WAV-Da
 - `index.html`, `app.js`: der Würfel
 - `druck.html`, `druck.js`: Bingokarten und Lottoscheine
 - `sounds.js`: Würfel-Klänge
+- `sync.js`: mehrere iPads verbinden, Tafel-Ansicht
+- `lib/`: MQTT.js 5.10.1 und qrcode-generator 1.4.4 (beide MIT, siehe `lib/README.md`),
+  werden erst beim Verbinden geladen
 - `core.js`: gemeinsame Grundlage (Aufgaben, Zahlen-Topf, Speichern)
 - `style.css`: Gestaltung
 - `audio/`: Ansagen mit der Stimme Thorsten (415 kleine m4a-Dateien)
