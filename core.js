@@ -11,6 +11,7 @@ const DEFAULTS = {
   max: 20, crossing: true,
   rows: CORE_ROWS, squares: true,
   excluded: [],          // aus dem Topf genommene Ergebnisse
+  color: 'blau',          // Farbe dieses iPads: gewürfelte Aufgaben erscheinen darin, auch auf der Tafel
   speech: true, volume: 1,
   dotsShow: 'always', resultShow: 'off',   // Punktebild und Ergebnis: off, tap (Knopf), always
   sound: 'trommel', fxConfetti: true,
@@ -20,6 +21,18 @@ const DEFAULTS = {
   lockSec: 5,              // Sperrzeit ohne „Weiter“
   settingsTab: 'spiel',   // zuletzt geöffneter Reiter in ⚙️
 };
+
+// Farben der iPads wie beim ABC-Bingo, etwas dunkler, damit Rechenzeichen und Ergebnis in Gelb lesbar bleiben.
+// Blau ist das bisherige Dunkelblau der Aufgabe.
+const COLORS = {
+  blau:    { hex: '#123a6b', name: 'Blau' },
+  gruen:   { hex: '#2a7d2e', name: 'Grün' },
+  orange:  { hex: '#b8560f', name: 'Orange' },
+  lila:    { hex: '#7b3fa0', name: 'Lila' },
+  tuerkis: { hex: '#12857f', name: 'Türkis' },
+  pink:    { hex: '#c2357a', name: 'Pink' },
+};
+const colorOf = (t) => (COLORS[t && t.c] || COLORS.blau).hex;
 
 const PRESETS = [
   { name: 'Plus bis 10', s: { mode: 'plus', max: 10, crossing: true } },
@@ -71,6 +84,7 @@ function loadStore() {
   if (!old.resultShow && typeof old.resultBtn === 'boolean') settings.resultShow = old.resultBtn ? 'tap' : 'off';
   delete settings.dots;
   delete settings.resultBtn;
+  if (!COLORS[settings.color]) settings.color = DEFAULTS.color;
   // Ältere Spielstände haben noch keine Zeitstempel: Reihenfolge beibehalten
   const history = (data.history || []).map((t, i) => ({ ts: i + 1, by: '', ...t }));
   return {

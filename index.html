@@ -11,7 +11,7 @@
   <title>Mathe-Bingo</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/icon-180.png">
-  <link rel="stylesheet" href="style.css?v=23">
+  <link rel="stylesheet" href="style.css?v=24">
 </head>
 <body class="game">
 
@@ -136,36 +136,13 @@
 
       <!-- ── Dieses iPad ───────────────────────────────────── -->
       <section data-tab="geraet" hidden>
-        <div class="tiny">Diese Einstellungen gelten nur für dieses Gerät.</div>
-
         <div class="scard">
-          <h3>🔊 Vorlesen</h3>
-          <div class="setrow">
-            <label class="switch"><span class="lbl">Aufgabe vorlesen <span class="tiny">Stimme Thorsten</span></span><input type="checkbox" data-opt="speech"></label>
+          <div class="tiny">Diese Einstellungen gelten nur für dieses Gerät.</div>
+          <div class="setrow col">
+            <span class="lbl">Farbe</span>
+            <div id="colorRow"></div>
+            <div class="tiny">Gewürfelte Aufgaben erscheinen in dieser Farbe, auch auf der Tafel.</div>
           </div>
-          <div class="setrow">
-            <label class="lbl" for="optVolume">Lautstärke</label>
-            <div class="ctl vol">
-              <input id="optVolume" type="range" data-opt="volume" min="0.1" max="1" step="0.05">
-              <span class="tiny" id="volVal"></span>
-            </div>
-          </div>
-          <div class="setrow">
-            <span class="lbl">Stimmprobe</span>
-            <button id="btnTestVoice" class="sbtn light">🔊 Probe hören</button>
-          </div>
-        </div>
-
-        <div class="scard">
-          <h3>🥁 Würfel-Klang <span class="tiny">Antippen zum Anhören und Auswählen</span></h3>
-          <div id="soundList" class="sound-list"></div>
-          <div class="setrow">
-            <label class="switch"><span class="lbl">Konfetti beim Ergebnis</span><input type="checkbox" data-opt="fxConfetti"></label>
-          </div>
-        </div>
-
-        <div class="scard">
-          <h3>👀 Unter der Aufgabe</h3>
           <div class="setrow">
             <span class="lbl">Punktebild</span>
             <div class="seg words" id="dotsSeg">
@@ -181,12 +158,37 @@
               <button data-show="tap">Auf Antippen</button>
               <button data-show="always">Immer</button>
             </div>
+            <div class="tiny full">„Auf Antippen“: Unter der Aufgabe erscheint ein Knopf, der Punktebild oder Ergebnis aufdeckt.</div>
           </div>
-          <div class="tiny">„Auf Antippen“: Unter der Aufgabe erscheint ein Knopf, der Punktebild oder Ergebnis aufdeckt.</div>
+          <div class="setrow">
+            <label class="switch"><span class="lbl">Aufgabe vorlesen <span class="tiny">Stimme Thorsten</span></span><input type="checkbox" data-opt="speech"></label>
+          </div>
+          <div class="setrow">
+            <label class="lbl" for="optVolume">Lautstärke</label>
+            <div class="ctl vol">
+              <input id="optVolume" type="range" data-opt="volume" min="0.1" max="1" step="0.05">
+              <span class="tiny" id="volVal"></span>
+            </div>
+          </div>
+          <div class="setrow">
+            <span class="lbl">Stimmprobe</span>
+            <button id="btnTestVoice" class="sbtn light">🔊 Probe hören</button>
+          </div>
+          <div class="setrow col">
+            <span class="lbl">Würfel-Klang <span class="tiny">Antippen zum Anhören und Auswählen</span></span>
+            <div id="soundList" class="sound-list"></div>
+          </div>
+          <div class="setrow">
+            <label class="switch"><span class="lbl">Konfetti beim Ergebnis</span><input type="checkbox" data-opt="fxConfetti"></label>
+          </div>
+          <div class="setrow" id="rowFullscreen">
+            <span class="lbl">Vollbild</span>
+            <button id="btnFullscreen" class="sbtn light">Einschalten</button>
+          </div>
         </div>
 
         <div class="scard">
-          <h3>👆 Würfeln</h3>
+          <h3>Würfeln</h3>
           <div class="setrow">
             <span class="lbl">Würfeln mit</span>
             <div class="seg words" id="trigSeg">
@@ -210,7 +212,7 @@
             <label class="switch"><span class="lbl">„Weiter“-Knopf nach jeder Aufgabe</span><input type="checkbox" id="optWeiter"></label>
           </div>
           <div class="setrow" id="lockRow">
-            <span class="lbl">Sperrzeit</span>
+            <span class="lbl">Sperrzeit nach dem Ergebnis</span>
             <div class="seg words" id="lockSeg">
               <button data-lock="0">0 s</button>
               <button data-lock="3">3 s</button>
@@ -222,12 +224,6 @@
           </div>
         </div>
 
-        <div class="scard" id="rowFullscreen">
-          <div class="setrow">
-            <span class="lbl">Vollbild</span>
-            <button id="btnFullscreen" class="sbtn light">Einschalten</button>
-          </div>
-        </div>
       </section>
 
       <!-- ── Verbinden ─────────────────────────────────────── -->
@@ -316,11 +312,11 @@
   </div>
 </dialog>
 
-<script src="core.js?v=20"></script>
+<script src="core.js?v=21"></script>
 <script src="sounds.js?v=18"></script>
-<script src="sync.js?v=2"></script>
+<script src="sync.js?v=3"></script>
 <script src="guide.js?v=1"></script>
-<script src="app.js?v=23"></script>
+<script src="app.js?v=24"></script>
 <script>
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>

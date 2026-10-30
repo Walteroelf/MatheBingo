@@ -147,7 +147,10 @@ const isNum = (x) => typeof x === 'number' && Number.isFinite(x);
 
 function cleanTask(t) {
   if (!t || !OPS[t.op] || ![t.a, t.b, t.r, t.ts].every(isNum)) return null;
-  return { a: t.a, op: t.op, b: t.b, r: t.r, ts: t.ts, by: typeof t.by === 'string' ? t.by : '' };
+  return {
+    a: t.a, op: t.op, b: t.b, r: t.r, ts: t.ts, by: typeof t.by === 'string' ? t.by : '',
+    c: COLORS[t.c] ? t.c : 'blau',
+  };
 }
 
 function cleanGame(g) {
@@ -241,7 +244,7 @@ function receive(raw) {
 
 // ---------- Würfeln mit Reservierung ----------
 
-const entryOf = (t) => ({ a: t.a, op: t.op, b: t.b, r: t.r, ts: Date.now(), by: DEVICE });
+const entryOf = (t) => ({ a: t.a, op: t.op, b: t.b, r: t.r, ts: Date.now(), by: DEVICE, c: S.color });
 
 function claimNext() {
   const d = draw();

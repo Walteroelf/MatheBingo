@@ -6,7 +6,7 @@
 // Alles andere kommt sofort aus dem Speicher und wird im Hintergrund aufgefrischt.
 // Skripte und CSS haben ?v=N: Eine neue Nummer ist eine neue Adresse und wird frisch geladen.
 // Bei Änderungen an der Dateiliste oder den Ansagen VERSION erhöhen.
-const VERSION = 'mathebingo-v1';
+const VERSION = 'mathebingo-v2';
 
 const FILES = [
   './',
@@ -68,8 +68,9 @@ async function store(req, res) {
   await cache.put(req, res);
 }
 
-function fetchAndStore(req) {
-  return fetch(req).then((res) => {
+function fetchAndStore(req, fresh) {
+  // Eine Seitenanfrage (navigate) lässt sich nicht mit Optionen weiterreichen, darum über die Adresse
+  return (fresh ? fetch(req.url, { cache: 'no-cache' }) : fetch(req)).then((res) => {
     if (res.ok) store(req, res.clone());
     return res;
   });
@@ -82,8 +83,9 @@ function fromCache(req, page) {
     .then((r) => r || Response.error());
 }
 
+// Seiten immer beim Server nachfragen (kurze Rückfrage), nicht aus dem Browser-Zwischenspeicher
 function networkFirst(req) {
-  const net = fetchAndStore(req);
+  const net = fetchAndStore(req, true);
   const timeout = new Promise((res) => setTimeout(res, NET_TIMEOUT_MS))
     .then(() => caches.match(req, { ignoreSearch: true }))
     .then((hit) => hit || net);

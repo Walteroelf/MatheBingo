@@ -193,7 +193,7 @@ function confetti() {
     x: w / 2 + (Math.random() - 0.5) * w * 0.3, y: h * 0.45,
     vx: (Math.random() - 0.5) * 14, vy: -Math.random() * 14 - 4,
     s: 6 + Math.random() * 8, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.4,
-    c: pick(CONFETTI_COLORS),
+    c: pick([COLORS[S.color].hex, ...CONFETTI_COLORS]),
   }));
   const id = ++confettiRun;
   const t0 = performance.now();
@@ -323,6 +323,7 @@ async function roll() {
   makeClaim();   // Ergebnis gleich reservieren (sync.js), aufgedeckt wird nach dem Rollen
   stopSpeech();
   stopConfetti();
+  $('#screenTask').style.background = COLORS[S.color].hex;
   showScreen('task');
   showExtras(null);
   $('#btnWeiter').hidden = true;
@@ -439,7 +440,7 @@ function renderBoard() {
   const last = list[list.length - 1] || null;
   $('#boardCount').textContent = net.code ? countText() : 'Nicht verbunden: ⚙️ → Verbinden';
   const lastEl = $('#boardLast');
-  lastEl.innerHTML = last ? `<span>${taskHtml(last)}</span>` : '';
+  lastEl.innerHTML = last ? `<span style="background:${colorOf(last)}">${taskHtml(last)}</span>` : '';
   if (last && last !== boardShownLast && !$('#screenBoard').hidden) {
     lastEl.classList.remove('pop');
     void lastEl.offsetWidth;   // Animation neu starten
@@ -447,7 +448,7 @@ function renderBoard() {
   }
   boardShownLast = last;
   $('#boardList').innerHTML = list.map((t) =>
-    `<div class="${t === last ? 'last' : ''}">${fmt(t)}</div>`).join('');
+    `<div class="${t === last ? 'last' : ''}" style="background:${colorOf(t)}">${fmt(t)}</div>`).join('');
 }
 
 // ---------- Sperrzeit ohne „Weiter“ ----------
@@ -711,8 +712,8 @@ function renderDrawer() {
       ? [...drawn].sort((a, b) => a.r - b.r)
       : drawn;
     box.innerHTML = list.map((t) => (state.drawnSort === 'size'
-      ? `<span class="chip ${t === last ? 'last' : ''}">${t.r}<small>${fmt(t)}</small></span>`
-      : `<span class="chip ${t === last ? 'last' : ''}">${fmt(t)}<small>= ${t.r}</small></span>`)).join('');
+      ? `<span class="chip ${t === last ? 'last' : ''}" style="background:${colorOf(t)}">${t.r}<small>${fmt(t)}</small></span>`
+      : `<span class="chip ${t === last ? 'last' : ''}" style="background:${colorOf(t)}">${fmt(t)}<small>= ${t.r}</small></span>`)).join('');
   }
   $('#btnUndo').disabled = !drawn.length;
   $('#btnReset').disabled = !state.history.length;
@@ -739,6 +740,8 @@ function renderDrawer() {
   $('#chkSquares').checked = S.squares;
 
   // Dieses iPad
+  $('#colorRow').innerHTML = Object.entries(COLORS).map(([k, c]) =>
+    `<button data-color="${k}" class="${k === S.color ? 'on' : ''}" style="background:${c.hex}" aria-label="Farbe ${c.name}" aria-pressed="${k === S.color}"></button>`).join('');
   for (const el of $$('[data-opt]')) {
     const v = S[el.dataset.opt];
     if (el.type === 'checkbox') el.checked = !!v;
@@ -871,6 +874,14 @@ function bind() {
   $('#resultSeg').addEventListener('click', (e) => {
     const b = e.target.closest('[data-show]');
     if (b) setOption('resultShow', b.dataset.show);
+  });
+  $('#colorRow').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-color]');
+    if (!b) return;
+    S.color = b.dataset.color;
+    save();
+    renderDrawer();
+    if (!$('#screenTask').hidden && !state.rolling) $('#screenTask').style.background = COLORS[S.color].hex;
   });
   $('#soundList').addEventListener('click', (e) => {
     const b = e.target.closest('[data-sound]');

@@ -27,8 +27,10 @@ Aufgebaut wie beim ABC-Bingo, mit fünf Reitern. Der zuletzt geöffnete Reiter w
 - **🧮 Aufgaben**: Schnellwahl (Plus bis 10 … 1×1 Kernaufgaben, Ganzes 1×1, Geteilt Kernaufgaben),
   Rechenart, Zahlenraum bis 5 … 100, Zehnerübergang, Einmaleins-Reihen, Quadrataufgaben.
   Eine Änderung hier startet ein neues Spiel.
-- **📱 Dieses iPad**: Vorlesen, Lautstärke, Stimmprobe, Punktebild und Ergebnis (je „Aus“, „Auf Antippen“,
-  „Immer“; bei „Auf Antippen“ deckt ein Knopf unter der Aufgabe es auf), Würfel-Klang, Konfetti, Vollbild.
+- **📱 Dieses iPad**: aufgebaut wie beim ABC-Bingo. Gilt nur für dieses Gerät: **Farbe** (gewürfelte Aufgaben
+  erscheinen in dieser Farbe, auch in der Liste und auf der Tafel; so sieht man, welches iPad gewürfelt hat),
+  Punktebild und Ergebnis (je „Aus“, „Auf Antippen“, „Immer“; bei „Auf Antippen“ deckt ein Knopf unter der
+  Aufgabe es auf), Vorlesen, Lautstärke, Stimmprobe, Würfel-Klang, Konfetti, Vollbild.
   Unter **Würfeln**: Antippen, Taster oder beides, „Weiter“-Knopf an/aus und Sperrzeit (siehe [Taster](#taster)).
   Würfel-Klänge (Antippen zum Anhören und Auswählen): 🥁 Trommelwirbel, 🎺 Tusch, 🎡 Glücksrad, 🎵 Xylophon,
   ✨ Zauberstab, 🔇 Kein Klang. Alle Klänge werden im Browser erzeugt (`sounds.js`).
@@ -64,9 +66,9 @@ Antippen während der Sperrzeit liest die Aufgabe nochmal vor.
 3. Ein grüner Punkt oben rechts heißt „verbunden“, ein oranger „gerade keine Verbindung“.
 
 Für alle verbundenen Geräte gemeinsam: gewürfelte Aufgaben (jedes Ergebnis kommt nur einmal, egal auf welchem
-iPad), Aufgaben-Einstellungen und Topf, „Letzte zurücknehmen“ und „Neues Spiel“. Würfeln zwei iPads im selben
+iPad, und erscheint in der Farbe des iPads, das es gewürfelt hat), Aufgaben-Einstellungen und Topf, „Letzte zurücknehmen“ und „Neues Spiel“. Würfeln zwei iPads im selben
 Moment dasselbe Ergebnis, würfelt eines davon unbemerkt neu. Die Einstellungen unter „Dieses iPad“
-(Vorlesen, Klang, Punktebild, Ergebnis …) bleiben auf jedem Gerät für sich.
+(Farbe, Vorlesen, Klang, Punktebild, Ergebnis …) bleiben auf jedem Gerät für sich.
 
 Gut zu wissen:
 
@@ -74,7 +76,7 @@ Gut zu wissen:
 - Mit mehreren iPads setzt „Weiter“ nach der letzten Aufgabe das Spiel **nicht** zurück, damit kein Kind das
   Spiel aller beendet. Neues Spiel über ⚙️ → Spiel → **Neues Spiel**.
 - Ohne Verbindung würfelt ein iPad allein weiter. Nur in diesem Fall kann ein Ergebnis doppelt kommen.
-- Die Geräte tauschen über einen öffentlichen Test-Server (HiveMQ, als Ersatz EMQX) nur Aufgaben,
+- Die Geräte tauschen über einen öffentlichen Test-Server (HiveMQ, als Ersatz EMQX) nur Aufgaben, Farben,
   Aufgaben-Einstellungen und einen zufälligen Spielcode aus. Keine Namen, keine Gerätedaten.
   Mathe-Bingo und ABC-Bingo haben getrennte Spielcodes.
 
@@ -82,7 +84,7 @@ Gut zu wissen:
 
 Verbinden → Tafel-Ansicht: **QR-Code für die Tafel** scannen, **Link kopieren** und auf dem Beamer-Rechner
 öffnen, oder **Dieses Gerät als Tafel**. Die Tafel zeigt die neueste Aufgabe groß und darunter alle bisher
-gewürfelten Aufgaben, ohne Ergebnisse.
+gewürfelten Aufgaben, ohne Ergebnisse, jede in der Farbe des iPads, das sie gewürfelt hat.
 
 ## Als App auf den Home-Bildschirm
 
@@ -135,7 +137,7 @@ python3 -c "import json,os;json.dump(sorted(f for f in os.listdir('audio') if f.
 
 - Ohne „Mehrere iPads“ bleibt alles auf dem Gerät.
 - Beim Verbinden tauschen die Geräte über einen öffentlichen Test-Server (HiveMQ, als Ersatz EMQX) nur Aufgaben,
-  Aufgaben-Einstellungen und einen zufälligen Spielcode aus. Keine Namen, keine Gerätedaten.
+  Farben, Aufgaben-Einstellungen und einen zufälligen Spielcode aus. Keine Namen, keine Gerätedaten.
 - Schrift, Ansagen und Bibliotheken liegen im Repo, es werden keine fremden Schrift- oder Bibliotheks-Server
   (CDN) abgefragt.
 
