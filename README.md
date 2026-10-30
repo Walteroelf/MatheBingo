@@ -33,7 +33,7 @@ Aufgebaut wie beim ABC-Bingo, mit fünf Reitern. Der zuletzt geöffnete Reiter w
   Würfel-Klänge (Antippen zum Anhören und Auswählen): 🥁 Trommelwirbel, 🎺 Tusch, 🎡 Glücksrad, 🎵 Xylophon,
   ✨ Zauberstab, 🔇 Kein Klang. Alle Klänge werden im Browser erzeugt (`sounds.js`).
 - **📡 Verbinden**: Mehrere iPads und die Tafel, siehe unten. Ein Punkt am Reiter zeigt den Verbindungsstatus.
-- **➕ Mehr**: Bingokarten und Lottoscheine, Anleitung.
+- **➕ Mehr**: Bingokarten und Lottoscheine, diese Anleitung (öffnet sich in der App).
 
 ## Taster
 
@@ -117,6 +117,7 @@ Neu erzeugen: `tools/thorsten_audio.py` (Anleitung im Skript), danach die WAV-Da
 - `druck.html`, `druck.js`: Bingokarten und Lottoscheine
 - `sounds.js`: Würfel-Klänge
 - `sync.js`: mehrere iPads verbinden, Tafel-Ansicht
+- `guide.js`: zeigt diese Anleitung (`README.md`) in der App an
 - `lib/`: MQTT.js 5.10.1 und qrcode-generator 1.4.4 (beide MIT, siehe `lib/README.md`),
   werden erst beim Verbinden geladen
 - `core.js`: gemeinsame Grundlage (Aufgaben, Zahlen-Topf, Speichern)

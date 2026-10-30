@@ -490,7 +490,7 @@ const isDone = () => !$('#screenDone').hidden;
 const switchClick = () => S.switchKey === 'mouse' && switchOK() && lastPointer === 'mouse';
 
 function switchPress() {
-  if (state.rolling || net.boardMode || !$('#drawer').hidden || $('#confirmDlg').open || isDone()) return;
+  if (state.rolling || net.boardMode || !$('#drawer').hidden || !$('#guide').hidden || $('#confirmDlg').open || isDone()) return;
   if (state.current && (S.weiter || Date.now() < lockUntil)) return;
   if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
   roll();
@@ -580,7 +580,7 @@ function bindSwitch() {
       return;
     }
     if (!switchOK() || S.switchKey !== 'mouse') return;
-    if (e.target.closest('#drawer, #btnGear, #btnWeiter, #confirmDlg')) return;
+    if (e.target.closest('#drawer, #guide, #btnGear, #btnWeiter, #confirmDlg')) return;
     initAudio();
     switchPress();
   }, true);
@@ -892,6 +892,7 @@ joinFromUrl();
 bind();
 bindSwitch();
 bindSync();
+bindGuide();
 renderStartText();
 backToTouch();
 connect();

@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="Mathe-Bingo">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Mathe-Bingo</title>
-  <link rel="stylesheet" href="style.css?v=21">
+  <link rel="stylesheet" href="style.css?v=23">
 </head>
 <body class="game">
 
@@ -134,20 +134,36 @@
 
       <!-- ── Dieses iPad ───────────────────────────────────── -->
       <section data-tab="geraet" hidden>
+        <div class="tiny">Diese Einstellungen gelten nur für dieses Gerät.</div>
+
         <div class="scard">
-          <div class="tiny">Diese Einstellungen gelten nur für dieses Gerät.</div>
+          <h3>🔊 Vorlesen</h3>
           <div class="setrow">
-            <label class="switch"><span class="lbl">Aufgabe vorlesen</span><input type="checkbox" data-opt="speech"></label>
+            <label class="switch"><span class="lbl">Aufgabe vorlesen <span class="tiny">Stimme Thorsten</span></span><input type="checkbox" data-opt="speech"></label>
           </div>
           <div class="setrow">
             <label class="lbl" for="optVolume">Lautstärke</label>
-            <input id="optVolume" type="range" data-opt="volume" min="0.1" max="1" step="0.05">
-            <span class="tiny" id="volVal"></span>
+            <div class="ctl vol">
+              <input id="optVolume" type="range" data-opt="volume" min="0.1" max="1" step="0.05">
+              <span class="tiny" id="volVal"></span>
+            </div>
           </div>
           <div class="setrow">
-            <span class="lbl">Stimme <span class="tiny">Thorsten</span></span>
+            <span class="lbl">Stimmprobe</span>
             <button id="btnTestVoice" class="sbtn light">🔊 Probe hören</button>
           </div>
+        </div>
+
+        <div class="scard">
+          <h3>🥁 Würfel-Klang <span class="tiny">Antippen zum Anhören und Auswählen</span></h3>
+          <div id="soundList" class="sound-list"></div>
+          <div class="setrow">
+            <label class="switch"><span class="lbl">Konfetti beim Ergebnis</span><input type="checkbox" data-opt="fxConfetti"></label>
+          </div>
+        </div>
+
+        <div class="scard">
+          <h3>👀 Unter der Aufgabe</h3>
           <div class="setrow">
             <span class="lbl">Punktebild</span>
             <div class="seg words" id="dotsSeg">
@@ -165,20 +181,10 @@
             </div>
           </div>
           <div class="tiny">„Auf Antippen“: Unter der Aufgabe erscheint ein Knopf, der Punktebild oder Ergebnis aufdeckt.</div>
-          <div class="setrow col">
-            <span class="lbl">Würfel-Klang <span class="tiny">Antippen zum Anhören und Auswählen</span></span>
-            <div id="soundList" class="sound-list"></div>
-          </div>
-          <div class="setrow">
-            <label class="switch"><span class="lbl">Konfetti beim Ergebnis</span><input type="checkbox" data-opt="fxConfetti"></label>
-          </div>
-          <div class="setrow" id="rowFullscreen">
-            <span class="lbl">Vollbild</span>
-            <button id="btnFullscreen" class="sbtn light">Einschalten</button>
-          </div>
         </div>
+
         <div class="scard">
-          <h3>Würfeln</h3>
+          <h3>👆 Würfeln</h3>
           <div class="setrow">
             <span class="lbl">Würfeln mit</span>
             <div class="seg words" id="trigSeg">
@@ -187,7 +193,7 @@
               <button data-trig="both">Beides</button>
             </div>
           </div>
-          <div class="setrow col" id="keyRow">
+          <div class="setrow" id="keyRow">
             <span class="lbl">Der Taster sendet</span>
             <div class="seg words" id="keySeg">
               <button data-key="Space">Leertaste</button>
@@ -195,14 +201,14 @@
               <button data-key="mouse">Mausklick</button>
               <button id="btnLearn">Anlernen</button>
             </div>
-            <div class="tiny" id="keyInfo"></div>
-            <div class="tiny">Wichtig: Die „Schaltersteuerung“ in den iPad-Bedienungshilfen muss für diesen Taster aus sein.</div>
+            <div class="tiny full" id="keyInfo"></div>
+            <div class="tiny full">Wichtig: Die „Schaltersteuerung“ in den iPad-Bedienungshilfen muss für diesen Taster aus sein.</div>
           </div>
           <div class="setrow">
             <label class="switch"><span class="lbl">„Weiter“-Knopf nach jeder Aufgabe</span><input type="checkbox" id="optWeiter"></label>
           </div>
-          <div class="setrow col" id="lockRow">
-            <span class="lbl">Sperrzeit nach dem Ergebnis</span>
+          <div class="setrow" id="lockRow">
+            <span class="lbl">Sperrzeit</span>
             <div class="seg words" id="lockSeg">
               <button data-lock="0">0 s</button>
               <button data-lock="3">3 s</button>
@@ -210,7 +216,14 @@
               <button data-lock="10">10 s</button>
               <button data-lock="20">20 s</button>
             </div>
-            <div class="tiny">Die Sperrzeit beginnt, wenn die Aufgabe fertig vorgelesen ist. So lange bleibt die Aufgabe stehen, bevor neu gewürfelt werden kann. Antippen in dieser Zeit liest die Aufgabe nochmal vor.</div>
+            <div class="tiny full">Beginnt, wenn die Aufgabe fertig vorgelesen ist. So lange bleibt die Aufgabe stehen, bevor neu gewürfelt werden kann. Antippen in dieser Zeit liest sie nochmal vor.</div>
+          </div>
+        </div>
+
+        <div class="scard" id="rowFullscreen">
+          <div class="setrow">
+            <span class="lbl">Vollbild</span>
+            <button id="btnFullscreen" class="sbtn light">Einschalten</button>
           </div>
         </div>
       </section>
@@ -275,11 +288,21 @@
         </div>
         <div class="scard">
           <h3>📖 Anleitung</h3>
-          <div class="tiny">Alles zum Spielen, zu den Einstellungen und zu den Ausdrucken.</div>
-          <a class="sbtn light" href="https://github.com/Walteroelf/MatheBingo#readme" target="_blank" rel="noopener">Anleitung öffnen</a>
+          <div class="tiny">Alles zum Spielen, zu den Einstellungen, zum Taster, zum Verbinden und zu den Ausdrucken.</div>
+          <button id="btnGuide" class="sbtn light">Anleitung öffnen</button>
         </div>
       </section>
     </div>
+  </div>
+</div>
+
+<div id="guide" hidden>
+  <div id="guideInner" role="dialog" aria-label="Anleitung">
+    <div id="guideHead">
+      <h2>📖 Anleitung</h2>
+      <button id="btnCloseGuide">✕ Schließen</button>
+    </div>
+    <div id="guideBody"></div>
   </div>
 </div>
 
@@ -294,6 +317,7 @@
 <script src="core.js?v=20"></script>
 <script src="sounds.js?v=18"></script>
 <script src="sync.js?v=2"></script>
-<script src="app.js?v=22"></script>
+<script src="guide.js?v=1"></script>
+<script src="app.js?v=23"></script>
 </body>
 </html>
