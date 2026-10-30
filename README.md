@@ -29,7 +29,7 @@ Aufgebaut wie beim ABC-Bingo, mit fünf Reitern. Der zuletzt geöffnete Reiter w
   - *Zahlen im Topf*: wie die Buchstaben beim ABC-Bingo. Antippen nimmt eine Zahl heraus oder legt sie zurück;
     „Alle“, „Keine“, „Ohne 0“. Bei Plus und Minus liegt die 0 im Topf; ohne 0 fallen auch Aufgaben wie 3 + 0 weg.
 - **🧮 Aufgaben**: Schnellwahl (Plus bis 10 … 1×1 Kernaufgaben, Ganzes 1×1, Geteilt Kernaufgaben),
-  **Was kommt nur einmal?** (siehe unten), Rechenart, Zahlenraum bis 5 … 100, Zehnerübergang, Einmaleins-Reihen, Quadrataufgaben.
+  **Was kommt nur einmal?** (siehe unten), Rechenart, Zahlenraum bis 5 … 100, **Kleines 1+1**, Zehnerübergang, Einmaleins-Reihen, Quadrataufgaben.
   Eine Änderung hier startet ein neues Spiel.
 - **📱 Dieses iPad**: aufgebaut wie beim ABC-Bingo. Gilt nur für dieses Gerät: **Farbe** (gewürfelte Aufgaben
   erscheinen in dieser Farbe, auch in der Liste und auf der Tafel; so sieht man, welches iPad gewürfelt hat),
@@ -40,6 +40,13 @@ Aufgebaut wie beim ABC-Bingo, mit fünf Reitern. Der zuletzt geöffnete Reiter w
   ✨ Zauberstab, 🔇 Kein Klang. Alle Klänge werden im Browser erzeugt (`sounds.js`).
 - **📡 Verbinden**: Mehrere iPads und die Tafel, siehe unten. Ein Punkt am Reiter zeigt den Verbindungsstatus.
 - **➕ Mehr**: Bingokarten und Lottoscheine, diese Anleitung (öffnet sich in der App).
+
+### Kleines 1+1
+
+Wie im ursprünglichen Scratch-1+1-Bingo mit zwei Würfeln von 0 bis 10: Bei Plus sind **beide Zahlen höchstens 10**
+(7 + 8, 10 + 9, aber nicht 15 + 3), das sind 121 Aufgaben mit Ergebnissen von 0 bis 20. Minus ist die Umkehrung
+davon (15 − 7: abgezogene Zahl und Ergebnis höchstens 10). Schnellwahl „Kleines 1+1“ bzw. „Kleines 1+1 mit Minus“,
+oder unter ⚙️ → Aufgaben der Schalter **Kleines 1+1**. Ohne den Schalter heißt „bis 20“: Ergebnis bis 20, also auch 15 + 3.
 
 ## Was kommt nur einmal?
 

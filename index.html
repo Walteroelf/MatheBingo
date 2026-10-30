@@ -140,6 +140,9 @@
               <button data-max="100">100</button>
             </div>
           </div>
+          <div class="setrow" id="rowSmall">
+            <label class="switch"><span class="lbl">Kleines 1+1 <span class="tiny">beide Zahlen höchstens 10, z. B. 7 + 8, 15 − 7</span></span><input type="checkbox" id="chkSmall"></label>
+          </div>
           <div class="setrow" id="rowCrossing">
             <label class="switch"><span class="lbl">Zehnerübergang <span class="tiny">z. B. 8 + 5, 13 − 6</span></span><input type="checkbox" id="chkCrossing"></label>
           </div>
@@ -335,11 +338,11 @@
   </div>
 </dialog>
 
-<script src="core.js?v=22"></script>
+<script src="core.js?v=23"></script>
 <script src="sounds.js?v=18"></script>
-<script src="sync.js?v=4"></script>
+<script src="sync.js?v=5"></script>
 <script src="guide.js?v=1"></script>
-<script src="app.js?v=28"></script>
+<script src="app.js?v=29"></script>
 <script>
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>

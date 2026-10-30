@@ -9,6 +9,7 @@ const CORE_ROWS = [1, 2, 5, 10];
 const DEFAULTS = {
   mode: 'plusminus',
   max: 20, crossing: true,
+  small: false,          // kleines 1+1: beide Zahlen höchstens 10 (wie das Scratch-1+1-Bingo)
   rows: CORE_ROWS, squares: true,
   excluded: [],          // aus dem Topf genommene Ergebnisse
   unique: 'result',      // was pro Runde nur einmal kommt: 'result' (Bingo) oder 'task' (Ergebnisse dürfen mehrfach kommen)
@@ -36,12 +37,14 @@ const COLORS = {
 const colorOf = (t) => (COLORS[t && t.c] || COLORS.blau).hex;
 
 const PRESETS = [
-  { name: 'Plus bis 10', s: { mode: 'plus', max: 10, crossing: true } },
-  { name: 'Minus bis 10', s: { mode: 'minus', max: 10, crossing: true } },
-  { name: 'Plus & Minus bis 10', s: { mode: 'plusminus', max: 10, crossing: true } },
-  { name: 'Plus & Minus bis 20 ohne Zehnerübergang', s: { mode: 'plusminus', max: 20, crossing: false } },
-  { name: 'Plus & Minus bis 20', s: { mode: 'plusminus', max: 20, crossing: true } },
-  { name: 'Plus & Minus bis 30', s: { mode: 'plusminus', max: 30, crossing: true } },
+  { name: 'Plus bis 10', s: { mode: 'plus', max: 10, crossing: true, small: false } },
+  { name: 'Minus bis 10', s: { mode: 'minus', max: 10, crossing: true, small: false } },
+  { name: 'Plus & Minus bis 10', s: { mode: 'plusminus', max: 10, crossing: true, small: false } },
+  { name: 'Kleines 1+1', s: { mode: 'plus', max: 20, crossing: true, small: true } },
+  { name: 'Kleines 1+1 mit Minus', s: { mode: 'plusminus', max: 20, crossing: true, small: true } },
+  { name: 'Plus & Minus bis 20 ohne Zehnerübergang', s: { mode: 'plusminus', max: 20, crossing: false, small: false } },
+  { name: 'Plus & Minus bis 20', s: { mode: 'plusminus', max: 20, crossing: true, small: false } },
+  { name: 'Plus & Minus bis 30', s: { mode: 'plusminus', max: 30, crossing: true, small: false } },
   { name: '1×1 Kernaufgaben', s: { mode: 'mal', rows: CORE_ROWS, squares: true } },
   { name: 'Ganzes 1×1', s: { mode: 'mal', rows: ALL_ROWS, squares: false } },
   { name: 'Geteilt Kernaufgaben', s: { mode: 'geteilt', rows: CORE_ROWS, squares: true } },
@@ -98,7 +101,7 @@ function loadStore() {
 }
 
 // Einstellungen, die bei mehreren verbundenen iPads für alle gelten
-const GAME_KEYS = ['mode', 'max', 'crossing', 'rows', 'squares', 'excluded', 'unique'];
+const GAME_KEYS = ['mode', 'max', 'crossing', 'small', 'rows', 'squares', 'excluded', 'unique'];
 const gameOf = (s) => Object.fromEntries(GAME_KEYS.map((k) => [k, s[k]]));
 
 function randomId(n) {
@@ -122,6 +125,8 @@ function crosses(a, b, op) {
 }
 
 // Alle Aufgaben zur Einstellung. Plus und Minus beginnen bei 0, das Einmaleins bei 1.
+// Kleines 1+1: beide Zahlen höchstens 10 (7 + 8), Minus als Umkehrung davon (15 − 7: abgezogene Zahl
+// und Ergebnis höchstens 10).
 // results: alle möglichen Ergebnisse; topf: die davon, die gerade im Topf liegen.
 // Ist die 0 aus dem Topf genommen, fallen auch Aufgaben wie 3 + 0 weg.
 function buildPool(s) {
@@ -129,15 +134,16 @@ function buildPool(s) {
   const add = (a, op, b, r) => all.set(`${a}${op}${b}`, { a, op, b, r, key: `${a}${op}${b}` });
   const ops = MODES[s.mode];
 
+  const lim = s.small ? 10 : Infinity;
   if (ops.includes('+')) {
-    for (let a = 0; a <= s.max; a++)
-      for (let b = 0; a + b <= s.max; b++)
+    for (let a = 0; a <= Math.min(s.max, lim); a++)
+      for (let b = 0; a + b <= s.max && b <= lim; b++)
         if (s.crossing || !crosses(a, b, '+')) add(a, '+', b, a + b);
   }
   if (ops.includes('-')) {
     for (let a = 0; a <= s.max; a++)
-      for (let b = 0; b <= a; b++)
-        if (s.crossing || !crosses(a, b, '-')) add(a, '-', b, a - b);
+      for (let b = 0; b <= a && b <= lim; b++)
+        if (a - b <= lim && (s.crossing || !crosses(a, b, '-'))) add(a, '-', b, a - b);
   }
 
   const pairs = [];
@@ -164,7 +170,8 @@ function buildPool(s) {
 function describe(s) {
   const parts = [MODE_NAMES[s.mode]];
   if (hasAddSub(s)) {
-    parts[0] += ` bis ${s.max}`;
+    parts[0] += s.small && s.max >= 20 ? ' im kleinen 1+1' : ` bis ${s.max}`;
+    if (s.small && s.max < 20) parts.push('Zahlen bis 10');
     if (!s.crossing) parts.push('ohne Zehnerübergang');
   }
   if (hasMulDiv(s)) {

@@ -774,10 +774,11 @@ function renderDrawer() {
     return `<button class="sbtn ${on ? '' : 'light'}" data-preset="${i}">${p.name}</button>`;
   }).join('');
   for (const b of $$('#modeSeg [data-mode]')) b.classList.toggle('on', b.dataset.mode === S.mode);
-  $('#rowMax').hidden = $('#rowCrossing').hidden = !hasAddSub(S);
+  $('#rowMax').hidden = $('#rowCrossing').hidden = $('#rowSmall').hidden = !hasAddSub(S);
   $('#rowRows').hidden = $('#rowSquares').hidden = !hasMulDiv(S);
   for (const b of $$('#maxSeg [data-max]')) b.classList.toggle('on', +b.dataset.max === S.max);
   $('#chkCrossing').checked = S.crossing;
+  $('#chkSmall').checked = S.small;
   $('#rowGrid').innerHTML = toggleGridHtml(ALL_ROWS, (r) => S.rows.includes(r), (r) => `${r}er`);
   $('#chkSquares').checked = S.squares;
   for (const b of $$('#uniqueSeg [data-unique]')) b.classList.toggle('on', b.dataset.unique === S.unique);
@@ -893,6 +894,7 @@ function bind() {
     if (b) changeGame({ max: +b.dataset.max });
   });
   $('#chkCrossing').addEventListener('change', (e) => changeGame({ crossing: e.target.checked }));
+  $('#chkSmall').addEventListener('change', (e) => changeGame({ small: e.target.checked, max: e.target.checked ? 20 : S.max }));
   $('#chkSquares').addEventListener('change', (e) => changeGame({ squares: e.target.checked }));
   $('#rowGrid').addEventListener('click', (e) => {
     const b = e.target.closest('[data-val]');

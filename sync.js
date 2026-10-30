@@ -161,7 +161,7 @@ function cleanTask(t) {
 function cleanGame(g) {
   if (!g || !MODES[g.mode] || !isNum(g.max) || !Array.isArray(g.rows) || !Array.isArray(g.excluded)) return null;
   return {
-    mode: g.mode, max: g.max, crossing: !!g.crossing, squares: !!g.squares,
+    mode: g.mode, max: g.max, crossing: !!g.crossing, small: !!g.small, squares: !!g.squares,
     rows: g.rows.filter(isNum), excluded: g.excluded.filter(isNum),
     unique: g.unique === 'task' ? 'task' : 'result',
   };
