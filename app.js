@@ -58,6 +58,7 @@ function audible(buf) {
 }
 let voiceSources = [];
 let speechRun = 0;
+let voiceEndsAt = 0;   // performance.now(), wann die laufende Ansage endet (für die Sperrzeit)
 
 function loadClip(name) {
   if (!clipCache.has(name)) {
@@ -95,6 +96,7 @@ async function playThorsten(t, run, delay = 0) {
     at += c.dur + JOIN_GAP_S;
     return src;
   });
+  voiceEndsAt = performance.now() + (at - audioCtx.currentTime) * 1000;
   return true;
 }
 
@@ -114,6 +116,7 @@ function stopSpeech() {
   speechRun++;
   for (const src of voiceSources) { try { src.stop(); } catch { /* schon zu Ende */ } }
   voiceSources = [];
+  voiceEndsAt = 0;
   if (hasSpeech) speechSynthesis.cancel();
 }
 
@@ -124,7 +127,9 @@ async function announce(t, delay = 0) {
   const run = speechRun;
   if (await playThorsten(t, run, delay)) return;
   if (delay) await sleep(delay * 1000);
-  if (run === speechRun) speakFallback(`${t.a} ${OPS[t.op].word} ${t.b}`);
+  if (run !== speechRun) return;
+  voiceEndsAt = performance.now() + 2500;   // geschätzt
+  speakFallback(`${t.a} ${OPS[t.op].word} ${t.b}`);
 }
 
 let audioCtx = null;
@@ -313,6 +318,7 @@ async function roll() {
   }
   if (!leftInTopf().length) { showAllDone(); return; }
 
+  stopLock();
   state.rolling = true;
   makeClaim();   // Ergebnis gleich reservieren (sync.js), aufgedeckt wird nach dem Rollen
   stopSpeech();
@@ -342,10 +348,15 @@ async function roll() {
   el.innerHTML = taskHtml(t);
   showExtras(t);
   state.rolling = false;
-  $('#btnWeiter').hidden = false;
   renderTouchCount();
   confetti();
-  announce(t, currentSound().speechDelay);
+  if (S.weiter) {
+    $('#btnWeiter').hidden = false;
+    announce(t, currentSound().speechDelay);
+  } else {
+    lockUntil = Infinity;   // bis klar ist, wann die Ansage endet
+    announce(t, currentSound().speechDelay).then(() => { if (state.current === t) startLock(); });
+  }
 }
 
 // Punktebild und Ergebnis unter der Aufgabe: aus, auf Antippen (Knopf) oder immer
@@ -382,6 +393,7 @@ function weiter() {
 function backToTouch() {
   stopSpeech();
   stopConfetti();
+  stopLock();
   state.current = null;
   $('#btnWeiter').hidden = true;
   showScreen(net.boardMode ? 'board' : 'touch');
@@ -436,6 +448,176 @@ function renderBoard() {
   boardShownLast = last;
   $('#boardList').innerHTML = list.map((t) =>
     `<div class="${t === last ? 'last' : ''}">${fmt(t)}</div>`).join('');
+}
+
+// ---------- Sperrzeit ohne „Weiter“ ----------
+
+let lockUntil = 0;   // Date.now(), ab wann wieder gewürfelt werden darf
+
+// Beginnt erst nach der Ansage, damit die Kinder die ganze Aufgabe hören
+function startLock() {
+  const wait = Math.max(0, voiceEndsAt - performance.now());
+  lockUntil = Date.now() + wait + S.lockSec * 1000;
+  const bar = $('#lockBar');
+  bar.classList.remove('run');
+  if (!S.lockSec) return;
+  void bar.offsetWidth;   // Animation neu starten
+  bar.style.animationDuration = `${S.lockSec}s`;
+  bar.style.animationDelay = `${Math.round(wait)}ms`;
+  bar.classList.add('run');
+}
+
+function stopLock() {
+  lockUntil = 0;
+  $('#lockBar').classList.remove('run');
+}
+
+// ---------- Taster ----------
+// Ein Taster am iPad meldet sich als Tastatur (Leertaste, Enter, …) oder als Maus.
+// Er würfelt nur, wenn gerade gewürfelt werden darf: auf „Bitte berühren“ oder, ohne „Weiter“,
+// nach Ablauf der Sperrzeit. Ergebnis und Punktebild deckt er nie auf.
+
+let learning = false;   // „Anlernen“: nächster Tastendruck wird gemerkt
+let keyHeld = false;    // gedrückt gehalten → nur einmal würfeln
+let lastPointer = '';
+let swallowClick = false;
+
+const tapOK = () => S.trigger !== 'switch';
+const switchOK = () => S.trigger !== 'tap';
+const isDone = () => !$('#screenDone').hidden;
+
+// Klick, der vom Maus-Taster kommt (nicht vom Finger)
+const switchClick = () => S.switchKey === 'mouse' && switchOK() && lastPointer === 'mouse';
+
+function switchPress() {
+  if (state.rolling || net.boardMode || !$('#drawer').hidden || $('#confirmDlg').open || isDone()) return;
+  if (state.current && (S.weiter || Date.now() < lockUntil)) return;
+  if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  roll();
+}
+
+function keyName(e) {
+  if (e.code === 'Space' || e.key === ' ') return 'Space';
+  if (e.key === 'Enter') return 'Enter';
+  return e.code || e.key || '';
+}
+
+function keyLabel(k) {
+  if (k === 'Space') return 'Leertaste';
+  if (k === 'Enter') return 'Enter';
+  if (k === 'mouse') return 'Mausklick';
+  return k.replace(/^Key/, '').replace(/^Digit/, '').replace(/^Arrow/, 'Pfeil ');
+}
+
+function learnDone(k) {
+  learning = false;
+  S.switchKey = k;
+  save();
+  renderDrawer();
+}
+
+// Antippen der Aufgabe: ohne „Weiter“ nach der Sperrzeit neu würfeln, sonst nochmal vorlesen
+function taskTap() {
+  if (switchClick() || state.rolling || !state.current) return;
+  if (!S.weiter && tapOK() && Date.now() >= lockUntil) { roll(); return; }
+  repeatCurrent();
+}
+
+function renderStartText() {
+  $('#startTitle').textContent = S.trigger === 'switch' ? 'Bitte Taster drücken' : 'Bitte berühren';
+  $('#startHint').textContent = S.trigger === 'switch' ? 'Drücke den Taster, um eine Aufgabe zu würfeln'
+    : S.trigger === 'both' ? 'Tippe oder drücke den Taster, um eine Aufgabe zu würfeln'
+      : 'Tippe, um eine Aufgabe zu würfeln';
+}
+
+function renderSwitch() {
+  for (const b of $$('#trigSeg [data-trig]')) b.classList.toggle('on', b.dataset.trig === S.trigger);
+  const fixed = ['Space', 'Enter', 'mouse'];
+  for (const b of $$('#keySeg [data-key]')) b.classList.toggle('on', !learning && b.dataset.key === S.switchKey);
+  const learnBtn = $('#btnLearn');
+  learnBtn.classList.toggle('learning', learning);
+  learnBtn.classList.toggle('on', !learning && !fixed.includes(S.switchKey));
+  learnBtn.textContent = learning ? 'Drücken …' : 'Anlernen';
+  $('#keyInfo').textContent = learning ? 'Jetzt den Taster einmal drücken.'
+    : S.switchKey === 'mouse' ? 'Ein Klick irgendwo auf dem Bildschirm würfelt. „Weiter“ und ⚙️ reagieren nicht auf den Taster.'
+      : fixed.includes(S.switchKey) ? '' : `Angelernt: ${keyLabel(S.switchKey)}`;
+  $('#keyRow').hidden = S.trigger === 'tap';
+  $('#optWeiter').checked = S.weiter;
+  $('#lockRow').hidden = S.weiter;
+  for (const b of $$('#lockSeg [data-lock]')) b.classList.toggle('on', +b.dataset.lock === S.lockSec);
+  renderStartText();
+}
+
+function bindSwitch() {
+  document.addEventListener('keydown', (e) => {
+    if (learning) {
+      e.preventDefault();
+      keyHeld = true;
+      learnDone(keyName(e));
+      return;
+    }
+    if (e.target.closest && e.target.closest('input, textarea')) return;
+    if (!switchOK() || S.switchKey === 'mouse' || keyName(e) !== S.switchKey) return;
+    e.preventDefault();   // keine Knöpfe auslösen, nicht scrollen
+    if (e.repeat || keyHeld) return;
+    keyHeld = true;
+    initAudio();
+    switchPress();
+  });
+  document.addEventListener('keyup', (e) => {
+    keyHeld = false;
+    if (switchOK() && keyName(e) === S.switchKey && !(e.target.closest && e.target.closest('input, textarea'))) {
+      e.preventDefault();
+    }
+  });
+  document.addEventListener('pointerdown', (e) => {
+    lastPointer = e.pointerType;
+    if (e.pointerType !== 'mouse') return;
+    if (learning) {
+      if (e.target.closest('#btnLearn')) return;
+      swallowClick = true;
+      learnDone('mouse');
+      return;
+    }
+    if (!switchOK() || S.switchKey !== 'mouse') return;
+    if (e.target.closest('#drawer, #btnGear, #btnWeiter, #confirmDlg')) return;
+    initAudio();
+    switchPress();
+  }, true);
+  document.addEventListener('click', (e) => {
+    if (!swallowClick) return;
+    swallowClick = false;
+    e.preventDefault();
+    e.stopPropagation();
+  }, true);
+
+  $('#trigSeg').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-trig]');
+    if (!b) return;
+    learning = false;
+    setOption('trigger', b.dataset.trig);
+  });
+  $('#keySeg').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-key]');
+    if (!b) return;
+    learning = false;
+    setOption('switchKey', b.dataset.key);
+  });
+  $('#btnLearn').addEventListener('click', () => {
+    learning = !learning;
+    renderSwitch();
+  });
+  $('#optWeiter').addEventListener('change', (e) => {
+    setOption('weiter', e.target.checked);
+    if (state.current && !state.rolling && !isDone() && !$('#screenTask').hidden) {
+      $('#btnWeiter').hidden = !S.weiter;
+      stopLock();
+    }
+  });
+  $('#lockSeg').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-lock]');
+    if (b) setOption('lockSec', +b.dataset.lock);
+  });
 }
 
 // ---------- Einstellungen ändern ----------
@@ -569,10 +751,11 @@ function renderDrawer() {
     `<button data-sound="${s.key}" class="${s.key === S.sound ? 'on' : ''}" aria-pressed="${s.key === S.sound}">${s.name}</button>`).join('');
   $('#rowFullscreen').hidden = !canFullscreen || isFullscreen();
 
+  renderSwitch();
   renderSync();
 }
 
-function openDrawer() { renderDrawer(); $('#drawer').hidden = false; }
+function openDrawer() { learning = false; renderDrawer(); $('#drawer').hidden = false; }
 function closeDrawer() { $('#drawer').hidden = true; }
 
 // ---------- Vollbild ----------
@@ -594,31 +777,25 @@ function requestFullscreen() {
 
 function bind() {
   // Spiel: Berühren würfelt, Tippen auf die Aufgabe wiederholt die Ansage
-  $('#btnTouch').addEventListener('click', roll);
-  $('#screenTask').addEventListener('click', repeatCurrent);
+  $('#btnTouch').addEventListener('click', () => { if (!switchClick() && tapOK()) roll(); });
+  $('#screenTask').addEventListener('click', taskTap);
   $('#btnResult').addEventListener('click', (e) => {
     e.stopPropagation(); // nicht zusätzlich die Ansage wiederholen
+    if (switchClick()) return; // der Taster würfelt nur
     $('#btnResult').hidden = true;
     $('#result').hidden = false;
   });
   $('#btnDots').addEventListener('click', (e) => {
     e.stopPropagation();
+    if (switchClick()) return;
     $('#btnDots').hidden = true;
     if (state.current) $('#dots').innerHTML = dotsHtml(state.current);
   });
-  $('#btnWeiter').addEventListener('click', weiter);
+  $('#btnWeiter').addEventListener('click', () => { if (!switchClick()) weiter(); });
   $('#btnGear').addEventListener('click', openDrawer);
   $('#btnCloseDrawer').addEventListener('click', closeDrawer);
   $('#drawer').addEventListener('click', (e) => { if (e.target.id === 'drawer') closeDrawer(); });
 
-  // Tastatur: Leertaste/Enter würfelt bzw. drückt „Weiter“
-  document.addEventListener('keydown', (e) => {
-    if (!$('#drawer').hidden || $('#confirmDlg').open || net.boardMode) return;
-    if (e.code !== 'Space' && e.code !== 'Enter') return;
-    e.preventDefault();
-    if (!$('#btnWeiter').hidden) weiter();
-    else if (!$('#screenTouch').hidden) roll();
-  });
 
   // Schublade
   $('#btnUndo').addEventListener('click', async () => {
@@ -713,6 +890,8 @@ function bind() {
 
 joinFromUrl();
 bind();
+bindSwitch();
 bindSync();
+renderStartText();
 backToTouch();
 connect();

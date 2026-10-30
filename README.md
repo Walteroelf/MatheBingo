@@ -6,13 +6,13 @@ ohne Installation und ohne Anmeldung: https://walteroelf.github.io/MatheBingo/
 
 ## Würfeln
 
-- **„Bitte berühren“**: Ein Tipp irgendwo auf den Bildschirm (oder die Leertaste) würfelt.
+- **„Bitte berühren“**: Ein Tipp irgendwo auf den Bildschirm würfelt, auf Wunsch auch ein Taster (siehe [Taster](#taster)).
   Beim ersten Tipp geht die App ins Vollbild.
 - Die Aufgabe rollt mit dem gewählten Würfel-Klang aus, erscheint groß mit Konfetti und wird vorgelesen.
   Darunter auf Wunsch Punktebild (Zehnerfelder bei Plus/Minus, Punktefeld bei Mal) und Ergebnis,
   jeweils aus, auf Antippen (Knopf) oder immer.
 - **Tipp auf die Aufgabe**: Sie wird nochmal vorgelesen.
-- **„Weiter“** unten rechts: zurück zu „Bitte berühren“.
+- **„Weiter“** unten rechts: zurück zu „Bitte berühren“. Der Knopf lässt sich abschalten, siehe [Taster](#taster).
 - Jedes Ergebnis im Topf kommt einmal pro Runde. Sind alle dran, erscheint „Alle Aufgaben wurden gewürfelt! 🎉“.
 
 ## Einstellungen (⚙️ unten links)
@@ -29,10 +29,31 @@ Aufgebaut wie beim ABC-Bingo, mit fünf Reitern. Der zuletzt geöffnete Reiter w
   Eine Änderung hier startet ein neues Spiel.
 - **📱 Dieses iPad**: Vorlesen, Lautstärke, Stimmprobe, Punktebild und Ergebnis (je „Aus“, „Auf Antippen“,
   „Immer“; bei „Auf Antippen“ deckt ein Knopf unter der Aufgabe es auf), Würfel-Klang, Konfetti, Vollbild.
+  Unter **Würfeln**: Antippen, Taster oder beides, „Weiter“-Knopf an/aus und Sperrzeit (siehe [Taster](#taster)).
   Würfel-Klänge (Antippen zum Anhören und Auswählen): 🥁 Trommelwirbel, 🎺 Tusch, 🎡 Glücksrad, 🎵 Xylophon,
   ✨ Zauberstab, 🔇 Kein Klang. Alle Klänge werden im Browser erzeugt (`sounds.js`).
 - **📡 Verbinden**: Mehrere iPads und die Tafel, siehe unten. Ein Punkt am Reiter zeigt den Verbindungsstatus.
 - **➕ Mehr**: Bingokarten und Lottoscheine, Anleitung.
+
+## Taster
+
+Ein einzelner Taster (per Adapter am iPad) kann statt des Bildschirms würfeln, wie beim ABC-Bingo.
+Einstellung unter ⚙️ → **Dieses iPad** → **Würfeln**:
+
+- **Würfeln mit:** Antippen, Taster oder Beides. Bei „Taster“ löst eine Berührung des Bildschirms kein Würfeln aus.
+- **Der Taster sendet:** Leertaste, Enter oder Mausklick. Bei einer anderen Taste auf **Anlernen** tippen und den
+  Taster einmal drücken. Beim Mausklick würfelt ein Klick irgendwo auf dem Bildschirm; „Weiter“ und ⚙️ reagieren
+  nicht auf den Taster.
+- Der Taster würfelt nur. Punktebild und Ergebnis deckt er nie auf, das geht nur mit dem Finger.
+- Gedrückt halten würfelt nur einmal.
+- Die **Schaltersteuerung** in den iPad-Bedienungshilfen muss für diesen Taster aus sein, sonst kommt der Druck
+  nicht in der App an.
+
+**Mit „Weiter“-Knopf:** Nach der Aufgabe reagiert der Taster nicht, bis die Lehrkraft „Weiter“ antippt.
+
+**Ohne „Weiter“-Knopf:** Die Aufgabe bleibt stehen. Ist sie fertig vorgelesen, läuft die **Sperrzeit**
+(0–20 Sekunden, ein Balken am unteren Rand läuft ab). Danach würfelt der nächste Druck sofort neu.
+Antippen während der Sperrzeit liest die Aufgabe nochmal vor.
 
 ## Mehrere iPads
 

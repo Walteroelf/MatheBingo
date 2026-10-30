@@ -9,15 +9,15 @@
   <meta name="apple-mobile-web-app-title" content="Mathe-Bingo">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Mathe-Bingo</title>
-  <link rel="stylesheet" href="style.css?v=20">
+  <link rel="stylesheet" href="style.css?v=21">
 </head>
 <body class="game">
 
 <div id="screenTouch" class="screen">
   <button id="btnTouch" aria-label="Aufgabe würfeln"></button>
   <p id="touchCount" class="touch-count" hidden></p>
-  <h1>Bitte berühren</h1>
-  <p>Tippe, um eine Aufgabe zu würfeln</p>
+  <h1 id="startTitle">Bitte berühren</h1>
+  <p id="startHint">Tippe, um eine Aufgabe zu würfeln</p>
 </div>
 
 <div id="screenTask" class="screen" hidden>
@@ -41,6 +41,7 @@
 
 <div id="syncDot" hidden></div>
 <div id="repeatHint">🔊 Nochmal</div>
+<div id="lockBar"></div>
 <canvas id="confetti" hidden></canvas>
 <button id="btnWeiter" hidden>Weiter</button>
 <button id="btnGear" aria-label="Einstellungen">⚙️</button>
@@ -176,6 +177,42 @@
             <button id="btnFullscreen" class="sbtn light">Einschalten</button>
           </div>
         </div>
+        <div class="scard">
+          <h3>Würfeln</h3>
+          <div class="setrow">
+            <span class="lbl">Würfeln mit</span>
+            <div class="seg words" id="trigSeg">
+              <button data-trig="tap">Antippen</button>
+              <button data-trig="switch">Taster</button>
+              <button data-trig="both">Beides</button>
+            </div>
+          </div>
+          <div class="setrow col" id="keyRow">
+            <span class="lbl">Der Taster sendet</span>
+            <div class="seg words" id="keySeg">
+              <button data-key="Space">Leertaste</button>
+              <button data-key="Enter">Enter</button>
+              <button data-key="mouse">Mausklick</button>
+              <button id="btnLearn">Anlernen</button>
+            </div>
+            <div class="tiny" id="keyInfo"></div>
+            <div class="tiny">Wichtig: Die „Schaltersteuerung“ in den iPad-Bedienungshilfen muss für diesen Taster aus sein.</div>
+          </div>
+          <div class="setrow">
+            <label class="switch"><span class="lbl">„Weiter“-Knopf nach jeder Aufgabe</span><input type="checkbox" id="optWeiter"></label>
+          </div>
+          <div class="setrow col" id="lockRow">
+            <span class="lbl">Sperrzeit nach dem Ergebnis</span>
+            <div class="seg words" id="lockSeg">
+              <button data-lock="0">0 s</button>
+              <button data-lock="3">3 s</button>
+              <button data-lock="5">5 s</button>
+              <button data-lock="10">10 s</button>
+              <button data-lock="20">20 s</button>
+            </div>
+            <div class="tiny">Die Sperrzeit beginnt, wenn die Aufgabe fertig vorgelesen ist. So lange bleibt die Aufgabe stehen, bevor neu gewürfelt werden kann. Antippen in dieser Zeit liest die Aufgabe nochmal vor.</div>
+          </div>
+        </div>
       </section>
 
       <!-- ── Verbinden ─────────────────────────────────────── -->
@@ -254,9 +291,9 @@
   </div>
 </dialog>
 
-<script src="core.js?v=19"></script>
+<script src="core.js?v=20"></script>
 <script src="sounds.js?v=18"></script>
 <script src="sync.js?v=2"></script>
-<script src="app.js?v=21"></script>
+<script src="app.js?v=22"></script>
 </body>
 </html>

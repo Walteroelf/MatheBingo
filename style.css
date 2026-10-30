@@ -272,6 +272,16 @@ select { padding: 9px 12px; border-radius: 10px; border: 2px solid #ccc; backgro
 .chip.last { box-shadow: 0 0 0 3px var(--yellow); }
 .drawn-empty { font-size: 0.85rem; color: #999; align-self: center; }
 
+/* Sperrzeit ohne „Weiter“: Balken bleibt voll, solange vorgelesen wird, und läuft dann ab */
+#lockBar {
+  position: fixed; left: 0; bottom: 0; height: 8px; width: 100%;
+  background: rgba(255, 255, 255, 0.75); z-index: 65; pointer-events: none;
+  transform-origin: left; transform: scaleX(0);
+}
+#lockBar.run { animation: lockrun linear both; }
+@keyframes lockrun { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+#btnLearn.learning { background: var(--yellow); border-color: #b08a00; color: #333; }
+
 /* Mehrere iPads */
 #tabDot, #syncDot { border-radius: 50%; background: #f0a020; }
 #tabDot { position: absolute; top: 0.45rem; right: 0.5rem; width: 10px; height: 10px; }

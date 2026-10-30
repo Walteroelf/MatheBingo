@@ -14,6 +14,10 @@ const DEFAULTS = {
   speech: true, volume: 1,
   dotsShow: 'always', resultShow: 'off',   // Punktebild und Ergebnis: off, tap (Knopf), always
   sound: 'trommel', fxConfetti: true,
+  trigger: 'tap',          // Würfeln mit: tap (Antippen), switch (Taster), both
+  switchKey: 'Space',      // Taster sendet: Space, Enter, mouse oder angelernter Tastencode
+  weiter: true,            // „Weiter“-Knopf nach jeder Aufgabe
+  lockSec: 5,              // Sperrzeit ohne „Weiter“
   settingsTab: 'spiel',   // zuletzt geöffneter Reiter in ⚙️
 };
 
