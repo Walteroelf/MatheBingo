@@ -84,6 +84,21 @@ Verbinden → Tafel-Ansicht: **QR-Code für die Tafel** scannen, **Link kopieren
 öffnen, oder **Dieses Gerät als Tafel**. Die Tafel zeigt die neueste Aufgabe groß und darunter alle bisher
 gewürfelten Aufgaben, ohne Ergebnisse.
 
+## Als App auf den Home-Bildschirm
+
+In Safari auf dem iPad: Teilen-Symbol → **Zum Home-Bildschirm**. Dann:
+
+- startet Mathe-Bingo mit eigenem Symbol im Vollbild, ohne Safari-Leiste,
+- funktioniert es mit **einem** iPad auch ganz ohne Internet (nachdem es einmal mit Internet geöffnet wurde;
+  dabei werden auch alle Ansagen gespeichert, zusammen etwa 6 MB),
+- holt es sich Updates automatisch, sobald Internet da ist.
+
+Wichtig: Die Home-Bildschirm-App hat einen eigenen Speicher, getrennt von Safari. Ein QR-Code öffnet sich immer
+in Safari, nicht in der App. Darum in der App zum Verbinden den **Spielcode eintippen**.
+
+Tipp für Kinder mit Beeinträchtigung: Mit **Geführter Zugriff** (Einstellungen → Bedienungshilfen) lässt sich
+das iPad auf die App festsetzen.
+
 ## Bingokarten und Lottoscheine
 
 Über ⚙️ → ➕ Mehr → „Ausdrucke öffnen“ (Seite `druck.html`). Beide nehmen immer die **Zahlen im Topf**,
@@ -109,7 +124,20 @@ auf jedem Gerät gleich und brauchen keine Internet-Stimme.
 
 Laden die Dateien einmal nicht, liest ersatzweise die Stimme des Browsers vor.
 Neu erzeugen: `tools/thorsten_audio.py` (Anleitung im Skript), danach die WAV-Dateien mit
-`afconvert -f m4af -d aac -b 40000` nach `audio/*.m4a` umwandeln.
+`afconvert -f m4af -d aac -b 40000` nach `audio/*.m4a` umwandeln. Danach `audio/liste.json` neu erzeugen
+(Liste aller Ansagen für den Offline-Speicher) und in `sw.js` die `VERSION` erhöhen:
+
+```bash
+python3 -c "import json,os;json.dump(sorted(f for f in os.listdir('audio') if f.endswith('.m4a')),open('audio/liste.json','w'))"
+```
+
+## Datenschutz
+
+- Ohne „Mehrere iPads“ bleibt alles auf dem Gerät.
+- Beim Verbinden tauschen die Geräte über einen öffentlichen Test-Server (HiveMQ, als Ersatz EMQX) nur Aufgaben,
+  Aufgaben-Einstellungen und einen zufälligen Spielcode aus. Keine Namen, keine Gerätedaten.
+- Schrift, Ansagen und Bibliotheken liegen im Repo, es werden keine fremden Schrift- oder Bibliotheks-Server
+  (CDN) abgefragt.
 
 ## Dateien
 
@@ -124,6 +152,8 @@ Neu erzeugen: `tools/thorsten_audio.py` (Anleitung im Skript), danach die WAV-Da
 - `style.css`: Gestaltung
 - `audio/`: Ansagen mit der Stimme Thorsten (415 kleine m4a-Dateien)
 - `tools/thorsten_audio.py`: erzeugt die Ansagen mit Piper
+- `sw.js`, `manifest.webmanifest`, `icons/`: Home-Bildschirm-App und Offline-Speicher.
+  Kommen Dateien hinzu, die offline da sein sollen: in `sw.js` die Liste `FILES` anpassen und `VERSION` erhöhen.
 - `fonts/`: Leselern-Schrift **Andika** von SIL International (SIL Open Font License, siehe `fonts/OFL.txt`)
 
 Einstellungen und Spielstand werden im Browser des jeweiligen Geräts gespeichert.
