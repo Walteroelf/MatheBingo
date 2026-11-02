@@ -533,7 +533,10 @@ const switchClick = () => S.switchKey === 'mouse' && switchOK() && lastPointer =
 
 function switchPress() {
   if (state.rolling || net.boardMode || !$('#drawer').hidden || !$('#guide').hidden || $('#confirmDlg').open || isDone()) return;
-  if (state.current && (S.weiter || Date.now() < lockUntil)) return;
+  // Auf „Bitte berühren“ immer. Steht eine Aufgabe da: nur ohne „Weiter“ und nach der Sperrzeit.
+  // (Nicht an state.current festmachen: Das bleibt nach „Weiter“ gesetzt.)
+  const onStart = !$('#screenTouch').hidden;
+  if (!onStart && (S.weiter || Date.now() < lockUntil)) return;
   if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
   roll();
 }
