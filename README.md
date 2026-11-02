@@ -7,7 +7,7 @@ ohne Installation und ohne Anmeldung: https://walteroelf.github.io/MatheBingo/
 ## Würfeln
 
 - **„Bitte berühren“**: Ein Tipp irgendwo auf den Bildschirm würfelt, auf Wunsch auch ein Taster (siehe [Taster](#taster)).
-  Vollbild gibt es über ⚙️ → Dieses iPad → **Vollbild** und auf der Tafel über den Knopf unten rechts.
+  **Vollbild ein und aus**: kleiner Knopf oben links (auf der Tafel unten rechts), außerdem ⚙️ → Dieses iPad → **Vollbild**.
   Läuft die App vom Home-Bildschirm, ist sie schon ohne Safari-Leiste, dann fehlen diese Knöpfe.
 - Die Aufgabe rollt mit dem gewählten Würfel-Klang aus, erscheint groß mit Konfetti und wird vorgelesen.
   Darunter auf Wunsch Punktebild (Zehnerfelder bei Plus/Minus, Punktefeld bei Mal) und Ergebnis,
@@ -112,7 +112,7 @@ gewürfelten Aufgaben, ohne Ergebnisse, jede in der Farbe des iPads, das sie gew
 Unter der neuesten Aufgabe stehen immer die Knöpfe **„Punktebild zeigen“** und **„Ergebnis zeigen“**
 (bei Geteilt nur das Ergebnis), z. B. zum gemeinsamen Nachrechnen am Smartboard. Aufgedeckt wird nur auf der
 Tafel; nochmal Antippen versteckt es wieder, bei der nächsten Aufgabe ist beides wieder zugedeckt. Die Aufgabe
-bleibt dabei an ihrem Platz. Unten rechts schaltet **⛶ Vollbild** die Tafel ins Vollbild.
+bleibt dabei an ihrem Platz. Unten rechts schaltet **Vollbild** die Tafel ins Vollbild und wieder zurück.
 
 ## Als App auf den Home-Bildschirm
 

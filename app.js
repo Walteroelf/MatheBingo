@@ -290,6 +290,7 @@ function showScreen(name) {
   $('#screenTask').hidden = name !== 'task';
   $('#screenDone').hidden = name !== 'done';
   $('#screenBoard').hidden = name !== 'board';
+  renderFullscreen();
 }
 
 function renderTouchCount() {
@@ -625,7 +626,7 @@ function bindSwitch() {
       return;
     }
     if (!switchOK() || S.switchKey !== 'mouse') return;
-    if (e.target.closest('#drawer, #guide, #btnGear, #btnWeiter, #confirmDlg')) return;
+    if (e.target.closest('#drawer, #guide, #btnGear, #btnWeiter, #btnFs, #btnBoardFs, #confirmDlg')) return;
     initAudio();
     switchPress();
   }, true);
@@ -818,11 +819,37 @@ const isFullscreen = () => !!(document.fullscreenElement || document.webkitFulls
 const isHomeApp = () => navigator.standalone === true ||
   !!(window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches);
 
-// Vollbild nur über die Knöpfe (⚙️ → Dieses iPad und auf der Tafel), nicht mehr automatisch
+// Vollbild ein und aus: Knopf oben links auf dem iPad, unten rechts auf der Tafel, dazu ⚙️ → Dieses iPad.
+// Vom Home-Bildschirm gibt es keine Browser-Leiste, darum dort keine Knöpfe.
+const FS_ICONS = {
+  on: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg>',
+  off: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5"/></svg>',
+};
+
 function renderFullscreen() {
-  const hide = !canFullscreen || isFullscreen() || isHomeApp();
-  $('#rowFullscreen').hidden = hide;
-  $('#btnBoardFs').hidden = hide;
+  const avail = canFullscreen && !isHomeApp();
+  const fs = isFullscreen();
+  const label = fs ? 'Vollbild beenden' : 'Vollbild';
+  $('#rowFullscreen').hidden = !avail;
+  $('#btnFullscreen').textContent = fs ? 'Beenden' : 'Einschalten';
+  $('#btnBoardFs').hidden = !avail;
+  $('#btnBoardFs').innerHTML = `${FS_ICONS[fs ? 'off' : 'on']}<span>${label}</span>`;
+  $('#btnFs').hidden = !avail || !$('#screenBoard').hidden;   // auf der Tafel gibt es den großen Knopf
+  $('#btnFs').innerHTML = FS_ICONS[fs ? 'off' : 'on'];
+  $('#btnFs').setAttribute('aria-label', label);
+}
+
+function toggleFullscreen() {
+  if (isFullscreen()) exitFullscreen();
+  else requestFullscreen();
+}
+
+function exitFullscreen() {
+  try {
+    const exit = document.exitFullscreen || document.webkitExitFullscreen;
+    const p = exit && exit.call(document);
+    if (p && p.catch) p.catch(() => {});
+  } catch { /* schon beendet */ }
 }
 
 function requestFullscreen() {
@@ -955,14 +982,22 @@ function bind() {
     previewSound(S.sound);
   });
   $('#btnTestVoice').addEventListener('click', () => { initAudio(); announce({ a: 7, op: '+', b: 3 }); });
-  $('#btnFullscreen').addEventListener('click', () => { requestFullscreen(); closeDrawer(); });
-  $('#btnBoardFs').addEventListener('click', requestFullscreen);
+  $('#btnFullscreen').addEventListener('click', () => { toggleFullscreen(); closeDrawer(); });
+  for (const id of ['#btnBoardFs', '#btnFs']) {
+    $(id).addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (switchClick()) return;   // der Maus-Taster würfelt nur
+      toggleFullscreen();
+      e.currentTarget.blur();
+    });
+  }
   $('#btnBoardDots').addEventListener('click', () => setBoardReveal('dots', true));
   $('#btnBoardResult').addEventListener('click', () => setBoardReveal('result', true));
   $('#boardDots').addEventListener('click', () => setBoardReveal('dots', false));
   $('#boardResult').addEventListener('click', () => setBoardReveal('result', false));
-  document.addEventListener('fullscreenchange', renderDrawer);
-  document.addEventListener('webkitfullscreenchange', renderDrawer);
+  for (const ev of ['fullscreenchange', 'webkitfullscreenchange']) {
+    document.addEventListener(ev, () => { renderFullscreen(); if (!$('#drawer').hidden) renderDrawer(); });
+  }
 }
 
 // ---------- Start ----------
