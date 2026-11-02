@@ -120,7 +120,7 @@ In Safari auf dem iPad: Teilen-Symbol → **Zum Home-Bildschirm**. Dann:
 
 - startet Mathe-Bingo mit eigenem Symbol im Vollbild, ohne Safari-Leiste,
 - funktioniert es mit **einem** iPad auch ganz ohne Internet (nachdem es einmal mit Internet geöffnet wurde;
-  dabei werden auch alle Ansagen gespeichert, zusammen etwa 6 MB),
+  dabei werden auch alle Ansagen gespeichert, zusammen gut 1 MB),
 - holt es sich Updates automatisch, sobald Internet da ist.
 
 Wichtig: Die Home-Bildschirm-App hat einen eigenen Speicher, getrennt von Safari. Ein QR-Code öffnet sich immer
@@ -138,28 +138,29 @@ also genau die Zahlen, die auch gewürfelt werden.
 - **Lottoscheine** „Lotto-Schein von ____“ mit allen Zahlen aus dem Topf der Reihe nach,
   drei Scheine pro A4-Seite (0–20 als 7 × 3, große Zahlenräume 10 pro Reihe).
 
-## Vorlesen: Stimme „Thorsten“
+## Vorlesen: Stimme „Jeuwre“
 
-Die Aufgaben spricht **Thorsten**, die freie deutsche Stimme von Thorsten Müller
-([Thorsten-Voice](https://github.com/thorstenMueller/Thorsten-Voice), Daten CC0), erzeugt mit
-[Piper](https://github.com/OHF-Voice/piper1-gpl) (Stimme `de_DE-thorsten-high`).
-Die Ansagen liegen als fertige Tondateien im Ordner `audio/` – wie beim ABC-Bingo. Sie klingen deshalb
-auf jedem Gerät gleich und brauchen keine Internet-Stimme.
+Die Aufgaben spricht ein echter Mensch: Wikimedia-Commons-Nutzer
+[Jeuwre](https://commons.wikimedia.org/wiki/User:Jeuwre), derselbe Sprecher wie beim ABC-Bingo.
+Jede Aufgabe wird aus drei Wörtern zusammengesetzt: „sieben“ – „plus“ – „drei“, mit einer kurzen Pause nach der
+ersten Zahl und einer etwas längeren vor der zweiten. Die Ansagen liegen als fertige Tondateien im Ordner
+`audio/`; sie klingen auf jedem Gerät gleich und gehen auch ohne Internet.
 
-- `n_plus`, `n_minus`, `n_mal`, `n_durch`: erste Zahl mit Rechenzeichen („sieben plus“), herausgeschnitten aus
-  „sieben plus, fünf“ – das Komma erzeugt eine echte Pause, in der sauber geschnitten wird
-- `n`: die zweite Zahl („drei“), herausgeschnitten aus „eins plus, drei“ (Melodie eines Satzendes,
-  sauberer Wortanfang ohne Zischlaut von „plus“)
-- Beim Abspielen wird die Stille an Anfang und Ende abgeschnitten; dazwischen bleibt eine kurze natürliche Pause.
+- `0.m4a` … `100.m4a`: die Zahlen, aus seinen Aufnahmen `De-Eins.ogg` … `De-Dreißig.ogg`, `De-einunddreißig.ogg` …,
+  `De-Vierzig.ogg` … `De-Hundert.ogg`
+- `plus.m4a`, `minus.m4a`, `mal.m4a`: aus `De-plus.ogg`, `De-minus.ogg`, `De-mal.ogg`
+- `durch.m4a`: aus seinem Wort `De-Durchzug.ogg` geschnitten (ein einzelnes „durch“ hat er nicht aufgenommen)
+
+Die Aufnahmen sind gekürzt, auf gleiche Lautheit gebracht und als m4a gespeichert. Lizenz der Originale und der
+bearbeiteten Dateien: [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.de).
+Die Originale: `https://commons.wikimedia.org/wiki/File:De-<Name>.ogg`.
 
 Laden die Dateien einmal nicht, liest ersatzweise die Stimme des Browsers vor.
-Neu erzeugen: `tools/thorsten_audio.py` (Anleitung im Skript), danach die WAV-Dateien mit
-`afconvert -f m4af -d aac -b 40000` nach `audio/*.m4a` umwandeln. Danach `audio/liste.json` neu erzeugen
-(Liste aller Ansagen für den Offline-Speicher) und in `sw.js` die `VERSION` erhöhen:
+Neu erzeugen (macOS): `python3 tools/jeuwre_audio.py laden <ordner>`, dann `python3 tools/jeuwre_audio.py bauen <ordner>`
+(Anleitung im Skript), danach in `sw.js` die `VERSION` erhöhen.
 
-```bash
-python3 -c "import json,os;json.dump(sorted(f for f in os.listdir('audio') if f.endswith('.m4a')),open('audio/liste.json','w'))"
-```
+Bis November 2026 sprach die Piper-Stimme „Thorsten“; die Dateien und `tools/thorsten_audio.py` sind in der
+Versionsgeschichte auf GitHub erhalten.
 
 ## Datenschutz
 
@@ -180,8 +181,8 @@ python3 -c "import json,os;json.dump(sorted(f for f in os.listdir('audio') if f.
   werden erst beim Verbinden geladen
 - `core.js`: gemeinsame Grundlage (Aufgaben, Zahlen-Topf, Speichern)
 - `style.css`: Gestaltung
-- `audio/`: Ansagen mit der Stimme Thorsten (415 kleine m4a-Dateien)
-- `tools/thorsten_audio.py`: erzeugt die Ansagen mit Piper
+- `audio/`: Ansagen mit der Stimme von Jeuwre (105 kleine m4a-Dateien, CC BY-SA 4.0)
+- `tools/jeuwre_audio.py`: lädt und bearbeitet die Ansagen
 - `sw.js`, `manifest.webmanifest`, `icons/`: Home-Bildschirm-App und Offline-Speicher.
   Kommen Dateien hinzu, die offline da sein sollen: in `sw.js` die Liste `FILES` anpassen und `VERSION` erhöhen.
 - `fonts/`: Leselern-Schrift **Andika** von SIL International (SIL Open Font License, siehe `fonts/OFL.txt`)

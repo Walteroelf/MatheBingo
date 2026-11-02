@@ -57,12 +57,13 @@ function draw() {
   return { t: pick(openTasks(pick(left), usedKeys())) };
 }
 
-// ---------- Ton: Thorsten-Stimme, Ersatzstimme, Trommel ----------
+// ---------- Ton: Stimme, Ersatzstimme, Trommel ----------
 
-// Thorsten (Piper-Stimme von Thorsten Müller, CC0): vorab erzeugte Tondateien in audio/.
-// Erster Teil mit Rechenzeichen in einem Zug („7_plus“), zweite Zahl nahtlos dahinter („3“).
+// Stimme: Aufnahmen von Jeuwre (Wikimedia Commons, CC BY-SA 4.0), wie beim ABC-Bingo.
+// Jede Aufgabe aus drei Wörtern: „sieben“ – „plus“ – „drei“ (audio/7.m4a, plus.m4a, 3.m4a).
 const OP_FILE = { '+': 'plus', '-': 'minus', '*': 'mal', '/': 'durch' };
-const JOIN_GAP_S = 0.04;   // kurze Pause zwischen „sieben plus“ und „drei“, wie im gesprochenen Satz
+// Pausen nach der ersten Zahl und nach dem Rechenwort; die zweite ist etwas länger, wie ein Komma
+const JOIN_GAPS_S = [0.12, 0.2];
 const SILENCE = 0.002;   // niedrig, damit leise Anfangslaute (f, s) erhalten bleiben
 const clipCache = new Map();
 
@@ -94,14 +95,14 @@ function loadClip(name) {
   return clipCache.get(name);
 }
 
-const clipsFor = (t) => [`${t.a}_${OP_FILE[t.op]}`, `${t.b}`];
+const clipsFor = (t) => [`${t.a}`, OP_FILE[t.op], `${t.b}`];
 
 // Schon beim Würfeln laden, damit die Ansage nach dem Rollen sofort kommt
 function preloadVoice(t) {
   if (audioCtx) for (const n of clipsFor(t)) loadClip(n).catch(() => {});
 }
 
-async function playThorsten(t, run, delay = 0) {
+async function playVoice(t, run, delay = 0) {
   if (!audioCtx) return false;
   let clips;
   try { clips = await Promise.all(clipsFor(t).map(loadClip)); } catch { return false; }
@@ -110,12 +111,12 @@ async function playThorsten(t, run, delay = 0) {
   gain.gain.value = S.volume;
   gain.connect(audioCtx.destination);
   let at = audioCtx.currentTime + 0.05 + delay;
-  voiceSources = clips.map((c) => {
+  voiceSources = clips.map((c, i) => {
     const src = audioCtx.createBufferSource();
     src.buffer = c.buf;
     src.connect(gain);
     src.start(at, c.start, c.dur);
-    at += c.dur + JOIN_GAP_S;
+    at += c.dur + (JOIN_GAPS_S[i] || 0);
     return src;
   });
   voiceEndsAt = performance.now() + (at - audioCtx.currentTime) * 1000;
@@ -147,7 +148,7 @@ async function announce(t, delay = 0) {
   if (!S.speech) return;
   stopSpeech();
   const run = speechRun;
-  if (await playThorsten(t, run, delay)) return;
+  if (await playVoice(t, run, delay)) return;
   if (delay) await sleep(delay * 1000);
   if (run !== speechRun) return;
   voiceEndsAt = performance.now() + 2500;   // geschätzt
