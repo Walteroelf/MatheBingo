@@ -35,6 +35,8 @@ let sawMsg = false;
 let claim = null;       // { t, confirmed, ts, echoTs } während des Würfelns
 let qrVisible = false;
 let qrBoardVisible = false;
+// Vom Würfel-iPad auf der Tafel aufgedeckt: Punktebild/Ergebnis der Aufgabe `key` (r|ts|by), jüngster Stand gewinnt
+let shown = { key: '', dots: false, result: false, ts: 0 };
 const pendingBy = {};   // Gerät → { keys, ts }: noch verdeckte Würfe anderer iPads
 
 const isOnline = () => !!(client && connected);
@@ -141,6 +143,7 @@ function publish() {
     drawn: state.history,
     // andere zeigen es erst nach dem Aufdecken; Ergebnis als Zahl wie bisher, Aufgabe als Text
     pending: claim && claim.t ? [S.unique === 'task' ? taskKey(claim.t) : claim.t.r] : [],
+    show: shown,
     by: DEVICE,
   };
   client.publish(TOPIC_PREFIX + net.code, JSON.stringify(msg), { qos: 1, retain: true });
@@ -184,6 +187,10 @@ function receive(raw) {
   try { m = JSON.parse(raw); } catch { return; }
   if (!m || typeof m.gen !== 'string' || !isNum(m.genTs) || !Array.isArray(m.drawn)) return;
   sawMsg = true;
+  const sh = m.show;
+  if (sh && typeof sh.key === 'string' && isNum(sh.ts) && sh.ts > shown.ts) {
+    shown = { key: sh.key.slice(0, 80), dots: !!sh.dots, result: !!sh.result, ts: sh.ts };
+  }
   if (typeof m.by === 'string' && m.by !== DEVICE) {
     const p = Array.isArray(m.pending)
       ? m.pending.filter((x) => isNum(x) || typeof x === 'string').map(String) : [];
@@ -397,6 +404,7 @@ function renderSync() {
   $('#qrBoardBox').hidden = !(code && qrBoardVisible);
   if (code && qrBoardVisible && window.qrcode) renderQr($('#qrBoard'), boardUrl());
   renderBoard();
+  renderTafelBtns();
 }
 
 function bindSync() {

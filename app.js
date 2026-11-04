@@ -302,6 +302,7 @@ function showScreen(name) {
   $('#screenDone').hidden = name !== 'done';
   $('#screenBoard').hidden = name !== 'board';
   renderFullscreen();
+  renderTafelBtns();
 }
 
 function renderTouchCount() {
@@ -399,6 +400,7 @@ function showExtras(t) {
   $('#result').textContent = t ? `= ${t.r}` : '';
   $('#result').hidden = !(t && S.resultShow === 'always');
   $('#btnResult').hidden = !(t && S.resultShow === 'tap');
+  renderTafelBtns(t);
   $('#screenTask').classList.toggle('noextras', S.dotsShow === 'off' && S.resultShow === 'off');
 }
 
@@ -463,12 +465,36 @@ function onRemote(roundChanged) {
   if (!$('#drawer').hidden) renderDrawer();
 }
 
+// ---------- Tafel vom Würfel-iPad aus bedienen ----------
+// Zwei Knöpfe unten rechts, nur wenn dieses iPad verbunden ist und gerade eine Aufgabe zeigt.
+// Sie decken Punktebild bzw. Ergebnis auf den Tafeln auf (sync.js: shown); die nächste Aufgabe ist wieder zugedeckt.
+
+const entryId = (t) => `${t.r}|${t.ts}|${t.by}`;
+
+function renderTafelBtns(t = state.current) {
+  const on = !!(t && isOnline() && !net.boardMode && !state.rolling && !$('#screenTask').hidden);
+  $('#tafelBtns').hidden = !on;
+  const same = on && shown.key === entryId(t);
+  $('#btnTafelDots').classList.toggle('on', same && shown.dots);
+  $('#btnTafelResult').classList.toggle('on', same && shown.result);
+}
+
+function tafelToggle(what) {
+  const t = state.current;
+  if (!t || !isOnline()) return;
+  const key = entryId(t);
+  shown = { key, dots: shown.key === key && shown.dots, result: shown.key === key && shown.result, ts: Date.now() };
+  shown[what] = !shown[what];
+  renderTafelBtns();
+  publish();
+}
+
 // ---------- Tafel-Ansicht ----------
 
 let boardShownLast = null;
 let boardListOpen = false;   // „Alle Ergebnisse anzeigen“ gedrückt
 // Aufgedeckt auf der Tafel, gilt nur für die neueste Aufgabe und nur auf diesem Gerät
-let boardReveal = { key: '', dots: false, result: false };
+let boardReveal = { key: '', dots: false, result: false, shownTs: 0 };
 
 function renderBoardExtras(t) {
   const dots = t ? dotsHtml(t) : '';
@@ -499,7 +525,11 @@ function renderBoard() {
   boardShownLast = last;
   // Neue Aufgabe: Punktebild und Ergebnis wieder zudecken
   const key = last ? `${last.r}|${last.ts}|${last.by}` : '';
-  if (key !== boardReveal.key) boardReveal = { key, dots: false, result: false };
+  if (key !== boardReveal.key) boardReveal = { key, dots: false, result: false, shownTs: 0 };
+  // Vom Würfel-iPad aufgedeckt (nur einmal übernehmen, danach gilt wieder das Antippen auf der Tafel)
+  if (key && shown.key === key && shown.ts > boardReveal.shownTs) {
+    boardReveal = { key, dots: shown.dots, result: shown.result, shownTs: shown.ts };
+  }
   renderBoardExtras(last);
   // Alle bisherigen Ergebnisse, nach Größe sortiert (zum Prüfen beim Bingo), nur auf Knopfdruck
   const byResult = new Map();
@@ -649,7 +679,7 @@ function bindSwitch() {
       return;
     }
     if (!switchOK() || S.switchKey !== 'mouse') return;
-    if (e.target.closest('#drawer, #guide, #btnGear, #btnWeiter, #btnFs, #btnBoardFs, #confirmDlg')) return;
+    if (e.target.closest('#drawer, #guide, #btnGear, #btnWeiter, #btnFs, #btnBoardFs, #tafelBtns, #confirmDlg')) return;
     initAudio();
     switchPress();
   }, true);
@@ -1011,6 +1041,14 @@ function bind() {
       e.stopPropagation();
       if (switchClick()) return;   // der Maus-Taster würfelt nur
       toggleFullscreen();
+      e.currentTarget.blur();
+    });
+  }
+  for (const [id, what] of [['#btnTafelDots', 'dots'], ['#btnTafelResult', 'result']]) {
+    $(id).addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (switchClick()) return;   // der Maus-Taster würfelt nur
+      tafelToggle(what);
       e.currentTarget.blur();
     });
   }

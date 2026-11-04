@@ -114,7 +114,10 @@ Antippen der Liste versteckt sie wieder.
 Unter der neuesten Aufgabe stehen immer die Knöpfe **„Punktebild zeigen“** und **„Ergebnis zeigen“**
 z. B. zum gemeinsamen Nachrechnen am Smartboard. Aufgedeckt wird nur auf der
 Tafel; nochmal Antippen versteckt es wieder, bei der nächsten Aufgabe ist beides wieder zugedeckt. Die Aufgabe
-bleibt dabei an ihrem Platz. Unten rechts schaltet **Vollbild** die Tafel ins Vollbild und wieder zurück.
+bleibt dabei an ihrem Platz. Vom Würfel-iPad aus geht das auch: Ist es verbunden, erscheinen unten rechts die Knöpfe
+**„Tafel: Punktebild“** und **„Tafel: Ergebnis“**. Sie decken es auf allen Tafeln auf (nochmal drücken versteckt es),
+würfeln nicht und werden bei der nächsten Aufgabe zurückgesetzt. Der Taster deckt nichts auf.
+Unten rechts schaltet **Vollbild** die Tafel ins Vollbild und wieder zurück.
 
 ## Als App auf den Home-Bildschirm
 
