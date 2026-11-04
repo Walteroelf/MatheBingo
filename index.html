@@ -11,7 +11,7 @@
   <title>Mathe-Bingo</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/icon-180.png">
-  <link rel="stylesheet" href="style.css?v=29">
+  <link rel="stylesheet" href="style.css?v=30">
 </head>
 <body class="game">
 
@@ -50,7 +50,8 @@
       <div id="boardResult" class="result schrift" hidden title="Antippen zum Verstecken"></div>
     </div>
   </div>
-  <div id="boardList" class="schrift"></div>
+  <button id="btnBoardList" class="result-btn" hidden>Alle Ergebnisse anzeigen</button>
+  <div id="boardList" class="schrift" title="Antippen zum Verstecken" hidden></div>
   <button id="btnBoardFs" hidden></button>
 </div>
 
@@ -343,7 +344,7 @@
 <script src="sounds.js?v=18"></script>
 <script src="sync.js?v=5"></script>
 <script src="guide.js?v=1"></script>
-<script src="app.js?v=32"></script>
+<script src="app.js?v=33"></script>
 <script>
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>

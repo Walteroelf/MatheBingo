@@ -265,17 +265,28 @@ function arrayHtml(rows, cols) {
   return html + '</div>';
 }
 
+// Je mehr Zehnerfelder, desto kleiner die Punkte, damit auch 95 + 5 aufs Bild passt
+const dotScale = (frames) => (frames <= 3 ? 1 : frames <= 6 ? 0.8 : frames <= 10 ? 0.62 : frames <= 14 ? 0.5 : 0.42);
+const frameCount = (n) => Math.max(1, Math.ceil(n / 10));
+const scaled = (frames, html) => `<div class="ds" style="--k:${dotScale(frames)}">${html}</div>`;
+
+// Geteilt: a Punkte in Gruppen zu je b (das Ergebnis ist die Zahl der Gruppen)
+function groupsHtml(a, b) {
+  if (!b) return '';
+  const n = Math.round(a / b);
+  let html = '<div class="frames">';
+  for (let g = 0; g < n; g++) html += '<div class="frame">' + '<span class="dot on"></span>'.repeat(b) + '</div>';
+  return scaled(Math.max(1, Math.ceil(n / 2)), html + '</div>');
+}
+
 function dotsHtml(t) {
   if (t.op === '+') {
-    if (t.a > 20 || t.b > 20) return '';
-    return framesHtml(t.a) + '<span class="sign">+</span>' + framesHtml(t.b, 'b');
+    return scaled(frameCount(t.a) + frameCount(t.b),
+      framesHtml(t.a) + '<span class="sign">+</span>' + framesHtml(t.b, 'b'));
   }
-  if (t.op === '-') {
-    if (t.a > 20) return '';
-    return framesHtml(t.a, '', t.b);
-  }
+  if (t.op === '-') return scaled(frameCount(t.a), framesHtml(t.a, '', t.b));
   if (t.op === '*') return arrayHtml(t.a, t.b);
-  return ''; // Geteilt: kein Bild, das würde das Ergebnis verraten
+  return groupsHtml(t.a, t.b);
 }
 
 // ---------- Bildschirme und Ablauf ----------
@@ -455,6 +466,7 @@ function onRemote(roundChanged) {
 // ---------- Tafel-Ansicht ----------
 
 let boardShownLast = null;
+let boardListOpen = false;   // „Alle Ergebnisse anzeigen“ gedrückt
 // Aufgedeckt auf der Tafel, gilt nur für die neueste Aufgabe und nur auf diesem Gerät
 let boardReveal = { key: '', dots: false, result: false };
 
@@ -489,8 +501,19 @@ function renderBoard() {
   const key = last ? `${last.r}|${last.ts}|${last.by}` : '';
   if (key !== boardReveal.key) boardReveal = { key, dots: false, result: false };
   renderBoardExtras(last);
-  $('#boardList').innerHTML = list.map((t) =>
-    `<div class="${t === last ? 'last' : ''}" style="background:${colorOf(t)}">${fmt(t)}</div>`).join('');
+  // Alle bisherigen Ergebnisse, nach Größe sortiert (zum Prüfen beim Bingo), nur auf Knopfdruck
+  const byResult = new Map();
+  for (const t of list) byResult.set(t.r, t);
+  const results = [...byResult.keys()].sort((x, y) => x - y);
+  if (!results.length) boardListOpen = false;
+  $('#btnBoardList').hidden = !results.length || boardListOpen;
+  const listEl = $('#boardList');
+  listEl.hidden = !boardListOpen;
+  listEl.classList.toggle('many', results.length > 30);
+  listEl.innerHTML = results.map((r) => {
+    const t = byResult.get(r);
+    return `<div class="${t === last ? 'last' : ''}" style="background:${colorOf(t)}">${r}</div>`;
+  }).join('');
 }
 
 // ---------- Sperrzeit ohne „Weiter“ ----------
@@ -995,6 +1018,8 @@ function bind() {
   $('#btnBoardResult').addEventListener('click', () => setBoardReveal('result', true));
   $('#boardDots').addEventListener('click', () => setBoardReveal('dots', false));
   $('#boardResult').addEventListener('click', () => setBoardReveal('result', false));
+  $('#btnBoardList').addEventListener('click', () => { boardListOpen = true; renderBoard(); });
+  $('#boardList').addEventListener('click', () => { boardListOpen = false; renderBoard(); });
   for (const ev of ['fullscreenchange', 'webkitfullscreenchange']) {
     document.addEventListener(ev, () => { renderFullscreen(); if (!$('#drawer').hidden) renderDrawer(); });
   }

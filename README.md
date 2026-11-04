@@ -10,7 +10,7 @@ ohne Installation und ohne Anmeldung: https://walteroelf.github.io/MatheBingo/
   **Vollbild ein und aus**: kleiner Knopf oben links (auf der Tafel unten rechts), außerdem ⚙️ → Dieses iPad → **Vollbild**.
   Läuft die App vom Home-Bildschirm, ist sie schon ohne Safari-Leiste, dann fehlen diese Knöpfe.
 - Die Aufgabe rollt mit dem gewählten Würfel-Klang aus, erscheint groß mit Konfetti und wird vorgelesen.
-  Darunter auf Wunsch Punktebild (Zehnerfelder bei Plus/Minus, Punktefeld bei Mal) und Ergebnis,
+  Darunter auf Wunsch Punktebild für alle Zahlen (Zehnerfelder bei Plus/Minus, Punktefeld bei Mal, Gruppen bei Geteilt; bei großen Zahlen kleinere Punkte) und Ergebnis,
   jeweils aus, auf Antippen (Knopf) oder immer. Unter der Aufgabe ist dafür fester Platz, so bleibt die Aufgabe
   beim Aufdecken stehen.
 - **Tipp auf die Aufgabe**: Sie wird nochmal vorgelesen.
@@ -107,10 +107,12 @@ Gut zu wissen:
 ### Tafel-Ansicht (Beamer, Smartboard)
 
 Verbinden → Tafel-Ansicht: **QR-Code für die Tafel** scannen, **Link kopieren** und auf dem Beamer-Rechner
-öffnen, oder **Dieses Gerät als Tafel**. Die Tafel zeigt die neueste Aufgabe groß und darunter alle bisher
-gewürfelten Aufgaben, ohne Ergebnisse, jede in der Farbe des iPads, das sie gewürfelt hat.
+öffnen, oder **Dieses Gerät als Tafel**. Die Tafel zeigt die neueste Aufgabe groß. Unten steht der Knopf
+**„Alle Ergebnisse anzeigen“**: Er zeigt alle bisher gewürfelten Ergebnisse der Größe nach sortiert, jedes in der
+Farbe des iPads, das es gewürfelt hat, so lässt sich bei einem Bingo prüfen, ob die Zahlen alle dabei waren.
+Antippen der Liste versteckt sie wieder.
 Unter der neuesten Aufgabe stehen immer die Knöpfe **„Punktebild zeigen“** und **„Ergebnis zeigen“**
-(bei Geteilt nur das Ergebnis), z. B. zum gemeinsamen Nachrechnen am Smartboard. Aufgedeckt wird nur auf der
+z. B. zum gemeinsamen Nachrechnen am Smartboard. Aufgedeckt wird nur auf der
 Tafel; nochmal Antippen versteckt es wieder, bei der nächsten Aufgabe ist beides wieder zugedeckt. Die Aufgabe
 bleibt dabei an ihrem Platz. Unten rechts schaltet **Vollbild** die Tafel ins Vollbild und wieder zurück.
 

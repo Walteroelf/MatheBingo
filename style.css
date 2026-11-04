@@ -150,9 +150,10 @@ body.game {
 .dots { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2.5vmin; pointer-events: none; }
 .dots:empty { display: none; }
 .dots .sign { font-size: 5vmin; font-weight: 800; color: var(--yellow); }
+.ds { display: contents; }
 .frames { display: flex; flex-wrap: wrap; gap: 1.5vmin; justify-content: center; }
 .frame {
-  --d: clamp(16px, 3.6vmin, 38px);
+  --d: calc(clamp(16px, 3.6vmin, 38px) * var(--k, 1));
   display: grid;
   grid-template-columns: repeat(5, var(--d));
   gap: calc(var(--d) / 4);
@@ -410,7 +411,7 @@ select { padding: 9px 12px; border-radius: 10px; border: 2px solid #ccc; backgro
   gap: 2vh 5vw; padding-top: 4vh;
 }
 #boardExtras .dots, #boardExtras .result { pointer-events: auto; cursor: pointer; }
-#boardExtras .frame { --d: clamp(10px, 2.6vmin, 30px); }
+#boardExtras .frame { --d: calc(clamp(10px, 2.6vmin, 30px) * var(--k, 1)); }
 #boardExtras .array { --d: clamp(7px, 1.9vmin, 22px); }
 #boardResult { font-size: min(11vw, 17vh); }
 #boardLast {
@@ -425,11 +426,14 @@ select { padding: 9px 12px; border-radius: 10px; border: 2px solid #ccc; backgro
 #boardLast .op.mul { font-size: 1.05em; line-height: 0.5; }
 #boardLast.pop { animation: pop 0.5s ease-out; }
 @keyframes pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-#boardList { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; max-width: 100%; }
+#boardList[hidden] { display: none; }
+#boardList { cursor: pointer; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; max-width: 100%; }
 #boardList div {
   background: rgba(255, 255, 255, 0.15); border-radius: 12px;
   padding: 0.2rem 0.6rem; font-size: clamp(1.3rem, 3vw, 2.4rem); white-space: nowrap;
 }
+#boardList.many div { font-size: clamp(1rem, 2.1vw, 1.7rem); padding: 0.1rem 0.45rem; }
+#boardList.many { gap: 0.4rem; }
 #boardList div.last { box-shadow: 0 0 0 4px var(--yellow); }
 
 @media (max-width: 520px) {
