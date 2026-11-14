@@ -37,17 +37,17 @@ const COLORS = {
 const colorOf = (t) => (COLORS[t && t.c] || COLORS.blau).hex;
 
 const PRESETS = [
-  { name: 'Plus bis 10', s: { mode: 'plus', max: 10, crossing: true, small: false } },
-  { name: 'Minus bis 10', s: { mode: 'minus', max: 10, crossing: true, small: false } },
-  { name: 'Plus & Minus bis 10', s: { mode: 'plusminus', max: 10, crossing: true, small: false } },
-  { name: 'Kleines 1+1', s: { mode: 'plus', max: 20, crossing: true, small: true } },
-  { name: 'Kleines 1+1 mit Minus', s: { mode: 'plusminus', max: 20, crossing: true, small: true } },
-  { name: 'Plus & Minus bis 20 ohne Zehnerübergang', s: { mode: 'plusminus', max: 20, crossing: false, small: false } },
-  { name: 'Plus & Minus bis 20', s: { mode: 'plusminus', max: 20, crossing: true, small: false } },
-  { name: 'Plus & Minus bis 30', s: { mode: 'plusminus', max: 30, crossing: true, small: false } },
-  { name: '1×1 Kernaufgaben', s: { mode: 'mal', rows: CORE_ROWS, squares: true } },
-  { name: 'Ganzes 1×1', s: { mode: 'mal', rows: ALL_ROWS, squares: false } },
-  { name: 'Geteilt Kernaufgaben', s: { mode: 'geteilt', rows: CORE_ROWS, squares: true } },
+  { name: 'Plus bis 10', ex: '3 + 4', s: { mode: 'plus', max: 10, crossing: true, small: false } },
+  { name: 'Minus bis 10', ex: '9 − 6', s: { mode: 'minus', max: 10, crossing: true, small: false } },
+  { name: 'Plus & Minus bis 10', ex: '7 − 2', s: { mode: 'plusminus', max: 10, crossing: true, small: false } },
+  { name: 'Kleines 1+1', ex: '8 + 7', s: { mode: 'plus', max: 20, crossing: true, small: true } },
+  { name: 'Kleines 1+1 mit Minus', ex: '15 − 7', s: { mode: 'plusminus', max: 20, crossing: true, small: true } },
+  { name: 'Plus & Minus bis 20 ohne Zehnerübergang', ex: '13 + 4', s: { mode: 'plusminus', max: 20, crossing: false, small: false } },
+  { name: 'Plus & Minus bis 20', ex: '17 − 9', s: { mode: 'plusminus', max: 20, crossing: true, small: false } },
+  { name: 'Plus & Minus bis 30', ex: '26 + 8', s: { mode: 'plusminus', max: 30, crossing: true, small: false } },
+  { name: '1×1 Kernaufgaben', ex: '5 · 4', s: { mode: 'mal', rows: CORE_ROWS, squares: true } },
+  { name: 'Ganzes 1×1', ex: '7 · 8', s: { mode: 'mal', rows: ALL_ROWS, squares: false } },
+  { name: 'Geteilt Kernaufgaben', ex: '20 : 4', s: { mode: 'geteilt', rows: CORE_ROWS, squares: true } },
 ];
 
 const OPS = {

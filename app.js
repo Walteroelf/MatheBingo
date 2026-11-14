@@ -6,6 +6,10 @@
 const ROLL_MS = [28, 54, 82, 112, 144, 178, 214, 252, 292, 334, 378, 424];
 const CONFETTI_COLORS = ['#f0c020', '#ffffff', '#4dabf7', '#ff6b6b', '#7bd389'];
 
+// Allererster Start auf diesem Gerät: noch nichts gespeichert (vor jedem save() feststellen)
+let firstRun = false;
+try { firstRun = localStorage.getItem(STORE) === null; } catch { /* privates Fenster: nicht zeigen */ }
+
 const stored = loadStore();
 let S = stored.settings;
 const state = {
@@ -586,7 +590,7 @@ const isDone = () => !$('#screenDone').hidden;
 const switchClick = () => S.switchKey === 'mouse' && switchOK() && lastPointer === 'mouse';
 
 function switchPress() {
-  if (state.rolling || net.boardMode || !$('#drawer').hidden || !$('#guide').hidden || $('#confirmDlg').open || isDone()) return;
+  if (state.rolling || net.boardMode || !$('#drawer').hidden || !$('#guide').hidden || !$('#levels').hidden || $('#confirmDlg').open || isDone()) return;
   // Auf „Bitte berühren“ immer. Steht eine Aufgabe da: nur ohne „Weiter“ und nach der Sperrzeit.
   // (Nicht an state.current festmachen: Das bleibt nach „Weiter“ gesetzt.)
   const onStart = !$('#screenTouch').hidden;
@@ -679,7 +683,7 @@ function bindSwitch() {
       return;
     }
     if (!switchOK() || S.switchKey !== 'mouse') return;
-    if (e.target.closest('#drawer, #guide, #btnGear, #btnWeiter, #btnFs, #btnBoardFs, #tafelBtns, #confirmDlg')) return;
+    if (e.target.closest('#drawer, #guide, #levels, #btnGear, #btnWeiter, #btnFs, #btnBoardFs, #tafelBtns, #confirmDlg')) return;
     initAudio();
     switchPress();
   }, true);
@@ -780,6 +784,43 @@ function setOption(key, value) {
   const taskShown = state.current && !$('#screenTask').hidden && !state.rolling;
   if ((key === 'dotsShow' || key === 'resultShow') && taskShown) showExtras(state.current);
   renderDrawer();
+}
+
+// ---------- Niveau wählen ----------
+// Erster Start und ⚙️ → Aufgaben → „Alle Niveaus ansehen“: Karten von leicht nach schwer.
+
+let levelPick = 0;       // Index in PRESETS
+let levelFirst = false;  // erster Start: es gibt noch nichts, was man abbrechen könnte
+
+const presetIndexOf = (s) => PRESETS.findIndex((p) =>
+  Object.keys(p.s).every((k) => JSON.stringify(p.s[k]) === JSON.stringify(s[k])));
+const DEFAULT_LEVEL = PRESETS.findIndex((p) => p.name === 'Plus & Minus bis 20');
+
+function renderLevels() {
+  $('#levelGrid').innerHTML = PRESETS.map((p, i) => {
+    const n = buildPool({ ...S, ...p.s, excluded: [] }).results.length;
+    return `<button class="lvl ${i === levelPick ? 'on' : ''}" data-lvl="${i}" aria-pressed="${i === levelPick}">
+      <span class="lvl-ex schrift">${p.ex}</span><span class="lvl-name">${p.name}</span>
+      <span class="lvl-n">${n} Ergebnisse</span></button>`;
+  }).join('');
+  $('#btnLevelGo').textContent = levelFirst ? `Los geht’s mit „${PRESETS[levelPick].name}“` : 'Übernehmen';
+  $('#btnLevelCancel').hidden = levelFirst;
+}
+
+function openLevels(first = false) {
+  levelFirst = first;
+  const cur = presetIndexOf(S);
+  levelPick = cur >= 0 ? cur : DEFAULT_LEVEL;
+  closeDrawer();
+  renderLevels();
+  $('#levels').hidden = false;
+}
+
+async function applyLevel() {
+  const keep = $('#levels');
+  keep.hidden = true;
+  await changeGame(PRESETS[levelPick].s);
+  save();   // auch ohne Änderung: damit der Bildschirm nicht wieder als „erster Start“ erscheint
 }
 
 // ---------- Schublade ----------
@@ -934,6 +975,18 @@ function bind() {
   });
   $('#btnWeiter').addEventListener('click', () => { if (!switchClick()) weiter(); });
   $('#btnGear').addEventListener('click', openDrawer);
+  $('#levelGrid').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-lvl]');
+    if (b) { levelPick = +b.dataset.lvl; renderLevels(); }
+  });
+  $('#btnLevelGo').addEventListener('click', applyLevel);
+  $('#btnLevelCancel').addEventListener('click', () => { $('#levels').hidden = true; });
+  $('#btnLevelPrint').addEventListener('click', async (e) => {
+    e.preventDefault();
+    await applyLevel();
+    location.href = 'druck.html';
+  });
+  $('#btnAllLevels').addEventListener('click', () => openLevels(false));
   $('#btnCloseDrawer').addEventListener('click', closeDrawer);
   $('#drawer').addEventListener('click', (e) => { if (e.target.id === 'drawer') closeDrawer(); });
 
@@ -1074,3 +1127,4 @@ renderFullscreen();
 renderStartText();
 backToTouch();
 connect();
+if (firstRun && !net.code && !net.boardMode) openLevels(true);

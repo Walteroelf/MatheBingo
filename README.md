@@ -6,6 +6,10 @@ ohne Installation und ohne Anmeldung: https://walteroelf.github.io/MatheBingo/
 
 ## Würfeln
 
+- **Niveau wählen**: Beim allerersten Start (und nur dann) fragt ein Bildschirm nach dem Niveau: Karten von leicht
+  nach schwer, jeweils mit Beispielaufgabe und Zahl der Ergebnisse. „Los geht’s“ übernimmt die Wahl, der Link
+  **„Passende Bingo-Karten drucken“** öffnet den Karten-Editor mit diesem Niveau. Später: ⚙️ → Aufgaben →
+  **Alle Niveaus mit Beispielen ansehen**. Wer einem gemeinsamen Spiel beitritt oder die Tafel öffnet, sieht ihn nie.
 - **„Bitte berühren“**: Ein Tipp irgendwo auf den Bildschirm würfelt, auf Wunsch auch ein Taster (siehe [Taster](#taster)).
   **Vollbild ein und aus**: kleiner Knopf oben links (auf der Tafel unten rechts), außerdem ⚙️ → Dieses iPad → **Vollbild**.
   Läuft die App vom Home-Bildschirm, ist sie schon ohne Safari-Leiste, dann fehlen diese Knöpfe.

@@ -11,7 +11,7 @@
   <title>Mathe-Bingo</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/icon-180.png">
-  <link rel="stylesheet" href="style.css?v=31">
+  <link rel="stylesheet" href="style.css?v=32">
 </head>
 <body class="game">
 
@@ -111,6 +111,7 @@
       <section data-tab="aufgaben" hidden>
         <div class="scard">
           <h3>Schnellwahl</h3>
+          <button id="btnAllLevels" class="sbtn dark">Alle Niveaus mit Beispielen ansehen</button>
           <div class="btnrow" id="presets"></div>
         </div>
         <div class="scard">
@@ -342,6 +343,19 @@
   </div>
 </div>
 
+<div id="levels" hidden>
+  <div id="levelsInner" role="dialog" aria-label="Aufgabenniveau wählen">
+    <h2>Welches Niveau passt zu deiner Klasse?</h2>
+    <p class="tiny">Von leicht nach schwer. Du kannst es jederzeit unter ⚙️ → Aufgaben ändern.</p>
+    <div id="levelGrid"></div>
+    <div id="levelFoot">
+      <button id="btnLevelGo" class="sbtn"></button>
+      <button id="btnLevelCancel" class="sbtn light">Abbrechen</button>
+      <a id="btnLevelPrint" href="druck.html">Passende Bingo-Karten drucken →</a>
+    </div>
+  </div>
+</div>
+
 <dialog id="confirmDlg">
   <p id="confirmText"></p>
   <div class="dlg-actions">
@@ -350,11 +364,11 @@
   </div>
 </dialog>
 
-<script src="core.js?v=23"></script>
+<script src="core.js?v=24"></script>
 <script src="sounds.js?v=18"></script>
 <script src="sync.js?v=6"></script>
 <script src="guide.js?v=1"></script>
-<script src="app.js?v=34"></script>
+<script src="app.js?v=35"></script>
 <script>
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
