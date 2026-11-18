@@ -960,7 +960,8 @@ function renderFullscreen() {
   $('#rowFullscreen').hidden = !avail;
   $('#btnFullscreen').textContent = fs ? 'Beenden' : 'Einschalten';
   $('#btnBoardFs').hidden = !avail;
-  $('#btnBoardFs').innerHTML = `${FS_ICONS[fs ? 'off' : 'on']}<span>${label}</span>`;
+  $('#btnBoardFs').innerHTML = FS_ICONS[fs ? 'off' : 'on'];
+  $('#btnBoardFs').setAttribute('aria-label', label);
   $('#btnFs').hidden = !avail || !$('#screenBoard').hidden;   // auf der Tafel gibt es den großen Knopf
   $('#btnFs').innerHTML = FS_ICONS[fs ? 'off' : 'on'];
   $('#btnFs').setAttribute('aria-label', label);

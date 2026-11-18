@@ -121,7 +121,7 @@ Tafel; nochmal Antippen versteckt es wieder, bei der nächsten Aufgabe ist beide
 bleibt dabei an ihrem Platz. Vom Würfel-iPad aus geht das auch: Ist es verbunden, erscheinen unten rechts die Knöpfe
 **„Tafel: Punktebild“** und **„Tafel: Ergebnis“**. Sie decken es auf allen Tafeln auf (nochmal drücken versteckt es),
 würfeln nicht und werden bei der nächsten Aufgabe zurückgesetzt. Der Taster deckt nichts auf.
-Unten rechts schaltet **Vollbild** die Tafel ins Vollbild und wieder zurück.
+Der kleine Knopf unten rechts schaltet die Tafel ins Vollbild und wieder zurück.
 
 ## Als App auf den Home-Bildschirm
 
