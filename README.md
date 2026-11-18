@@ -111,13 +111,13 @@ Gut zu wissen:
 ### Tafel-Ansicht (Beamer, Smartboard)
 
 Verbinden → Tafel-Ansicht: **QR-Code für die Tafel** scannen, **Link kopieren** und auf dem Beamer-Rechner
-öffnen, oder **Dieses Gerät als Tafel**. Die Tafel zeigt die neueste Aufgabe groß. Unten steht der Knopf
-**„Alle Ergebnisse anzeigen“**: Er zeigt alle bisher gewürfelten Ergebnisse der Größe nach sortiert, jedes in der
+öffnen, oder **Dieses Gerät als Tafel**. Die Tafel zeigt die neueste Aufgabe groß. Unten links, neben dem Zahnrad,
+steht der kleine Knopf **„Alle Ergebnisse“**: Er zeigt alle bisher gewürfelten Ergebnisse der Größe nach sortiert, jedes in der
 Farbe des iPads, das es gewürfelt hat, so lässt sich bei einem Bingo prüfen, ob die Zahlen alle dabei waren.
-Antippen der Liste versteckt sie wieder.
+Nochmal drücken (oder die Liste antippen) versteckt sie wieder.
 Unter der neuesten Aufgabe stehen immer die Knöpfe **„Punktebild zeigen“** und **„Ergebnis zeigen“**
-z. B. zum gemeinsamen Nachrechnen am Smartboard. Aufgedeckt wird nur auf der
-Tafel; nochmal Antippen versteckt es wieder, bei der nächsten Aufgabe ist beides wieder zugedeckt. Die Aufgabe
+z. B. zum gemeinsamen Nachrechnen am Smartboard. Das Ergebnis erscheint groß in einem Pop-up, Antippen
+schließt es. Aufgedeckt wird nur auf der Tafel; bei Punktebild versteckt nochmal Antippen es wieder, bei der nächsten Aufgabe ist beides wieder zugedeckt. Die Aufgabe
 bleibt dabei an ihrem Platz. Vom Würfel-iPad aus geht das auch: Ist es verbunden, erscheinen unten rechts die Knöpfe
 **„Tafel: Punktebild“** und **„Tafel: Ergebnis“**. Sie decken es auf allen Tafeln auf (nochmal drücken versteckt es),
 würfeln nicht und werden bei der nächsten Aufgabe zurückgesetzt. Der Taster deckt nichts auf.

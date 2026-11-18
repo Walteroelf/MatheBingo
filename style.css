@@ -412,7 +412,31 @@ select { padding: 9px 12px; border-radius: 10px; border: 2px solid #ccc; backgro
 #boardExtras .dots, #boardExtras .result { pointer-events: auto; cursor: pointer; }
 #boardExtras .frame { --d: calc(clamp(10px, 2.6vmin, 30px) * var(--k, 1)); }
 #boardExtras .array { --d: clamp(7px, 1.9vmin, 22px); }
-#boardResult { font-size: min(11vw, 17vh); }
+/* Ergebnis als großes Pop-up über der Tafel */
+#resultPop {
+  position: fixed; inset: 0; z-index: 65; background: rgba(0, 0, 0, 0.6);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+#resultPop[hidden] { display: none; }
+.pop-box {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.1em;
+  width: min(92vw, 1100px); min-height: min(80vh, 640px); padding: 3vh 3vw; border-radius: 40px;
+  font-size: min(10vw, 17vh); line-height: 1; box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.35);
+}
+.pop-task { display: flex; align-items: center; gap: 0.18em; font-size: 0.6em; opacity: 0.85; }
+.pop-task .op { color: var(--yellow); }
+.pop-res { font-size: 2.3em; font-weight: 800; color: var(--yellow); }
+/* „Alle Ergebnisse“: klein, rechts neben dem Zahnrad */
+#btnBoardList {
+  position: fixed; z-index: 60;
+  left: calc(1rem + env(safe-area-inset-left) + clamp(64px, 14vw, 84px) + 0.6rem);
+  bottom: calc(1rem + env(safe-area-inset-bottom) + (clamp(64px, 14vw, 84px) - clamp(44px, 8vw, 56px)) / 2);
+  height: clamp(44px, 8vw, 56px); padding: 0 1rem; border-radius: 12px;
+  background: rgba(0, 0, 0, 0.25); color: rgba(255, 255, 255, 0.85);
+  border: 2px solid rgba(255, 255, 255, 0.3); font-weight: 700; font-size: clamp(0.85rem, 2vw, 1rem);
+  -webkit-tap-highlight-color: transparent;
+}
+#btnBoardList[hidden] { display: none; }
 #boardLast {
   align-self: end; display: flex; align-items: center; justify-content: center;
   font-size: min(14vw, 26vh); line-height: 1; white-space: nowrap;

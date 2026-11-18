@@ -533,8 +533,11 @@ function renderBoardExtras(t) {
   $('#btnBoardDots').hidden = !dots || boardReveal.dots;
   $('#boardDots').innerHTML = dots && boardReveal.dots ? dots : '';
   $('#btnBoardResult').hidden = !t || boardReveal.result;
-  $('#boardResult').hidden = !(t && boardReveal.result);
-  $('#boardResult').textContent = t ? `= ${t.r}` : '';
+  // Ergebnis groß im Pop-up, Antippen schließt es wieder
+  const pop = $('#resultPop');
+  pop.hidden = !(t && boardReveal.result);
+  pop.innerHTML = t ? `<div class="pop-box" style="background:${colorOf(t)}"><div class="pop-task">${taskHtml(t)}</div>
+    <div class="pop-res">= ${t.r}</div></div>` : '';
 }
 
 function setBoardReveal(what, on) {
@@ -568,7 +571,8 @@ function renderBoard() {
   for (const t of list) byResult.set(t.r, t);
   const results = [...byResult.keys()].sort((x, y) => x - y);
   if (!results.length) boardListOpen = false;
-  $('#btnBoardList').hidden = !results.length || boardListOpen;
+  $('#btnBoardList').hidden = !results.length;
+  $('#btnBoardList').textContent = boardListOpen ? 'Ergebnisse ausblenden' : 'Alle Ergebnisse';
   const listEl = $('#boardList');
   listEl.hidden = !boardListOpen;
   listEl.classList.toggle('many', results.length > 30);
@@ -1142,8 +1146,8 @@ function bind() {
   $('#btnBoardDots').addEventListener('click', () => setBoardReveal('dots', true));
   $('#btnBoardResult').addEventListener('click', () => setBoardReveal('result', true));
   $('#boardDots').addEventListener('click', () => setBoardReveal('dots', false));
-  $('#boardResult').addEventListener('click', () => setBoardReveal('result', false));
-  $('#btnBoardList').addEventListener('click', () => { boardListOpen = true; renderBoard(); });
+  $('#resultPop').addEventListener('click', () => setBoardReveal('result', false));
+  $('#btnBoardList').addEventListener('click', () => { boardListOpen = !boardListOpen; renderBoard(); });
   $('#boardList').addEventListener('click', () => { boardListOpen = false; renderBoard(); });
   for (const ev of ['fullscreenchange', 'webkitfullscreenchange']) {
     document.addEventListener(ev, () => { renderFullscreen(); if (!$('#drawer').hidden) renderDrawer(); });
