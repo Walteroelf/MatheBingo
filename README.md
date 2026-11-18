@@ -116,8 +116,8 @@ steht der kleine Knopf **„Alle Ergebnisse“**: Er zeigt alle bisher gewürfel
 Farbe des iPads, das es gewürfelt hat, so lässt sich bei einem Bingo prüfen, ob die Zahlen alle dabei waren.
 Nochmal drücken (oder die Liste antippen) versteckt sie wieder.
 Unter der neuesten Aufgabe stehen immer die Knöpfe **„Punktebild zeigen“** und **„Ergebnis zeigen“**
-z. B. zum gemeinsamen Nachrechnen am Smartboard. Das Ergebnis erscheint groß in einem Pop-up, Antippen
-schließt es. Aufgedeckt wird nur auf der Tafel; bei Punktebild versteckt nochmal Antippen es wieder, bei der nächsten Aufgabe ist beides wieder zugedeckt. Die Aufgabe
+z. B. zum gemeinsamen Nachrechnen am Smartboard. Punktebild und Ergebnis erscheinen groß in einem Pop-up, Antippen
+schließt es; das Punktebild-Fenster hat einen Knopf „Ergebnis zeigen“, der zum Ergebnis weiterführt. Aufgedeckt wird nur auf der Tafel; bei Punktebild versteckt nochmal Antippen es wieder, bei der nächsten Aufgabe ist beides wieder zugedeckt. Die Aufgabe
 bleibt dabei an ihrem Platz. Vom Würfel-iPad aus geht das auch: Ist es verbunden, erscheinen unten rechts die Knöpfe
 **„Tafel: Punktebild“** und **„Tafel: Ergebnis“**. Sie decken es auf allen Tafeln auf (nochmal drücken versteckt es),
 würfeln nicht und werden bei der nächsten Aufgabe zurückgesetzt. Der Taster deckt nichts auf.

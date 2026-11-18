@@ -11,7 +11,7 @@
   <title>Mathe-Bingo</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/icon-180.png">
-  <link rel="stylesheet" href="style.css?v=34">
+  <link rel="stylesheet" href="style.css?v=35">
 </head>
 <body class="game">
 
@@ -45,13 +45,13 @@
     <!-- fester Platz unter der Aufgabe: Aufdecken verschiebt die Aufgabe nicht -->
     <div id="boardExtras">
       <button id="btnBoardDots" class="result-btn" hidden>Punktebild zeigen</button>
-      <div id="boardDots" class="dots" title="Antippen zum Verstecken"></div>
       <button id="btnBoardResult" class="result-btn" hidden>Ergebnis zeigen</button>
     </div>
   </div>
   <button id="btnBoardList" hidden>Alle Ergebnisse</button>
   <div id="boardList" class="schrift" title="Antippen zum Verstecken" hidden></div>
   <button id="btnBoardFs" hidden></button>
+  <div id="dotsPop" class="schrift" hidden title="Antippen zum Schließen"></div>
   <div id="resultPop" class="schrift" hidden title="Antippen zum Schließen"></div>
 </div>
 
@@ -368,7 +368,7 @@
 <script src="sounds.js?v=18"></script>
 <script src="sync.js?v=6"></script>
 <script src="guide.js?v=1"></script>
-<script src="app.js?v=38"></script>
+<script src="app.js?v=39"></script>
 <script>
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>

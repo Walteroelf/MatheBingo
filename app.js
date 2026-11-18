@@ -531,8 +531,12 @@ let boardReveal = { key: '', dots: false, result: false, shownTs: 0 };
 function renderBoardExtras(t) {
   const dots = t ? dotsHtml(t) : '';
   $('#btnBoardDots').hidden = !dots || boardReveal.dots;
-  $('#boardDots').innerHTML = dots && boardReveal.dots ? dots : '';
   $('#btnBoardResult').hidden = !t || boardReveal.result;
+  // Punktebild groß im Pop-up (mit Knopf zum Ergebnis). Ist auch das Ergebnis offen, liegt es darüber.
+  const dpop = $('#dotsPop');
+  dpop.hidden = !(dots && boardReveal.dots && !boardReveal.result);
+  dpop.innerHTML = dots ? `<div class="pop-box" style="background:${colorOf(t)}"><div class="pop-task">${taskHtml(t)}</div>
+    <div class="dots">${dots}</div><button id="btnPopResult" class="result-btn">Ergebnis zeigen</button></div>` : '';
   // Ergebnis groß im Pop-up, Antippen schließt es wieder
   const pop = $('#resultPop');
   pop.hidden = !(t && boardReveal.result);
@@ -1145,7 +1149,10 @@ function bind() {
   }
   $('#btnBoardDots').addEventListener('click', () => setBoardReveal('dots', true));
   $('#btnBoardResult').addEventListener('click', () => setBoardReveal('result', true));
-  $('#boardDots').addEventListener('click', () => setBoardReveal('dots', false));
+  $('#dotsPop').addEventListener('click', (e) => {
+    if (e.target.closest('#btnPopResult')) { boardReveal.dots = false; setBoardReveal('result', true); }
+    else setBoardReveal('dots', false);
+  });
   $('#resultPop').addEventListener('click', () => setBoardReveal('result', false));
   $('#btnBoardList').addEventListener('click', () => { boardListOpen = !boardListOpen; renderBoard(); });
   $('#boardList').addEventListener('click', () => { boardListOpen = false; renderBoard(); });
