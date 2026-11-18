@@ -15,11 +15,11 @@ const DEFAULTS = {
   unique: 'result',      // was pro Runde nur einmal kommt: 'result' (Bingo) oder 'task' (Ergebnisse dürfen mehrfach kommen)
   color: 'blau',          // Farbe dieses iPads: gewürfelte Aufgaben erscheinen darin, auch auf der Tafel
   speech: true, volume: 1,
-  dotsShow: 'always', resultShow: 'off',   // Punktebild und Ergebnis: off, tap (Knopf), always
+  dotsShow: 'off', resultShow: 'off',   // Punktebild und Ergebnis: off, tap (Knopf), always
   sound: 'trommel', fxConfetti: true,
   trigger: 'tap',          // Würfeln mit: tap (Antippen), switch (Taster), both
   switchKey: 'Space',      // Taster sendet: Space, Enter, mouse oder angelernter Tastencode
-  tafelRemote: false,      // Tafel-Fernbedienung: Knopf „Tafel“ auf dem Würfel-iPad (Punktebild, Ergebnis, alle Ergebnisse)
+  tafelRemote: true,       // Tafel-Fernbedienung: Knopf „Tafel“ auf dem Würfel-iPad (Punktebild, Ergebnis, alle Ergebnisse)
   keepAwake: true,         // Bildschirm anlassen (kein Ruhezustand), damit auch der Ton nicht einschläft
   weiter: true,            // „Weiter“-Knopf nach jeder Aufgabe
   lockSec: 5,              // Sperrzeit ohne „Weiter“
@@ -89,6 +89,9 @@ function loadStore() {
   const old = data.settings || {};
   if (!old.dotsShow && typeof old.dots === 'boolean') settings.dotsShow = old.dots ? 'always' : 'off';
   if (!old.resultShow && typeof old.resultBtn === 'boolean') settings.resultShow = old.resultBtn ? 'tap' : 'off';
+  // Tafel-Fernbedienung ist jetzt standardmäßig an: einmalig auch bei Geräten, die sie noch aus haben
+  if (!old.tafelMig) settings.tafelRemote = true;
+  settings.tafelMig = true;
   delete settings.dots;
   delete settings.resultBtn;
   if (!COLORS[settings.color]) settings.color = DEFAULTS.color;

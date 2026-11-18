@@ -560,6 +560,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 16px; }
 }
 #tafelBtns button[hidden] { display: none; }
 #tafelBtns #tafelPanel button { background: rgba(0, 0, 0, 0.45); }
+#tafelBtns.offline { opacity: 0.45; }
 #tafelBtns button.open { border-color: #fff; }
 #tafelBtns button.on { background: var(--yellow); color: #123a6b; border-color: var(--yellow); }
 

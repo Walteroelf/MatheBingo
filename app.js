@@ -425,6 +425,7 @@ async function roll() {
   el.innerHTML = taskHtml(t);
   showExtras(t);
   state.rolling = false;
+  renderTafelBtns();
   renderTouchCount();
   confetti();
   if (S.weiter) {
@@ -444,7 +445,6 @@ function showExtras(t) {
   $('#result').textContent = t ? `= ${t.r}` : '';
   $('#result').hidden = !(t && S.resultShow === 'always');
   $('#btnResult').hidden = !(t && S.resultShow === 'tap');
-  renderTafelBtns(t);
   $('#screenTask').classList.toggle('noextras', S.dotsShow === 'off' && S.resultShow === 'off');
 }
 
@@ -506,6 +506,7 @@ function onRemote(roundChanged) {
   if (roundChanged && !state.rolling) backToTouch();
   renderTouchCount();
   renderBoard();
+  renderTafelBtns();   // Fernbedienung: Stand von Tafel oder anderem iPad übernehmen
   if (!$('#drawer').hidden) renderDrawer();
 }
 
@@ -515,12 +516,18 @@ function onRemote(roundChanged) {
 // Aufgabe (bei der nächsten Aufgabe wieder zugedeckt) sowie „Alle Ergebnisse“.
 
 const entryId = (t) => `${t.r}|${t.ts}|${t.by}`;
+// Zeitstempel für Aufdecken/Zudecken: nie kleiner als der zuletzt gesehene, auch wenn die Uhren der Geräte abweichen
+const nextTs = (prev) => Math.max(Date.now(), prev + 1);
 let tafelOpen = false;
 
-function renderTafelBtns(t = state.current) {
-  const screen = !$('#screenTask').hidden || !$('#screenDone').hidden;
-  const on = !!(S.tafelRemote && isOnline() && !net.boardMode && !state.rolling && screen);
+// Aufgabe, die die Tafel gerade groß zeigt: die neueste sichtbare
+const boardTask = () => { const l = visibleHistory(); return l[l.length - 1] || null; };
+
+function renderTafelBtns(t = boardTask()) {
+  // Immer da, wo es ein gemeinsames Spiel gibt (auch auf „Bitte berühren“); ohne Verbindung nur blass
+  const on = !!(S.tafelRemote && net.code && !net.boardMode && !state.rolling && $('#screenBoard').hidden);
   $('#tafelBtns').hidden = !on;
+  $('#tafelBtns').classList.toggle('offline', on && !isOnline());
   if (!on) tafelOpen = false;
   $('#tafelPanel').hidden = !tafelOpen;
   $('#btnTafel').setAttribute('aria-expanded', String(tafelOpen));
@@ -533,10 +540,10 @@ function renderTafelBtns(t = state.current) {
 }
 
 function tafelToggle(what) {
-  const t = state.current;
+  const t = boardTask();
   if (!t || !isOnline()) return;
   const key = entryId(t);
-  shown = { key, dots: shown.key === key && shown.dots, result: shown.key === key && shown.result, ts: Date.now() };
+  shown = { key, dots: shown.key === key && shown.dots, result: shown.key === key && shown.result, ts: nextTs(shown.ts) };
   shown[what] = !shown[what];
   renderTafelBtns();
   publish();
@@ -544,7 +551,7 @@ function tafelToggle(what) {
 
 function tafelToggleList() {
   if (!isOnline()) return;
-  shownList = { on: !shownList.on, ts: Date.now() };
+  shownList = { on: !shownList.on, ts: nextTs(shownList.ts) };
   renderTafelBtns();
   publish();
 }
@@ -577,6 +584,21 @@ function setBoardReveal(what, on) {
   boardReveal[what] = on;
   const list = visibleHistory();
   renderBoardExtras(list[list.length - 1] || null);
+  // Die iPad-Fernbedienung soll wissen, was die Tafel gerade zeigt
+  if (boardReveal.key) {
+    shown = { key: boardReveal.key, dots: boardReveal.dots, result: boardReveal.result, ts: nextTs(shown.ts) };
+    boardReveal.shownTs = shown.ts;
+    publish();
+  }
+}
+
+// „Alle Ergebnisse“ auf der Tafel selbst ein- oder ausschalten und den Stand weitergeben
+function setBoardList(on) {
+  boardListOpen = on;
+  shownList = { on, ts: nextTs(shownList.ts) };
+  boardListTs = shownList.ts;
+  renderBoard();
+  publish();
 }
 
 function renderBoard() {
@@ -1215,8 +1237,8 @@ function bind() {
     else setBoardReveal('dots', false);
   });
   $('#resultPop').addEventListener('click', () => setBoardReveal('result', false));
-  $('#btnBoardList').addEventListener('click', () => { boardListOpen = !boardListOpen; renderBoard(); });
-  $('#boardList').addEventListener('click', () => { boardListOpen = false; renderBoard(); });
+  $('#btnBoardList').addEventListener('click', () => setBoardList(!boardListOpen));
+  $('#boardList').addEventListener('click', () => setBoardList(false));
   for (const ev of ['fullscreenchange', 'webkitfullscreenchange']) {
     document.addEventListener(ev, () => { renderFullscreen(); if (!$('#drawer').hidden) renderDrawer(); });
   }

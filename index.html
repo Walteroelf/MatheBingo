@@ -11,7 +11,7 @@
   <title>Mathe-Bingo</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/icon-180.png">
-  <link rel="stylesheet" href="style.css?v=39">
+  <link rel="stylesheet" href="style.css?v=40">
 </head>
 <body class="game">
 
@@ -222,7 +222,7 @@
             <label class="switch"><span class="lbl">Konfetti beim Ergebnis</span><input type="checkbox" data-opt="fxConfetti"></label>
           </div>
           <div class="setrow">
-            <label class="switch"><span class="lbl">Tafel-Fernbedienung <span class="tiny">Knopf „Tafel“ unten auf dem iPad: zeigt Punktebild, Ergebnis und alle Ergebnisse auf der Tafel. Nur sichtbar, wenn das iPad verbunden ist.</span></span><input type="checkbox" data-opt="tafelRemote"></label>
+            <label class="switch"><span class="lbl">Tafel-Fernbedienung <span class="tiny">Knopf „Tafel“ unten auf dem iPad: zeigt Punktebild, Ergebnis und alle Ergebnisse auf der Tafel. Erscheint, sobald ein gemeinsames Spiel besteht (⚙️ → Verbinden).</span></span><input type="checkbox" data-opt="tafelRemote"></label>
           </div>
           <div class="setrow">
             <label class="switch"><span class="lbl">Bildschirm anlassen <span class="tiny">kein Ruhezustand, der Ton bleibt wach. Am besten mit Ladekabel.</span></span><input type="checkbox" data-opt="keepAwake"></label>
@@ -380,11 +380,11 @@
   </div>
 </dialog>
 
-<script src="core.js?v=26"></script>
+<script src="core.js?v=27"></script>
 <script src="sounds.js?v=18"></script>
 <script src="sync.js?v=7"></script>
 <script src="guide.js?v=1"></script>
-<script src="app.js?v=42"></script>
+<script src="app.js?v=44"></script>
 <script>
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>

@@ -119,8 +119,8 @@ Nochmal drücken (oder die Liste antippen) versteckt sie wieder.
 Unter der neuesten Aufgabe stehen immer die Knöpfe **„Punktebild zeigen“** und **„Ergebnis zeigen“**
 z. B. zum gemeinsamen Nachrechnen am Smartboard. Punktebild und Ergebnis erscheinen groß in einem Pop-up, Antippen
 schließt es; das Punktebild-Fenster hat einen Knopf „Ergebnis zeigen“, der zum Ergebnis weiterführt. Aufgedeckt wird nur auf der Tafel; bei Punktebild versteckt nochmal Antippen es wieder, bei der nächsten Aufgabe ist beides wieder zugedeckt. Die Aufgabe
-bleibt dabei an ihrem Platz. **Tafel-Fernbedienung** (⚙️ → Dieses iPad, aus bis du sie einschaltest): Ist das iPad verbunden, erscheint unten in
-der Mitte der Knopf **„Tafel“**. Er öffnet drei Schalter: **Punktebild**, **Ergebnis** (beide für die aktuelle Aufgabe,
+bleibt dabei an ihrem Platz. **Tafel-Fernbedienung** (⚙️ → Dieses iPad, standardmäßig an; Punktebild und Ergebnis auf dem iPad selbst sind dagegen standardmäßig aus): Gibt es ein gemeinsames Spiel, erscheint unten in
+der Mitte immer der Knopf **„Tafel“**. Er öffnet drei Schalter: **Punktebild**, **Ergebnis** (beide für die aktuelle Aufgabe,
 bei der nächsten wieder zugedeckt) und **Alle Ergebnisse**. Sie wirken auf allen Tafeln, nochmal drücken versteckt es
 wieder. Sie würfeln nicht, und der Taster deckt nichts auf.
 Der kleine Knopf unten rechts schaltet die Tafel ins Vollbild und wieder zurück.
