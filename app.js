@@ -160,16 +160,43 @@ async function announce(t, delay = 0) {
 }
 
 let audioCtx = null;
+let resumeTries = 0;   // Weckversuche, ohne dass der Ton wieder lief
+let resumeAt = 0;      // performance.now() des letzten Weckversuchs
 
-// Muss in einem Tipp-Ereignis aufgerufen werden, sonst bleibt der Ton auf iPads stumm
-function initAudio() {
+function newAudioContext() {
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return;
-  if (!audioCtx) {
-    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { /* egal */ }
-    audioCtx = new AC();
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { /* egal */ }
+  const old = audioCtx;
+  audioCtx = new AC();
+  resumeTries = 0;
+  audioCtx.addEventListener('statechange', () => { if (audioCtx && audioCtx.state === 'running') resumeTries = 0; });
+  if (old) { try { old.close(); } catch { /* egal */ } }
+}
+
+// Muss in einem Tipp-Ereignis aufgerufen werden, sonst bleibt der Ton auf iPads stumm.
+// iOS legt den Ton still („interrupted“, z. B. nach Sperrbildschirm, Anruf, Siri) und weckt ihn manchmal
+// nicht mehr auf. Dann hilft nur ein neuer Kontext: der kommt hier beim nächsten Tippen oder Tastendruck.
+function initAudio() {
+  if (!(window.AudioContext || window.webkitAudioContext)) return;
+  if (!audioCtx || audioCtx.state === 'closed' || audioCtx.state === 'interrupted') newAudioContext();
+  else if (audioCtx.state !== 'running' && resumeTries >= 1 && performance.now() - resumeAt > 1500) {
+    newAudioContext();   // Wecken hat nicht gereicht
   }
-  if (audioCtx.state !== 'running') audioCtx.resume().catch(() => {});
+  if (audioCtx.state !== 'running') {
+    resumeTries++;
+    resumeAt = performance.now();
+    audioCtx.resume().catch(() => {});
+  }
+}
+
+// Kurz warten, bis der Ton läuft, sonst bliebe der erste Wurf nach dem Aufwachen stumm
+async function audioReady() {
+  initAudio();
+  if (audioCtx && audioCtx.state !== 'running') {
+    await Promise.race([audioCtx.resume().catch(() => {}), sleep(350)]);
+  }
+  return !!audioCtx && audioCtx.state === 'running';
 }
 
 // Würfel-Klang (Klänge in sounds.js): eigene Lautstärke-Stufe und ein Begrenzer gegen Übersteuern
@@ -347,7 +374,7 @@ const showAllDone = () => showDone('Alle Aufgaben wurden gewürfelt! 🎉', net.
 
 async function roll() {
   if (state.rolling || net.boardMode) return;
-  initAudio();
+  initAudio();   // im Tipp-Ereignis, danach kurz auf den Ton warten (audioReady)
   if (!pool.topf.length) {
     showDone('Keine Zahlen im Topf.', 'Über ⚙️ unten links Zahlen in den Topf legen.');
     return;
@@ -366,6 +393,7 @@ async function roll() {
   const el = $('#task');
   $('#dots').innerHTML = '';
   el.classList.add('rolling');
+  await audioReady();
   const out = soundOut();
   if (out) currentSound().roll(audioCtx, out, audioCtx.currentTime + 0.02, rollTicks());
   await rollAnimation(el);
@@ -666,6 +694,11 @@ function bindSwitch() {
     keyHeld = true;
     initAudio();
     switchPress();
+  });
+  // Jedes Tippen oder jeder Tastendruck weckt einen eingeschlafenen Ton wieder auf
+  for (const ev of ['pointerdown', 'touchend', 'keydown']) document.addEventListener(ev, initAudio, true);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && audioCtx && audioCtx.state !== 'running') audioCtx.resume().catch(() => {});
   });
   document.addEventListener('keyup', (e) => {
     keyHeld = false;
