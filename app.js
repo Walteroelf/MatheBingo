@@ -108,6 +108,7 @@ function preloadVoice(t) {
 
 async function playVoice(t, run, delay = 0) {
   if (!audioCtx) return false;
+  audioUsedAt = performance.now();
   let clips;
   try { clips = await Promise.all(clipsFor(t).map(loadClip)); } catch { return false; }
   if (run !== speechRun) return true; // inzwischen abgebrochen
@@ -162,6 +163,9 @@ async function announce(t, delay = 0) {
 let audioCtx = null;
 let resumeTries = 0;   // Weckversuche, ohne dass der Ton wieder lief
 let resumeAt = 0;      // performance.now() des letzten Weckversuchs
+let audioUsedAt = 0;   // performance.now(), wann zuletzt Ton gespielt wurde
+let audioStale = false; // Seite war im Hintergrund / Bildschirm aus: Kontext gilt als verdächtig
+const AUDIO_IDLE_MS = 90000;
 
 function newAudioContext() {
   const AC = window.AudioContext || window.webkitAudioContext;
@@ -170,17 +174,24 @@ function newAudioContext() {
   const old = audioCtx;
   audioCtx = new AC();
   resumeTries = 0;
+  audioStale = false;
+  audioUsedAt = performance.now();
+  clipCache.clear();   // Ansagen für den neuen Kontext frisch decodieren
   audioCtx.addEventListener('statechange', () => { if (audioCtx && audioCtx.state === 'running') resumeTries = 0; });
   if (old) { try { old.close(); } catch { /* egal */ } }
 }
 
 // Muss in einem Tipp-Ereignis aufgerufen werden, sonst bleibt der Ton auf iPads stumm.
-// iOS legt den Ton still („interrupted“, z. B. nach Sperrbildschirm, Anruf, Siri) und weckt ihn manchmal
-// nicht mehr auf. Dann hilft nur ein neuer Kontext: der kommt hier beim nächsten Tippen oder Tastendruck.
+// iOS legt den Ton still („interrupted“ nach Sperrbildschirm, Anruf, Siri) und weckt ihn manchmal
+// nicht mehr auf, oder meldet „running“, obwohl nichts mehr zu hören ist. Darum gilt ein Kontext nach
+// Hintergrund/Bildschirm-aus und nach längerem Leerlauf als verbraucht: dann kommt beim nächsten Tippen
+// oder Tastendruck ein neuer.
 function initAudio() {
   if (!(window.AudioContext || window.webkitAudioContext)) return;
-  if (!audioCtx || audioCtx.state === 'closed' || audioCtx.state === 'interrupted') newAudioContext();
-  else if (audioCtx.state !== 'running' && resumeTries >= 1 && performance.now() - resumeAt > 1500) {
+  const idle = performance.now() - audioUsedAt > AUDIO_IDLE_MS;
+  if (!audioCtx || audioCtx.state === 'closed' || audioCtx.state === 'interrupted' || audioStale || idle) {
+    newAudioContext();
+  } else if (audioCtx.state !== 'running' && resumeTries >= 1 && performance.now() - resumeAt > 1500) {
     newAudioContext();   // Wecken hat nicht gereicht
   }
   if (audioCtx.state !== 'running') {
@@ -202,6 +213,7 @@ async function audioReady() {
 // Würfel-Klang (Klänge in sounds.js): eigene Lautstärke-Stufe und ein Begrenzer gegen Übersteuern
 function soundOut() {
   if (!audioCtx || audioCtx.state !== 'running') return null;
+  audioUsedAt = performance.now();
   const g = audioCtx.createGain();
   g.gain.value = 0.9 * S.volume;
   const limit = audioCtx.createDynamicsCompressor();
@@ -704,10 +716,17 @@ function bindSwitch() {
     switchPress();
   });
   // Jedes Tippen oder jeder Tastendruck weckt einen eingeschlafenen Ton wieder auf
-  for (const ev of ['pointerdown', 'touchend', 'keydown']) document.addEventListener(ev, initAudio, true);
+  for (const ev of ['pointerdown', 'touchend', 'keydown']) {
+    document.addEventListener(ev, () => { initAudio(); keepAwake(); }, true);
+  }
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && audioCtx && audioCtx.state !== 'running') audioCtx.resume().catch(() => {});
+    if (document.visibilityState === 'hidden') audioStale = true;
+    else {
+      if (audioCtx && audioCtx.state !== 'running') audioCtx.resume().catch(() => {});
+      keepAwake();
+    }
   });
+  window.addEventListener('pageshow', (e) => { if (e.persisted) audioStale = true; keepAwake(); });
   document.addEventListener('keyup', (e) => {
     keyHeld = false;
     if (switchOK() && keyName(e) === S.switchKey && !(e.target.closest && e.target.closest('input, textarea'))) {
@@ -822,9 +841,30 @@ function setExcluded(list) {
 function setOption(key, value) {
   S[key] = value;
   save();
+  if (key === 'keepAwake') keepAwake();
   const taskShown = state.current && !$('#screenTask').hidden && !state.rolling;
   if ((key === 'dotsShow' || key === 'resultShow') && taskShown) showExtras(state.current);
   renderDrawer();
+}
+
+// ---------- Bildschirm anlassen ----------
+// Kein Ruhezustand, solange die App sichtbar ist (Wake Lock). iOS gibt die Sperre beim Verlassen der
+// Seite von selbst frei, darum wird sie beim Zurückkommen und beim nächsten Tippen neu angefordert.
+let wakeLock = null;
+
+async function keepAwake() {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    if (S.keepAwake && document.visibilityState === 'visible' && !wakeLock) {
+      const lock = await navigator.wakeLock.request('screen');
+      wakeLock = lock;
+      lock.addEventListener('release', () => { if (wakeLock === lock) wakeLock = null; });
+    } else if (!S.keepAwake && wakeLock) {
+      const lock = wakeLock;
+      wakeLock = null;
+      await lock.release();
+    }
+  } catch { wakeLock = null; /* ohne Erlaubnis oder Akku schwach: dann eben nicht */ }
 }
 
 // ---------- Niveau wählen ----------
@@ -1172,4 +1212,5 @@ renderFullscreen();
 renderStartText();
 backToTouch();
 connect();
+keepAwake();
 if (firstRun && !net.code && !net.boardMode) openLevels(true);

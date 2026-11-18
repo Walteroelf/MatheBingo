@@ -38,7 +38,7 @@ Aufgebaut wie beim ABC-Bingo, mit fünf Reitern. Der zuletzt geöffnete Reiter w
 - **📱 Dieses iPad**: aufgebaut wie beim ABC-Bingo. Gilt nur für dieses Gerät: **Farbe** (gewürfelte Aufgaben
   erscheinen in dieser Farbe, auch in der Liste und auf der Tafel; so sieht man, welches iPad gewürfelt hat),
   Punktebild und Ergebnis (je „Aus“, „Auf Antippen“, „Immer“; bei „Auf Antippen“ deckt ein Knopf unter der
-  Aufgabe es auf), Vorlesen, Lautstärke, Stimmprobe, Würfel-Klang, Konfetti, Vollbild.
+  Aufgabe es auf), Vorlesen, Lautstärke, Stimmprobe, Würfel-Klang, Konfetti, **Bildschirm anlassen**, Vollbild.
   Unter **Würfeln**: Antippen, Taster oder beides, „Weiter“-Knopf an/aus und Sperrzeit (siehe [Taster](#taster)).
   Würfel-Klänge (Antippen zum Anhören und Auswählen): 🥁 Trommelwirbel, 🎺 Tusch, 🎡 Glücksrad, 🎵 Xylophon,
   ✨ Zauberstab, 🔇 Kein Klang. Alle Klänge werden im Browser erzeugt (`sounds.js`).
@@ -118,7 +118,7 @@ Nochmal drücken (oder die Liste antippen) versteckt sie wieder.
 Unter der neuesten Aufgabe stehen immer die Knöpfe **„Punktebild zeigen“** und **„Ergebnis zeigen“**
 z. B. zum gemeinsamen Nachrechnen am Smartboard. Punktebild und Ergebnis erscheinen groß in einem Pop-up, Antippen
 schließt es; das Punktebild-Fenster hat einen Knopf „Ergebnis zeigen“, der zum Ergebnis weiterführt. Aufgedeckt wird nur auf der Tafel; bei Punktebild versteckt nochmal Antippen es wieder, bei der nächsten Aufgabe ist beides wieder zugedeckt. Die Aufgabe
-bleibt dabei an ihrem Platz. Vom Würfel-iPad aus geht das auch: Ist es verbunden, erscheinen unten rechts die Knöpfe
+bleibt dabei an ihrem Platz. Vom Würfel-iPad aus geht das auch: Ist es verbunden, erscheinen unten in der Mitte die Knöpfe
 **„Tafel: Punktebild“** und **„Tafel: Ergebnis“**. Sie decken es auf allen Tafeln auf (nochmal drücken versteckt es),
 würfeln nicht und werden bei der nächsten Aufgabe zurückgesetzt. Der Taster deckt nichts auf.
 Der kleine Knopf unten rechts schaltet die Tafel ins Vollbild und wieder zurück.
@@ -207,3 +207,12 @@ python3 -m http.server 8765
 ```
 
 und dann `http://localhost:8765` aufrufen.
+
+## Ton fällt aus?
+
+iPads legen den Ton still, wenn der Bildschirm ausgeht oder die App im Hintergrund war. Dagegen:
+- ⚙️ → Dieses iPad → **Bildschirm anlassen** (Standard: an). Dann geht der Bildschirm nicht in den Ruhezustand,
+  solange die App offen ist. Das kostet Akku, am besten mit Ladekabel. Wichtig: Auf dem iPad ist das nur zuverlässig,
+  wenn die App in Safari läuft oder iOS 18.4 oder neuer installiert ist. Sonst unter iPad-Einstellungen →
+  Anzeige & Helligkeit → Automatische Sperre → „Nie“ stellen.
+- Nach Ruhezustand oder längerer Pause legt die App beim nächsten Tippen oder Tastendruck einen frischen Ton an.
