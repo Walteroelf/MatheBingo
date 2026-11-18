@@ -11,7 +11,7 @@
   <title>Mathe-Bingo</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/icon-180.png">
-  <link rel="stylesheet" href="style.css?v=36">
+  <link rel="stylesheet" href="style.css?v=39">
 </head>
 <body class="game">
 
@@ -56,8 +56,12 @@
 </div>
 
 <div id="tafelBtns" hidden>
-  <button id="btnTafelDots">Tafel: Punktebild</button>
-  <button id="btnTafelResult">Tafel: Ergebnis</button>
+  <div id="tafelPanel" hidden>
+    <button id="btnTafelDots">Punktebild</button>
+    <button id="btnTafelResult">Ergebnis</button>
+    <button id="btnTafelList">Alle Ergebnisse</button>
+  </div>
+  <button id="btnTafel" aria-expanded="false">Tafel</button>
 </div>
 
 <div id="syncDot" hidden></div>
@@ -78,6 +82,7 @@
       <button data-tab="spiel" role="tab"><span class="ico">🎲</span>Spiel</button>
       <button data-tab="aufgaben" role="tab"><span class="ico">🧮</span>Aufgaben</button>
       <button data-tab="geraet" role="tab"><span class="ico">📱</span>Dieses iPad</button>
+      <button data-tab="taster" role="tab"><span class="ico">🔘</span>Taster</button>
       <button data-tab="verbinden" role="tab"><span class="ico">📡</span>Verbinden<span id="tabDot" hidden></span></button>
       <button data-tab="mehr" role="tab"><span class="ico">➕</span>Mehr</button>
     </div>
@@ -193,7 +198,7 @@
               <button data-show="always">Immer</button>
             </div>
             <div class="tiny full">„Auf Antippen“: Unter der Aufgabe erscheint ein Knopf, der Punktebild oder Ergebnis aufdeckt.
-              Das gilt nur für dieses iPad. Für die Tafel gibt es unten auf dem iPad die Knöpfe „Tafel: Punktebild“ und „Tafel: Ergebnis“ (sichtbar, sobald das iPad verbunden ist).</div>
+              Das gilt nur für dieses iPad. Für die Tafel gibt es die Tafel-Fernbedienung (unten in diesem Reiter).</div>
           </div>
           <div class="setrow">
             <label class="switch"><span class="lbl">Aufgabe vorlesen <span class="tiny">echte Stimme (Jeuwre)</span></span><input type="checkbox" data-opt="speech"></label>
@@ -217,6 +222,9 @@
             <label class="switch"><span class="lbl">Konfetti beim Ergebnis</span><input type="checkbox" data-opt="fxConfetti"></label>
           </div>
           <div class="setrow">
+            <label class="switch"><span class="lbl">Tafel-Fernbedienung <span class="tiny">Knopf „Tafel“ unten auf dem iPad: zeigt Punktebild, Ergebnis und alle Ergebnisse auf der Tafel. Nur sichtbar, wenn das iPad verbunden ist.</span></span><input type="checkbox" data-opt="tafelRemote"></label>
+          </div>
+          <div class="setrow">
             <label class="switch"><span class="lbl">Bildschirm anlassen <span class="tiny">kein Ruhezustand, der Ton bleibt wach. Am besten mit Ladekabel.</span></span><input type="checkbox" data-opt="keepAwake"></label>
           </div>
           <div class="setrow" id="rowFullscreen">
@@ -225,8 +233,12 @@
           </div>
         </div>
 
+      </section>
+
+      <!-- ── Taster ────────────────────────────────────────── -->
+      <section data-tab="taster" hidden>
         <div class="scard">
-          <h3>Würfeln</h3>
+          <h3>Würfeln mit Taster</h3>
           <div class="setrow">
             <span class="lbl">Würfeln mit</span>
             <div class="seg words" id="trigSeg">
@@ -261,7 +273,6 @@
             <div class="tiny full">Beginnt, wenn die Aufgabe fertig vorgelesen ist. So lange bleibt die Aufgabe stehen, bevor neu gewürfelt werden kann. Antippen in dieser Zeit liest sie nochmal vor.</div>
           </div>
         </div>
-
       </section>
 
       <!-- ── Verbinden ─────────────────────────────────────── -->
@@ -294,7 +305,7 @@
 
         <div class="scard">
           <h3>Tafel-Ansicht (Beamer, Smartboard)</h3>
-          <div class="tiny">Die Tafel zeigt die neueste Aufgabe groß. Punktebild und Ergebnis zeigst du dort mit den Knöpfen auf der Tafel selbst oder vom Würfel-iPad aus: Dort erscheinen unten, sobald das iPad verbunden ist, die Knöpfe „Tafel: Punktebild“ und „Tafel: Ergebnis“.</div>
+          <div class="tiny">Die Tafel zeigt die neueste Aufgabe groß. Punktebild, Ergebnis und alle Ergebnisse zeigst du dort mit den Knöpfen auf der Tafel selbst oder vom Würfel-iPad aus mit der Tafel-Fernbedienung (⚙️ → Dieses iPad).</div>
           <div class="tiny" id="boardInfo">Erst ein gemeinsames Spiel starten oder beitreten, dann lässt sich hier die Tafel verbinden.</div>
           <div class="tiny" id="boardLinkBox" hidden>Link für den Beamer-Rechner: <b id="boardLink"></b></div>
           <div class="btnrow">
@@ -369,11 +380,11 @@
   </div>
 </dialog>
 
-<script src="core.js?v=25"></script>
+<script src="core.js?v=26"></script>
 <script src="sounds.js?v=18"></script>
-<script src="sync.js?v=6"></script>
+<script src="sync.js?v=7"></script>
 <script src="guide.js?v=1"></script>
-<script src="app.js?v=40"></script>
+<script src="app.js?v=42"></script>
 <script>
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>

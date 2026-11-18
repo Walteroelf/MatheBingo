@@ -19,6 +19,7 @@ const DEFAULTS = {
   sound: 'trommel', fxConfetti: true,
   trigger: 'tap',          // Würfeln mit: tap (Antippen), switch (Taster), both
   switchKey: 'Space',      // Taster sendet: Space, Enter, mouse oder angelernter Tastencode
+  tafelRemote: false,      // Tafel-Fernbedienung: Knopf „Tafel“ auf dem Würfel-iPad (Punktebild, Ergebnis, alle Ergebnisse)
   keepAwake: true,         // Bildschirm anlassen (kein Ruhezustand), damit auch der Ton nicht einschläft
   weiter: true,            // „Weiter“-Knopf nach jeder Aufgabe
   lockSec: 5,              // Sperrzeit ohne „Weiter“

@@ -509,18 +509,27 @@ function onRemote(roundChanged) {
   if (!$('#drawer').hidden) renderDrawer();
 }
 
-// ---------- Tafel vom Würfel-iPad aus bedienen ----------
-// Zwei Knöpfe unten rechts, nur wenn dieses iPad verbunden ist und gerade eine Aufgabe zeigt.
-// Sie decken Punktebild bzw. Ergebnis auf den Tafeln auf (sync.js: shown); die nächste Aufgabe ist wieder zugedeckt.
+// ---------- Tafel-Fernbedienung ----------
+// Einstellung „Tafel-Fernbedienung“: unten in der Mitte ein Knopf „Tafel“, nur wenn dieses iPad verbunden ist.
+// Er öffnet drei Schalter für alle Tafeln (sync.js: shown, shownList): Punktebild und Ergebnis der aktuellen
+// Aufgabe (bei der nächsten Aufgabe wieder zugedeckt) sowie „Alle Ergebnisse“.
 
 const entryId = (t) => `${t.r}|${t.ts}|${t.by}`;
+let tafelOpen = false;
 
 function renderTafelBtns(t = state.current) {
-  const on = !!(t && isOnline() && !net.boardMode && !state.rolling && !$('#screenTask').hidden);
+  const screen = !$('#screenTask').hidden || !$('#screenDone').hidden;
+  const on = !!(S.tafelRemote && isOnline() && !net.boardMode && !state.rolling && screen);
   $('#tafelBtns').hidden = !on;
-  const same = on && shown.key === entryId(t);
+  if (!on) tafelOpen = false;
+  $('#tafelPanel').hidden = !tafelOpen;
+  $('#btnTafel').setAttribute('aria-expanded', String(tafelOpen));
+  $('#btnTafel').classList.toggle('open', tafelOpen);
+  const same = !!(on && t && shown.key === entryId(t));
+  $('#btnTafelDots').hidden = $('#btnTafelResult').hidden = !t;
   $('#btnTafelDots').classList.toggle('on', same && shown.dots);
   $('#btnTafelResult').classList.toggle('on', same && shown.result);
+  $('#btnTafelList').classList.toggle('on', shownList.on);
 }
 
 function tafelToggle(what) {
@@ -533,10 +542,18 @@ function tafelToggle(what) {
   publish();
 }
 
+function tafelToggleList() {
+  if (!isOnline()) return;
+  shownList = { on: !shownList.on, ts: Date.now() };
+  renderTafelBtns();
+  publish();
+}
+
 // ---------- Tafel-Ansicht ----------
 
 let boardShownLast = null;
-let boardListOpen = false;   // „Alle Ergebnisse anzeigen“ gedrückt
+let boardListOpen = false;   // „Alle Ergebnisse“ gedrückt (auf der Tafel oder per Fernbedienung)
+let boardListTs = 0;         // Stand der Fernbedienung, der zuletzt übernommen wurde
 // Aufgedeckt auf der Tafel, gilt nur für die neueste Aufgabe und nur auf diesem Gerät
 let boardReveal = { key: '', dots: false, result: false, shownTs: 0 };
 
@@ -586,6 +603,7 @@ function renderBoard() {
   const byResult = new Map();
   for (const t of list) byResult.set(t.r, t);
   const results = [...byResult.keys()].sort((x, y) => x - y);
+  if (shownList.ts > boardListTs) { boardListOpen = shownList.on; boardListTs = shownList.ts; }
   if (!results.length) boardListOpen = false;
   $('#btnBoardList').hidden = !results.length;
   $('#btnBoardList').textContent = boardListOpen ? 'Ergebnisse ausblenden' : 'Alle Ergebnisse';
@@ -842,6 +860,7 @@ function setOption(key, value) {
   S[key] = value;
   save();
   if (key === 'keepAwake') keepAwake();
+  if (key === 'tafelRemote') renderTafelBtns();
   const taskShown = state.current && !$('#screenTask').hidden && !state.rolling;
   if ((key === 'dotsShow' || key === 'resultShow') && taskShown) showExtras(state.current);
   renderDrawer();
@@ -1179,14 +1198,16 @@ function bind() {
       e.currentTarget.blur();
     });
   }
-  for (const [id, what] of [['#btnTafelDots', 'dots'], ['#btnTafelResult', 'result']]) {
-    $(id).addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (switchClick()) return;   // der Maus-Taster würfelt nur
-      tafelToggle(what);
-      e.currentTarget.blur();
-    });
-  }
+  const tafelClick = (fn) => (e) => {
+    e.stopPropagation();
+    if (switchClick()) return;   // der Maus-Taster würfelt nur
+    fn();
+    e.currentTarget.blur();
+  };
+  $('#btnTafel').addEventListener('click', tafelClick(() => { tafelOpen = !tafelOpen; renderTafelBtns(); }));
+  $('#btnTafelDots').addEventListener('click', tafelClick(() => tafelToggle('dots')));
+  $('#btnTafelResult').addEventListener('click', tafelClick(() => tafelToggle('result')));
+  $('#btnTafelList').addEventListener('click', tafelClick(tafelToggleList));
   $('#btnBoardDots').addEventListener('click', () => setBoardReveal('dots', true));
   $('#btnBoardResult').addEventListener('click', () => setBoardReveal('result', true));
   $('#dotsPop').addEventListener('click', (e) => {

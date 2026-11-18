@@ -198,13 +198,13 @@ body.game {
   background: var(--blue); color: #fff; font-weight: 700;
 }
 #drawerTabs {
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.3rem;
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.2rem;
   margin: 0 1.2rem; padding: 0.3rem; border-radius: 14px; background: #dde2e7;
 }
 #drawerTabs button {
   position: relative;
-  padding: 0.6rem 0.2rem; border: none; border-radius: 11px;
-  background: transparent; color: #333; font-size: 0.95rem; font-weight: 700;
+  padding: 0.6rem 0.1rem; border: none; border-radius: 11px;
+  background: transparent; color: #333; font-size: 0.85rem; font-weight: 700;
 }
 #drawerTabs button .ico { display: block; font-size: 1.3rem; line-height: 1.2; }
 #drawerTabs button.on { background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15); }
@@ -472,7 +472,7 @@ select { padding: 9px 12px; border-radius: 10px; border: 2px solid #ccc; backgro
 @media (max-width: 520px) {
   #colorRow { gap: 0.4rem; }
   #colorRow button { width: 2.5rem; height: 2.5rem; border-width: 3px; }
-  #drawerTabs button { font-size: 0.7rem; }
+  #drawerTabs button { font-size: 0.62rem; }
   .setrow .seg, .setrow .ctl { flex-basis: 100%; }
   .sound-list { grid-template-columns: repeat(2, 1fr); }
   #keySeg { display: grid; grid-template-columns: repeat(2, 1fr); }
@@ -545,17 +545,22 @@ main { max-width: 1100px; margin: 0 auto; padding: 16px; }
   .cards.lotto { grid-template-columns: 1fr; gap: 5mm; }
 }
 
-/* Würfel-iPad: Punktebild/Ergebnis auf der Tafel aufdecken (nur wenn verbunden) */
+/* Tafel-Fernbedienung auf dem Würfel-iPad (nur wenn aktiviert und verbunden) */
 #tafelBtns {
   position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(1rem + env(safe-area-inset-bottom));
-  display: flex; gap: 0.6rem; z-index: 60; white-space: nowrap;   /* mittig, damit „Weiter“ rechts frei bleibt */
+  display: flex; flex-direction: column; align-items: center; gap: 0.6rem; z-index: 60; white-space: nowrap;
 }
 #tafelBtns[hidden] { display: none; }
+#tafelPanel { display: flex; gap: 0.6rem; }
+#tafelPanel[hidden] { display: none; }
 #tafelBtns button {
   padding: 0.7rem 1rem; border-radius: 12px; font-size: clamp(0.9rem, 2.2vw, 1.15rem); font-weight: 700;
   background: rgba(0, 0, 0, 0.25); color: rgba(255, 255, 255, 0.9); border: 2px solid rgba(255, 255, 255, 0.35);
   -webkit-tap-highlight-color: transparent;
 }
+#tafelBtns button[hidden] { display: none; }
+#tafelBtns #tafelPanel button { background: rgba(0, 0, 0, 0.45); }
+#tafelBtns button.open { border-color: #fff; }
 #tafelBtns button.on { background: var(--yellow); color: #123a6b; border-color: var(--yellow); }
 
 /* Niveau wählen (erster Start, ⚙️ → Aufgaben) */

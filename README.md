@@ -25,7 +25,7 @@ ohne Installation und ohne Anmeldung: https://walteroelf.github.io/MatheBingo/
 
 ## Einstellungen (⚙️ unten links)
 
-Aufgebaut wie beim ABC-Bingo, mit fünf Reitern. Der zuletzt geöffnete Reiter wird gemerkt.
+Aufgebaut wie beim ABC-Bingo, mit sechs Reitern. Der zuletzt geöffnete Reiter wird gemerkt.
 
 - **🎲 Spiel**
   - *Gewürfelte Aufgaben* (x von y): neueste gelb umrandet, „Letzte zurücknehmen“, „Neues Spiel“,
@@ -39,9 +39,10 @@ Aufgebaut wie beim ABC-Bingo, mit fünf Reitern. Der zuletzt geöffnete Reiter w
   erscheinen in dieser Farbe, auch in der Liste und auf der Tafel; so sieht man, welches iPad gewürfelt hat),
   Punktebild und Ergebnis (je „Aus“, „Auf Antippen“, „Immer“; bei „Auf Antippen“ deckt ein Knopf unter der
   Aufgabe es auf), Vorlesen, Lautstärke, Stimmprobe, Würfel-Klang, Konfetti, **Bildschirm anlassen**, Vollbild.
-  Unter **Würfeln**: Antippen, Taster oder beides, „Weiter“-Knopf an/aus und Sperrzeit (siehe [Taster](#taster)).
+  Die Taster-Einstellungen stehen im eigenen Reiter **🔘 Taster**.
   Würfel-Klänge (Antippen zum Anhören und Auswählen): 🥁 Trommelwirbel, 🎺 Tusch, 🎡 Glücksrad, 🎵 Xylophon,
   ✨ Zauberstab, 🔇 Kein Klang. Alle Klänge werden im Browser erzeugt (`sounds.js`).
+- **🔘 Taster**: Würfeln mit Antippen, Taster oder beides, welche Taste der Taster sendet (auch Anlernen), „Weiter“-Knopf an/aus und Sperrzeit (siehe [Taster](#taster)).
 - **📡 Verbinden**: Mehrere iPads und die Tafel, siehe unten. Ein Punkt am Reiter zeigt den Verbindungsstatus.
 - **➕ Mehr**: Bingokarten und Lottoscheine, diese Anleitung (öffnet sich in der App).
 
@@ -68,7 +69,7 @@ länger, bis alle Zahlen einmal dran waren. Eine Änderung startet ein neues Spi
 ## Taster
 
 Ein einzelner Taster (per Adapter am iPad) kann statt des Bildschirms würfeln, wie beim ABC-Bingo.
-Einstellung unter ⚙️ → **Dieses iPad** → **Würfeln**:
+Einstellung unter ⚙️ → **Taster** (eigener Reiter):
 
 - **Würfeln mit:** Antippen, Taster oder Beides. Bei „Taster“ löst eine Berührung des Bildschirms kein Würfeln aus.
 - **Der Taster sendet:** Leertaste, Enter oder Mausklick. Bei einer anderen Taste auf **Anlernen** tippen und den
@@ -118,9 +119,10 @@ Nochmal drücken (oder die Liste antippen) versteckt sie wieder.
 Unter der neuesten Aufgabe stehen immer die Knöpfe **„Punktebild zeigen“** und **„Ergebnis zeigen“**
 z. B. zum gemeinsamen Nachrechnen am Smartboard. Punktebild und Ergebnis erscheinen groß in einem Pop-up, Antippen
 schließt es; das Punktebild-Fenster hat einen Knopf „Ergebnis zeigen“, der zum Ergebnis weiterführt. Aufgedeckt wird nur auf der Tafel; bei Punktebild versteckt nochmal Antippen es wieder, bei der nächsten Aufgabe ist beides wieder zugedeckt. Die Aufgabe
-bleibt dabei an ihrem Platz. Vom Würfel-iPad aus geht das auch: Ist es verbunden, erscheinen unten in der Mitte die Knöpfe
-**„Tafel: Punktebild“** und **„Tafel: Ergebnis“**. Sie decken es auf allen Tafeln auf (nochmal drücken versteckt es),
-würfeln nicht und werden bei der nächsten Aufgabe zurückgesetzt. Der Taster deckt nichts auf.
+bleibt dabei an ihrem Platz. **Tafel-Fernbedienung** (⚙️ → Dieses iPad, aus bis du sie einschaltest): Ist das iPad verbunden, erscheint unten in
+der Mitte der Knopf **„Tafel“**. Er öffnet drei Schalter: **Punktebild**, **Ergebnis** (beide für die aktuelle Aufgabe,
+bei der nächsten wieder zugedeckt) und **Alle Ergebnisse**. Sie wirken auf allen Tafeln, nochmal drücken versteckt es
+wieder. Sie würfeln nicht, und der Taster deckt nichts auf.
 Der kleine Knopf unten rechts schaltet die Tafel ins Vollbild und wieder zurück.
 
 ## Als App auf den Home-Bildschirm

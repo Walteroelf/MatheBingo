@@ -37,6 +37,8 @@ let qrVisible = false;
 let qrBoardVisible = false;
 // Vom Würfel-iPad auf der Tafel aufgedeckt: Punktebild/Ergebnis der Aufgabe `key` (r|ts|by), jüngster Stand gewinnt
 let shown = { key: '', dots: false, result: false, ts: 0 };
+// „Alle Ergebnisse“ auf der Tafel, vom Würfel-iPad aus: unabhängig von der Aufgabe, jüngster Stand gewinnt
+let shownList = { on: false, ts: 0 };
 const pendingBy = {};   // Gerät → { keys, ts }: noch verdeckte Würfe anderer iPads
 
 const isOnline = () => !!(client && connected);
@@ -144,6 +146,7 @@ function publish() {
     // andere zeigen es erst nach dem Aufdecken; Ergebnis als Zahl wie bisher, Aufgabe als Text
     pending: claim && claim.t ? [S.unique === 'task' ? taskKey(claim.t) : claim.t.r] : [],
     show: shown,
+    showList: shownList,
     by: DEVICE,
   };
   client.publish(TOPIC_PREFIX + net.code, JSON.stringify(msg), { qos: 1, retain: true });
@@ -187,6 +190,8 @@ function receive(raw) {
   try { m = JSON.parse(raw); } catch { return; }
   if (!m || typeof m.gen !== 'string' || !isNum(m.genTs) || !Array.isArray(m.drawn)) return;
   sawMsg = true;
+  const sl = m.showList;
+  if (sl && isNum(sl.ts) && sl.ts > shownList.ts) shownList = { on: !!sl.on, ts: sl.ts };
   const sh = m.show;
   if (sh && typeof sh.key === 'string' && isNum(sh.ts) && sh.ts > shown.ts) {
     shown = { key: sh.key.slice(0, 80), dots: !!sh.dots, result: !!sh.result, ts: sh.ts };
