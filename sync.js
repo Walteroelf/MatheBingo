@@ -382,14 +382,14 @@ function renderSync() {
     dot.classList.toggle('on', isOnline());
   }
   $('#syncStatus').textContent = !code ? 'Nicht verbunden. Dieses iPad spielt allein.'
-    : isOnline() ? `🟢 Verbunden über ${BROKERS[net.server].name}. Spielcode:`
-      : '🟠 Gerade keine Verbindung. Dieses iPad würfelt vorerst allein weiter. Spielcode:';
+    : isOnline() ? `Verbunden über ${BROKERS[net.server].name}. Spielcode:`
+      : 'Gerade keine Verbindung. Dieses iPad würfelt vorerst allein weiter. Spielcode:';
   $('#codeBig').hidden = !code;
   $('#codeBig').textContent = code ? displayCode() : '';
 
   $('#shareTitle').textContent = code ? 'Weitere iPads dazuholen' : 'Gemeinsames Spiel starten';
   $('#shareDesc').textContent = code
-    ? 'Auf dem anderen iPad den QR-Code scannen, oder dort unter ⚙️ → Verbinden → „Einem Spiel beitreten“ den Spielcode von oben eintippen.'
+    ? 'Auf dem anderen iPad den QR-Code scannen, oder dort unter Zahnrad → Verbinden → „Einem Spiel beitreten“ den Spielcode von oben eintippen.'
     : 'Mehrere iPads würfeln dann aus einem Topf, kein Ergebnis kommt doppelt.';
   $('#btnShare').textContent = !code ? 'Gemeinsames Spiel starten'
     : qrVisible ? 'QR-Code ausblenden' : 'QR-Code für weitere iPads zeigen';

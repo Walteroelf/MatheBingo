@@ -6,7 +6,7 @@
 // Alles andere kommt sofort aus dem Speicher und wird im Hintergrund aufgefrischt.
 // Skripte und CSS haben ?v=N: Eine neue Nummer ist eine neue Adresse und wird frisch geladen.
 // Bei Änderungen an der Dateiliste oder den Ansagen VERSION erhöhen.
-const VERSION = 'mathebingo-v4';
+const VERSION = 'mathebingo-v5';
 
 const FILES = [
   './',
@@ -14,6 +14,7 @@ const FILES = [
   'druck.html',
   'README.md',
   'manifest.webmanifest',
+  'design.css',
   'style.css',
   'core.js',
   'sounds.js',

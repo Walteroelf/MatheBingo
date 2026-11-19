@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#1f5fa8">
+  <meta name="theme-color" content="#4DB2E6">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Mathe-Bingo">
@@ -11,9 +11,25 @@
   <title>Mathe-Bingo</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/icon-180.png">
-  <link rel="stylesheet" href="style.css?v=40">
+  <link rel="stylesheet" href="design.css?v=1">
+  <link rel="stylesheet" href="style.css?v=41">
 </head>
 <body class="game">
+<!-- Eigene Linien-Symbole (statt Emojis), siehe DESIGN.md -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-zahnrad" viewBox="0 0 24 24"><path d="M18.99 10.29 L21.38 10.49 L21.38 13.51 L18.99 13.71 L18.16 15.74 L19.70 17.56 L17.56 19.70 L15.74 18.16 L13.71 18.99 L13.51 21.38 L10.49 21.38 L10.29 18.99 L8.26 18.16 L6.44 19.70 L4.30 17.56 L5.84 15.74 L5.01 13.71 L2.62 13.51 L2.62 10.49 L5.01 10.29 L5.84 8.26 L4.30 6.44 L6.44 4.30 L8.26 5.84 L10.29 5.01 L10.49 2.62 L13.51 2.62 L13.71 5.01 L15.74 5.84 L17.56 4.30 L19.70 6.44 L18.16 8.26Z"/><circle cx="12" cy="12" r="3.2"/></symbol>
+  <symbol id="i-wuerfel" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/><path d="M8 8h.01M16 8h.01M12 12h.01M8 16h.01M16 16h.01" stroke-width="3.4"/></symbol>
+  <symbol id="i-rechnen" viewBox="0 0 24 24"><path d="M7 3.5v7M3.5 7h7M13.5 7h7M14.5 14.5l5 5M19.5 14.5l-5 5M3.5 15.5h7M3.5 19h7"/></symbol>
+  <symbol id="i-ipad" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><path d="M11 18.5h2"/></symbol>
+  <symbol id="i-taster" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/></symbol>
+  <symbol id="i-verbinden" viewBox="0 0 24 24"><path d="M12 13v8"/><circle cx="12" cy="11" r="1.6"/><path d="M8.5 7.5a5 5 0 0 0 0 7M15.5 7.5a5 5 0 0 1 0 7M5.5 4.5a9.2 9.2 0 0 0 0 13M18.5 4.5a9.2 9.2 0 0 1 0 13"/></symbol>
+  <symbol id="i-mehr" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-schliessen" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-ton" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></symbol>
+  <symbol id="i-drucker" viewBox="0 0 24 24"><path d="M7 9V3.5h10V9"/><rect x="3.5" y="9" width="17" height="8" rx="2"/><path d="M7 14h10v6.5H7z"/></symbol>
+  <symbol id="i-buch" viewBox="0 0 24 24"><path d="M12 6.5C10 5 7 4.5 3.5 5v13.5c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5V20"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></symbol>
+</svg>
 
 <div id="screenTouch" class="screen">
   <button id="btnTouch" aria-label="Aufgabe würfeln"></button>
@@ -34,7 +50,7 @@
 </div>
 
 <div id="screenDone" class="screen" hidden>
-  <div id="doneTitle">Alle Aufgaben wurden gewürfelt! 🎉</div>
+  <div id="doneTitle">Alle Aufgaben wurden gewürfelt!</div>
   <span id="doneHint">Drücke „Weiter“, um neu zu starten.</span>
 </div>
 
@@ -48,9 +64,9 @@
       <button id="btnBoardResult" class="result-btn" hidden>Ergebnis zeigen</button>
     </div>
   </div>
-  <button id="btnBoardList" hidden>Alle Ergebnisse</button>
+  <button id="btnBoardList" class="schwebe" hidden>Alle Ergebnisse</button>
   <div id="boardList" class="schrift" title="Antippen zum Verstecken" hidden></div>
-  <button id="btnBoardFs" hidden></button>
+  <button id="btnBoardFs" class="schwebe" hidden></button>
   <div id="dotsPop" class="schrift" hidden title="Antippen zum Schließen"></div>
   <div id="resultPop" class="schrift" hidden title="Antippen zum Schließen"></div>
 </div>
@@ -65,26 +81,26 @@
 </div>
 
 <div id="syncDot" hidden></div>
-<div id="repeatHint">🔊 Nochmal</div>
-<div id="lockBar"></div>
+<div id="repeatHint"><svg class="symbol" aria-hidden="true"><use href="#i-ton"/></svg> Nochmal</div>
+<div id="lockBar" class="bewegung-erlaubt"></div>
 <canvas id="confetti" hidden></canvas>
 <button id="btnWeiter" hidden>Weiter</button>
-<button id="btnGear" aria-label="Einstellungen">⚙️</button>
-<button id="btnFs" hidden></button>
+<button id="btnGear" class="schwebe" aria-label="Einstellungen"><svg class="symbol" aria-hidden="true"><use href="#i-zahnrad"/></svg></button>
+<button id="btnFs" class="schwebe" hidden></button>
 
 <div id="drawer" hidden>
   <div id="drawerInner" role="dialog" aria-label="Einstellungen">
     <div id="drawerHead">
-      <h2>⚙️ Einstellungen</h2>
-      <button id="btnCloseDrawer">✕ Schließen</button>
+      <h2><svg class="symbol" aria-hidden="true"><use href="#i-zahnrad"/></svg> Einstellungen</h2>
+      <button id="btnCloseDrawer"><svg class="symbol" aria-hidden="true"><use href="#i-schliessen"/></svg> Schließen</button>
     </div>
     <div id="drawerTabs" role="tablist">
-      <button data-tab="spiel" role="tab"><span class="ico">🎲</span>Spiel</button>
-      <button data-tab="aufgaben" role="tab"><span class="ico">🧮</span>Aufgaben</button>
-      <button data-tab="geraet" role="tab"><span class="ico">📱</span>Dieses iPad</button>
-      <button data-tab="taster" role="tab"><span class="ico">🔘</span>Taster</button>
-      <button data-tab="verbinden" role="tab"><span class="ico">📡</span>Verbinden<span id="tabDot" hidden></span></button>
-      <button data-tab="mehr" role="tab"><span class="ico">➕</span>Mehr</button>
+      <button data-tab="spiel" role="tab"><span class="ico"><svg class="symbol" aria-hidden="true"><use href="#i-wuerfel"/></svg></span>Spiel</button>
+      <button data-tab="aufgaben" role="tab"><span class="ico"><svg class="symbol" aria-hidden="true"><use href="#i-rechnen"/></svg></span>Aufgaben</button>
+      <button data-tab="geraet" role="tab"><span class="ico"><svg class="symbol" aria-hidden="true"><use href="#i-ipad"/></svg></span>Dieses iPad</button>
+      <button data-tab="taster" role="tab"><span class="ico"><svg class="symbol" aria-hidden="true"><use href="#i-taster"/></svg></span>Taster</button>
+      <button data-tab="verbinden" role="tab"><span class="ico"><svg class="symbol" aria-hidden="true"><use href="#i-verbinden"/></svg></span>Verbinden<span id="tabDot" hidden></span></button>
+      <button data-tab="mehr" role="tab"><span class="ico"><svg class="symbol" aria-hidden="true"><use href="#i-mehr"/></svg></span>Mehr</button>
     </div>
 
     <div id="drawerBody">
@@ -92,7 +108,7 @@
       <section data-tab="spiel">
         <div class="scard">
           <h3>Gewürfelte Aufgaben <span class="tiny" id="drawnCount"></span></h3>
-          <div class="tiny" id="drawnHint">In der Reihenfolge, in der sie gewürfelt wurden. Die neueste ist gelb umrandet.</div>
+          <div class="tiny" id="drawnHint">In der Reihenfolge, in der sie gewürfelt wurden. Die neueste ist dunkel umrandet.</div>
           <div id="drawnTasks" class="schrift"></div>
           <div class="btnrow">
             <button id="btnUndo" class="sbtn light">↶ Letzte zurücknehmen</button>
@@ -212,7 +228,7 @@
           </div>
           <div class="setrow">
             <span class="lbl">Stimmprobe</span>
-            <button id="btnTestVoice" class="sbtn light">🔊 Probe hören</button>
+            <button id="btnTestVoice" class="sbtn light"><svg class="symbol" aria-hidden="true"><use href="#i-ton"/></svg> Probe hören</button>
           </div>
           <div class="setrow col">
             <span class="lbl">Würfel-Klang <span class="tiny">Antippen zum Anhören und Auswählen</span></span>
@@ -222,7 +238,7 @@
             <label class="switch"><span class="lbl">Konfetti beim Ergebnis</span><input type="checkbox" data-opt="fxConfetti"></label>
           </div>
           <div class="setrow">
-            <label class="switch"><span class="lbl">Tafel-Fernbedienung <span class="tiny">Knopf „Tafel“ unten auf dem iPad: zeigt Punktebild, Ergebnis und alle Ergebnisse auf der Tafel. Erscheint, sobald ein gemeinsames Spiel besteht (⚙️ → Verbinden).</span></span><input type="checkbox" data-opt="tafelRemote"></label>
+            <label class="switch"><span class="lbl">Tafel-Fernbedienung <span class="tiny">Knopf „Tafel“ unten auf dem iPad: zeigt Punktebild, Ergebnis und alle Ergebnisse auf der Tafel. Erscheint, sobald ein gemeinsames Spiel besteht (Zahnrad → Verbinden).</span></span><input type="checkbox" data-opt="tafelRemote"></label>
           </div>
           <div class="setrow">
             <label class="switch"><span class="lbl">Bildschirm anlassen <span class="tiny">kein Ruhezustand, der Ton bleibt wach. Am besten mit Ladekabel.</span></span><input type="checkbox" data-opt="keepAwake"></label>
@@ -295,17 +311,17 @@
 
         <div class="scard" id="joinBox">
           <h3>Einem Spiel beitreten</h3>
-          <div class="tiny">Den Spielcode eingeben, der auf dem anderen iPad unter ⚙️ → Verbinden steht.</div>
+          <div class="tiny">Den Spielcode eingeben, der auf dem anderen iPad unter Zahnrad → Verbinden steht.</div>
           <div class="btnrow">
             <input id="joinInput" type="text" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Spielcode">
             <button id="btnJoin" class="sbtn">Beitreten</button>
           </div>
-          <div class="tiny" id="joinError" hidden>Diesen Code kenne ich nicht. Er steht auf dem anderen iPad unter ⚙️ → Verbinden.</div>
+          <div class="tiny" id="joinError" hidden>Diesen Code kenne ich nicht. Er steht auf dem anderen iPad unter Zahnrad → Verbinden.</div>
         </div>
 
         <div class="scard">
           <h3>Tafel-Ansicht (Beamer, Smartboard)</h3>
-          <div class="tiny">Die Tafel zeigt die neueste Aufgabe groß. Punktebild, Ergebnis und alle Ergebnisse zeigst du dort mit den Knöpfen auf der Tafel selbst oder vom Würfel-iPad aus mit der Tafel-Fernbedienung (⚙️ → Dieses iPad).</div>
+          <div class="tiny">Die Tafel zeigt die neueste Aufgabe groß. Punktebild, Ergebnis und alle Ergebnisse zeigst du dort mit den Knöpfen auf der Tafel selbst oder vom Würfel-iPad aus mit der Tafel-Fernbedienung (Zahnrad → Dieses iPad).</div>
           <div class="tiny" id="boardInfo">Erst ein gemeinsames Spiel starten oder beitreten, dann lässt sich hier die Tafel verbinden.</div>
           <div class="tiny" id="boardLinkBox" hidden>Link für den Beamer-Rechner: <b id="boardLink"></b></div>
           <div class="btnrow">
@@ -330,17 +346,17 @@
       <!-- ── Mehr ──────────────────────────────────────────── -->
       <section data-tab="mehr" hidden>
         <div class="scard">
-          <h3>🖨️ Bingokarten und Lottoscheine</h3>
+          <h3><span class="titel"><svg class="symbol" aria-hidden="true"><use href="#i-drucker"/></svg> Bingokarten und Lottoscheine</span></h3>
           <div class="tiny">Zum Ausdrucken, mit genau den Zahlen im Topf.</div>
           <a class="sbtn" href="druck.html">Ausdrucke öffnen</a>
         </div>
         <div class="scard">
-          <h3>📖 Anleitung</h3>
+          <h3><span class="titel"><svg class="symbol" aria-hidden="true"><use href="#i-buch"/></svg> Anleitung</span></h3>
           <div class="tiny">Alles zum Spielen, zu den Einstellungen, zum Taster, zum Verbinden und zu den Ausdrucken.</div>
           <button id="btnGuide" class="sbtn light">Anleitung öffnen</button>
         </div>
         <div class="scard">
-          <h3>ℹ️ Über diese App</h3>
+          <h3><span class="titel"><svg class="symbol" aria-hidden="true"><use href="#i-info"/></svg> Über diese App</span></h3>
           <div class="tiny">Mathe-Bingo. Alle Apps wurden per Vibe-Coding mit Claude erstellt.</div>
           <p class="copyright-line" style="margin:16px 0 0;font-size:.8rem;opacity:.75;text-align:center;line-height:1.4;text-align:left">© 2026 Walteroelf · Work in Progress · <a href="https://github.com/Walteroelf/MatheBingo/blob/main/LICENSE.md" target="_blank" rel="noopener" style="color:inherit">CC BY-NC-SA 4.0</a></p>
         </div>
@@ -352,8 +368,8 @@
 <div id="guide" hidden>
   <div id="guideInner" role="dialog" aria-label="Anleitung">
     <div id="guideHead">
-      <h2>📖 Anleitung</h2>
-      <button id="btnCloseGuide">✕ Schließen</button>
+      <h2><svg class="symbol" aria-hidden="true"><use href="#i-buch"/></svg> Anleitung</h2>
+      <button id="btnCloseGuide"><svg class="symbol" aria-hidden="true"><use href="#i-schliessen"/></svg> Schließen</button>
     </div>
     <div id="guideBody"></div>
   </div>
@@ -362,7 +378,7 @@
 <div id="levels" hidden>
   <div id="levelsInner" role="dialog" aria-label="Aufgabenniveau wählen">
     <h2>Welches Niveau passt zu deiner Klasse?</h2>
-    <p class="tiny">Von leicht nach schwer. Du kannst es jederzeit unter ⚙️ → Aufgaben ändern.</p>
+    <p class="tiny">Von leicht nach schwer. Du kannst es jederzeit unter Zahnrad → Aufgaben ändern.</p>
     <div id="levelGrid"></div>
     <div id="levelFoot">
       <button id="btnLevelGo" class="sbtn"></button>
@@ -380,11 +396,11 @@
   </div>
 </dialog>
 
-<script src="core.js?v=27"></script>
+<script src="core.js?v=28"></script>
 <script src="sounds.js?v=18"></script>
-<script src="sync.js?v=7"></script>
+<script src="sync.js?v=8"></script>
 <script src="guide.js?v=1"></script>
-<script src="app.js?v=44"></script>
+<script src="app.js?v=45"></script>
 <script>
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>

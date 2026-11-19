@@ -1,4 +1,8 @@
-/* Andika: Leselern-Schrift von SIL (OFL), wie im ABC-Bingo */
+/* Mathe-Bingo: App-eigene Gestaltung.
+   Farben, Schrift, Fokus-Rahmen und Grundregeln kommen aus design.css (Olympia-72-Palette, siehe DESIGN.md).
+   Regel: Auf jeder Farbfläche steht Dunkelblau. Weiße Schrift gibt es nicht. Blau nie als Fläche. */
+
+/* Andika: Leselern-Schrift von SIL (OFL) */
 @font-face {
   font-family: "Andika"; font-weight: 400; font-display: block;
   src: url("fonts/andika-latin-400.woff2") format("woff2");
@@ -8,25 +12,23 @@
   src: url("fonts/andika-latin-700.woff2") format("woff2");
 }
 
-/* Mathe ist blau: Berühren-Bildschirm hell, Aufgaben-Bildschirm dunkel */
 :root {
-  --blue: #1f5fa8;
-  --blue-dark: #123a6b;
-  --yellow: #f0c020;
-  --panel: #f6f8fa;
-  --text: #1d2433;
-  --muted: #555;
+  /* leichter Schleier über dem Spiel, wenn ein Fenster offen ist */
+  --schleier: rgb(13 43 78 / 0.55);
+  /* Punkte und Rahmen im Punktebild */
+  --punkt-leer: rgb(13 43 78 / 0.35);
 }
 
-*, *::before, *::after { box-sizing: border-box; }
-html, body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--text); }
-button, input, select { font: inherit; }
-button { cursor: pointer; }
-button:disabled { opacity: 0.45; cursor: not-allowed; }
-button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
 [hidden] { display: none !important; }
 
-.schrift { font-family: "Andika", system-ui, sans-serif; font-weight: 700; }
+.schrift { font-family: var(--schrift); font-weight: 700; }
+
+/* Knöpfe, die über einer Farbfläche schweben: immer Weiß mit Dunkelblau, auf jeder Gerätefarbe gut sichtbar */
+.schwebe {
+  background: var(--weiss); color: var(--dunkelblau);
+  border: 3px solid var(--dunkelblau);
+  -webkit-tap-highlight-color: transparent;
+}
 
 /* ---------- Spiel ---------- */
 body.game {
@@ -42,21 +44,21 @@ body.game {
   align-items: center; justify-content: center;
 }
 
-#screenTouch { background: var(--blue); color: #fff; }
+#screenTouch { background: var(--hellblau); color: var(--dunkelblau); }
 #screenTouch h1 {
   font-size: clamp(2.8rem, 11vw, 7rem);
-  font-weight: 900; text-align: center; padding: 1rem; margin: 0;
+  font-weight: 700; text-align: center; padding: 1rem; margin: 0;
   pointer-events: none;
 }
 #screenTouch p {
-  color: rgba(255, 255, 255, 0.75);
-  font-size: clamp(1rem, 3.5vw, 2rem);
+  color: var(--dunkelblau);
+  font-size: clamp(1.1rem, 3.5vw, 2rem);
   margin: 1rem 0 0; text-align: center; padding: 0 1rem;
   pointer-events: none;
 }
 #screenTouch .touch-count {
   position: absolute; top: calc(1.2rem + env(safe-area-inset-top)); left: 0; right: 0;
-  margin: 0; font-size: clamp(0.9rem, 2.8vw, 1.4rem);
+  margin: 0; font-size: clamp(1rem, 2.8vw, 1.4rem);
 }
 #btnTouch {
   position: absolute; inset: 0;
@@ -66,9 +68,10 @@ body.game {
 
 /* Obere Hälfte: Aufgabe (unten bündig), untere Hälfte: Punktebild und Ergebnis.
    Feste Aufteilung wie auf der Tafel, damit die Aufgabe beim Aufdecken stehen bleibt.
-   Sind Punktebild und Ergebnis beide aus, steht die Aufgabe in der Mitte. */
+   Sind Punktebild und Ergebnis beide aus, steht die Aufgabe in der Mitte.
+   Hintergrund ist die Farbe dieses iPads (siehe COLORS in core.js). */
 #screenTask {
-  background: var(--blue-dark); color: #fff; padding: 1rem 1rem 8rem; cursor: pointer;
+  background: var(--hellblau); color: var(--dunkelblau); padding: 1rem 1rem 8rem; cursor: pointer;
   display: grid; grid-template-rows: 1fr 1fr; justify-items: center;
 }
 #screenTask .task { align-self: end; padding-bottom: 3vh; }
@@ -90,21 +93,26 @@ body.game {
   transition: opacity 0.1s;
 }
 #screenTask .task.rolling { opacity: 0.2; }
-#screenTask .op { color: var(--yellow); }
+.op { color: var(--dunkelblau); font-weight: 400; }
 #screenTask .op.mul { font-size: 1.05em; line-height: 0.5; }
 
 /* Ergebnis-Knopf mittig unter dem Punktebild */
 .result-btn {
-  padding: 14px 30px; border-radius: 16px;
-  border: 3px solid rgba(255, 255, 255, 0.6); background: rgba(255, 255, 255, 0.12);
-  color: #fff; font-weight: 800; font-size: clamp(1.1rem, 3vw, 1.6rem);
+  min-height: var(--knopf-hoehe);
+  padding: 12px 30px; border-radius: var(--rundung);
+  background: var(--weiss); color: var(--dunkelblau); border: 3px solid var(--dunkelblau);
+  font-weight: 700; font-size: clamp(1.1rem, 3vw, 1.6rem);
   -webkit-tap-highlight-color: transparent;
 }
-.result { font-size: min(12vw, 20vh); line-height: 1; color: var(--yellow); pointer-events: none; }
+/* Ergebnis: weißes Feld mit dunkelblauer Zahl, damit es sich von der Aufgabe abhebt */
+.result {
+  font-size: min(12vw, 20vh); line-height: 1; color: var(--dunkelblau); pointer-events: none;
+  background: var(--weiss); border-radius: 0.18em; padding: 0.06em 0.3em;
+}
 
 #screenDone {
-  background: var(--blue-dark); color: #fff;
-  font-size: clamp(1.6rem, 6vw, 3.2rem); font-weight: 900;
+  background: var(--hellgruen); color: var(--dunkelblau);
+  font-size: clamp(1.6rem, 6vw, 3.2rem); font-weight: 700;
   text-align: center; padding: 2rem;
 }
 #screenDone span { font-size: 0.55em; font-weight: 400; margin-top: 1rem; }
@@ -113,11 +121,9 @@ body.game {
   position: fixed;
   right: calc(1rem + env(safe-area-inset-right)); bottom: calc(1rem + env(safe-area-inset-bottom));
   width: clamp(80px, 18vw, 110px); height: clamp(80px, 18vw, 110px);
-  border-radius: 20px;
-  background: linear-gradient(180deg, #3a86e0, #174a86);
-  color: #fff; border: 4px solid #fff;
-  font-weight: 900; font-size: clamp(0.95rem, 2.5vw, 1.2rem);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+  border-radius: var(--rundung-gross);
+  background: var(--gruen); color: var(--dunkelblau); border: 4px solid var(--dunkelblau);
+  font-weight: 700; font-size: clamp(1rem, 2.5vw, 1.25rem);
   z-index: 60;
   -webkit-tap-highlight-color: transparent;
 }
@@ -125,20 +131,20 @@ body.game {
 #btnGear {
   position: fixed;
   left: calc(1rem + env(safe-area-inset-left)); bottom: calc(1rem + env(safe-area-inset-bottom));
-  width: clamp(64px, 14vw, 84px); height: clamp(64px, 14vw, 84px);
-  border-radius: 16px; background: rgba(0, 0, 0, 0.3);
-  color: #fff; border: 3px solid rgba(255, 255, 255, 0.3);
-  font-size: clamp(1.4rem, 4vw, 2rem);
+  width: clamp(64px, 14vw, 84px); height: clamp(64px, 14vw, 84px); padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--rundung);
   z-index: 60;
-  -webkit-tap-highlight-color: transparent;
 }
+#btnGear .symbol { width: 55%; height: 55%; }
 
 #repeatHint {
   position: fixed; bottom: 7rem; left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.6); color: #fff;
-  font-size: 1rem; font-weight: 700;
-  padding: 0.4rem 1rem; border-radius: 20px;
+  display: flex; align-items: center; gap: 0.4em;
+  background: var(--weiss); color: var(--dunkelblau); border: 2px solid var(--dunkelblau);
+  font-size: 1.1rem; font-weight: 700;
+  padding: 0.4rem 1rem; border-radius: 999px;
   opacity: 0; transition: opacity 0.2s;
   pointer-events: none; z-index: 55;
 }
@@ -146,10 +152,10 @@ body.game {
 
 #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 58; }
 
-/* Punktebilder */
+/* Punktebilder: erste Zahl dunkelblau, zweite Zahl weiß mit dunkelblauem Rand */
 .dots { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2.5vmin; pointer-events: none; }
 .dots:empty { display: none; }
-.dots .sign { font-size: 5vmin; font-weight: 800; color: var(--yellow); }
+.dots .sign { font-size: 5vmin; font-weight: 700; color: var(--dunkelblau); }
 .ds { display: contents; }
 .frames { display: flex; flex-wrap: wrap; gap: 1.5vmin; justify-content: center; }
 .frame {
@@ -158,18 +164,18 @@ body.game {
   grid-template-columns: repeat(5, var(--d));
   gap: calc(var(--d) / 4);
   padding: calc(var(--d) / 4);
-  border: 2px solid rgba(255, 255, 255, 0.45);
+  border: 2px solid var(--dunkelblau);
   border-radius: 10px;
 }
 .frame .dot { width: var(--d); height: var(--d); }
-.dot { border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.35); }
-.dot.on { background: #fff; border-color: #fff; }
-.b .dot.on { background: var(--yellow); border-color: var(--yellow); }
-.dot.gone { background: transparent; border: 2px dashed rgba(255, 255, 255, 0.7); position: relative; }
+.dot { border-radius: 50%; border: 2px solid var(--punkt-leer); }
+.dot.on { background: var(--dunkelblau); border-color: var(--dunkelblau); }
+.b .dot.on { background: var(--weiss); border: 3px solid var(--dunkelblau); }
+.dot.gone { background: transparent; border: 2px dashed var(--dunkelblau); position: relative; }
 .dot.gone::after {
   content: "";
   position: absolute; left: -3px; right: -3px; top: 50%;
-  border-top: 3px solid var(--yellow);
+  border-top: 3px solid var(--dunkelblau);
   transform: rotate(-45deg);
 }
 .array { --d: clamp(12px, 2.8vmin, 30px); display: grid; gap: calc(var(--d) / 4); }
@@ -177,13 +183,13 @@ body.game {
 .array .dot.col5 { margin-right: calc(var(--d) / 2); }
 .array .dot.row5 { margin-bottom: calc(var(--d) / 2); }
 
-/* ---------- Einstellungen (aufgebaut wie im ABC-Bingo) ---------- */
+/* ---------- Einstellungen ---------- */
 #drawer {
-  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5);
+  position: fixed; inset: 0; background: var(--schleier);
   z-index: 70; display: flex; align-items: flex-end;
 }
 #drawerInner {
-  width: 100%; max-width: 760px; margin: 0 auto; background: #eef1f4;
+  width: 100%; max-width: 760px; margin: 0 auto; background: var(--hg); color: var(--text);
   border-radius: 22px 22px 0 0;
   display: flex; flex-direction: column;
   height: min(88vh, 900px);
@@ -192,32 +198,41 @@ body.game {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   padding: 1rem 1.2rem 0.6rem;
 }
-#drawerHead h2 { font-size: 1.3rem; font-weight: 800; margin: 0; }
+#drawerHead h2, #guideHead h2 {
+  font-size: var(--gr-2); font-weight: 700; margin: 0;
+  display: flex; align-items: center; gap: 0.4em;
+}
 #btnCloseDrawer, #btnCloseGuide {
-  padding: 10px 18px; border-radius: 12px; border: none;
-  background: var(--blue); color: #fff; font-weight: 700;
+  min-height: 48px; padding: 0 18px; border-radius: var(--rundung); border: none;
+  background: var(--hellblau); color: var(--dunkelblau); font-weight: 700;
+  display: inline-flex; align-items: center; gap: 0.4em;
 }
 #drawerTabs {
   display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.2rem;
-  margin: 0 1.2rem; padding: 0.3rem; border-radius: 14px; background: #dde2e7;
+  margin: 0 1.2rem; padding: 0.3rem; border-radius: 14px; background: var(--flaeche-2);
 }
 #drawerTabs button {
   position: relative;
-  padding: 0.6rem 0.1rem; border: none; border-radius: 11px;
-  background: transparent; color: #333; font-size: 0.85rem; font-weight: 700;
+  padding: 0.55rem 0.1rem; border: none; border-radius: 11px;
+  background: transparent; color: var(--text); font-size: 0.9rem; font-weight: 700;
 }
-#drawerTabs button .ico { display: block; font-size: 1.3rem; line-height: 1.2; }
-#drawerTabs button.on { background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15); }
+#drawerTabs button .ico { display: flex; justify-content: center; line-height: 1.2; margin-bottom: 0.15rem; }
+#drawerTabs button .ico .symbol { width: 1.6rem; height: 1.6rem; }
+#drawerTabs button.on { background: var(--karte); box-shadow: inset 0 -3px 0 var(--akzent-text); }
 #drawerBody {
   flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
   padding: 1rem 1.2rem calc(2rem + env(safe-area-inset-bottom));
 }
 #drawerBody section { display: flex; flex-direction: column; gap: 0.9rem; }
 .scard {
-  background: #fff; border-radius: 16px; padding: 1rem;
+  background: var(--karte); border-radius: 16px; padding: 1rem;
   display: flex; flex-direction: column; gap: 0.6rem;
 }
-.scard h3 { font-size: 1.05rem; font-weight: 800; margin: 0; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.scard h3 {
+  font-size: 1.15rem; font-weight: 700; margin: 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+}
+.scard h3 .titel { display: inline-flex; align-items: center; gap: 0.4em; }
 .scard h3 .tiny { font-weight: 400; }
 .setrow {
   display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap;
@@ -226,144 +241,149 @@ body.game {
 .setrow.col { flex-direction: column; flex-wrap: nowrap; align-items: stretch; }
 .setrow.col > * { flex: none; }
 .setrow .full { flex-basis: 100%; }
-.setrow + .setrow { border-top: 1px solid #eee; padding-top: 0.8rem; }
-.lbl { font-weight: 700; font-size: 1rem; }
+.setrow + .setrow { border-top: 1px solid var(--linie); padding-top: 0.8rem; }
+.lbl { font-weight: 700; font-size: 1.05rem; }
 .lbl .tiny { font-weight: 400; margin-left: 0.3em; }
 .setrow .seg { flex: 0 1 26rem; min-width: 0; }
 .setrow .ctl { display: flex; align-items: center; gap: 0.6rem; flex: 0 1 26rem; }
-.setrow input[type="range"] { flex: 1; min-width: 0; }
+.setrow input[type="range"] { flex: 1; min-width: 0; accent-color: var(--akzent-text); }
 .ctl.vol .tiny { min-width: 3em; text-align: right; }
 .switch { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; cursor: pointer; }
 .switch input {
   appearance: none; -webkit-appearance: none; flex: none; margin: 0;
-  width: 3.2rem; height: 1.9rem; border-radius: 1rem; background: #ccc;
+  width: 3.4rem; height: 2rem; border-radius: 1rem; background: var(--rand);
   position: relative; cursor: pointer; transition: background 0.15s;
 }
 .switch input::after {
   content: ""; position: absolute; top: 0.2rem; left: 0.2rem;
-  width: 1.5rem; height: 1.5rem; border-radius: 50%; background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); transition: transform 0.15s;
+  width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--weiss);
+  transition: transform 0.15s;
 }
-.switch input:checked { background: var(--blue); }
-.switch input:checked::after { transform: translateX(1.3rem); }
-.tiny { font-size: 0.85rem; color: var(--muted); margin: 0; }
+.switch input:checked { background: var(--akzent-text); }
+.switch input:checked::after { transform: translateX(1.4rem); }
+.tiny { font-size: 0.9rem; color: var(--leise); margin: 0; }
 .btnrow { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
-select { padding: 9px 12px; border-radius: 10px; border: 2px solid #ccc; background: #fff; color: var(--text); max-width: 100%; }
+select {
+  min-height: 48px; padding: 8px 12px; border-radius: 10px;
+  border: 2px solid var(--rand); background: var(--karte); color: var(--text); max-width: 100%;
+}
 
+/* Knöpfe in den Einstellungen: Hauptknopf Hellblau, .light = leise (Karte mit Rand), .dark = Gelb zum Hervorheben */
 .sbtn {
-  display: inline-block;
-  padding: 10px 16px; border-radius: 10px; border: none;
-  background: var(--blue); color: #fff; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4em;
+  min-height: var(--knopf-hoehe);
+  padding: 0 18px; border-radius: var(--rundung); border: 2px solid transparent;
+  background: var(--hellblau); color: var(--dunkelblau); font-weight: 700;
   text-decoration: none; align-self: flex-start;
 }
-.sbtn.light { background: #ddd; color: #333; }
-.sbtn.dark { background: var(--blue-dark); color: #fff; }
+.sbtn.light { background: var(--karte); color: var(--text); border-color: var(--rand); }
+.sbtn.dark { background: var(--gelb); color: var(--dunkelblau); }
 
 .seg { display: flex; gap: 0.4rem; }
 .seg button {
-  flex: 1; padding: 10px 0; border-radius: 10px;
-  border: 2px solid var(--blue); background: #fff; color: var(--blue); font-size: 1.3rem;
+  flex: 1; min-height: var(--knopf-hoehe); padding: 0; border-radius: 10px;
+  border: 2px solid var(--akzent-text); background: var(--karte); color: var(--akzent-text); font-size: 1.3rem;
 }
-.seg button.on { background: var(--blue); color: #fff; }
-.seg.words button { font-size: 1rem; font-weight: 700; padding: 10px 4px; }
+.seg button.on { background: var(--hellblau); border-color: var(--hellblau); color: var(--dunkelblau); }
+.seg.words button { font-size: 1rem; font-weight: 700; padding: 0 4px; }
 
-.toggle-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(2.8rem, 1fr)); gap: 0.4rem; }
+.toggle-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(3rem, 1fr)); gap: 0.4rem; }
 .toggle-grid button {
-  height: 2.8rem; border-radius: 10px; border: 2px solid var(--blue);
-  background: var(--blue); color: #fff; font-size: 1.25rem; padding: 0;
+  height: 3rem; border-radius: 10px; border: 2px solid var(--hellblau);
+  background: var(--hellblau); color: var(--dunkelblau); font-size: 1.25rem; padding: 0;
 }
-.toggle-grid button.off { background: #fff; color: #aaa; border-color: #ccc; text-decoration: line-through; }
+.toggle-grid button.off { background: var(--karte); color: var(--leise); border-color: var(--linie); text-decoration: line-through; }
 #rowGrid { grid-template-columns: repeat(auto-fill, minmax(3.4rem, 1fr)); }
 .sound-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
 .sound-list button {
-  padding: 12px 10px; border-radius: 12px; border: 2px solid var(--blue);
-  background: #fff; color: var(--blue); font-size: 1rem; font-weight: 700; text-align: left;
+  min-height: 48px; padding: 10px; border-radius: var(--rundung); border: 2px solid var(--akzent-text);
+  background: var(--karte); color: var(--akzent-text); font-size: 1rem; font-weight: 700; text-align: left;
 }
-.sound-list button.on { background: var(--blue); color: #fff; }
+.sound-list button.on { background: var(--hellblau); border-color: var(--hellblau); color: var(--dunkelblau); }
 
-#drawnTasks { display: flex; flex-wrap: wrap; gap: 0.4rem; min-height: 2.4rem; }
+#drawnTasks { display: flex; flex-wrap: wrap; gap: 0.4rem; min-height: 2.6rem; }
+/* Hintergrund = Farbe des iPads, das gewürfelt hat */
 .chip {
-  background: var(--blue); color: #fff;
-  height: 2.4rem; padding: 0 0.6rem; border-radius: 10px;
+  background: var(--hellblau); color: var(--dunkelblau);
+  height: 2.6rem; padding: 0 0.6rem; border-radius: 10px;
   display: inline-flex; align-items: center; gap: 0.35em;
   font-size: 1.15rem;
 }
-.chip small { font-size: 0.72em; opacity: 0.85; font-weight: 400; }
-.chip.last { box-shadow: 0 0 0 3px var(--yellow); }
-#colorRow { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.chip small { font-size: 0.72em; font-weight: 400; }
+.chip.last { box-shadow: 0 0 0 3px var(--karte), 0 0 0 6px var(--text); }
+#colorRow { display: flex; flex-wrap: wrap; gap: 0.6rem; }
 #colorRow button {
-  width: 3rem; height: 3rem; border-radius: 50%; cursor: pointer;
-  border: 4px solid #fff; box-shadow: 0 0 0 2px #ccc;
+  width: 3.2rem; height: 3.2rem; border-radius: 50%; cursor: pointer;
+  border: 4px solid var(--karte); box-shadow: 0 0 0 2px var(--rand);
 }
 #colorRow button.on { box-shadow: 0 0 0 4px var(--text); }
-.drawn-empty { font-size: 0.85rem; color: #999; align-self: center; }
+.drawn-empty { font-size: 0.9rem; color: var(--leise); align-self: center; }
 
 #keyInfo:empty { display: none; }
 
 /* Anleitung (aus README.md) über dem Menü */
 #guide {
-  position: fixed; inset: 0; z-index: 210; background: rgba(0, 0, 0, 0.5);
+  position: fixed; inset: 0; z-index: 210; background: var(--schleier);
   display: flex; align-items: center; justify-content: center;
   padding: calc(0.8rem + env(safe-area-inset-top)) 0.8rem calc(0.8rem + env(safe-area-inset-bottom));
 }
 #guideInner {
-  width: 100%; max-width: 760px; height: 100%; background: #fff; border-radius: 18px;
+  width: 100%; max-width: 760px; height: 100%; background: var(--karte); color: var(--text); border-radius: 18px;
   display: flex; flex-direction: column; overflow: hidden;
 }
 #guideHead {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-  padding: 0.8rem 1rem; border-bottom: 1px solid #e3e6ea;
+  padding: 0.8rem 1rem; border-bottom: 1px solid var(--linie);
 }
-#guideHead h2 { font-size: 1.3rem; font-weight: 800; margin: 0; }
 #guideBody {
   flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
-  padding: 0.4rem 1.2rem 2rem; font-size: 1.02rem; line-height: 1.5; color: #222;
+  padding: 0.4rem 1.2rem 2rem; font-size: 1.05rem; line-height: 1.5; color: var(--text);
   user-select: text; -webkit-user-select: text;
 }
 #guideBody h1 { display: none; }
-#guideBody h2 { font-size: 1.25rem; font-weight: 800; margin: 1.4rem 0 0.4rem; }
-#guideBody h3 { font-size: 1.08rem; font-weight: 800; margin: 1.1rem 0 0.3rem; }
+#guideBody h2 { font-size: 1.3rem; font-weight: 700; margin: 1.4rem 0 0.4rem; }
+#guideBody h3 { font-size: 1.12rem; font-weight: 700; margin: 1.1rem 0 0.3rem; }
 #guideBody p, #guideBody ul, #guideBody ol, #guideBody table, #guideBody pre { margin: 0.5rem 0; }
 #guideBody ul, #guideBody ol { padding-left: 1.4rem; }
 #guideBody li { margin: 0.2rem 0; }
 #guideBody table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
-#guideBody th, #guideBody td { border: 1px solid #dde1e6; padding: 0.4rem 0.5rem; text-align: left; vertical-align: top; }
-#guideBody th { background: #f3f5f7; }
-#guideBody code { background: #f0f2f4; border-radius: 4px; padding: 0 0.25em; font-size: 0.92em; }
-#guideBody pre { background: #f0f2f4; border-radius: 8px; padding: 0.6rem 0.8rem; overflow-x: auto; }
+#guideBody th, #guideBody td { border: 1px solid var(--linie); padding: 0.4rem 0.5rem; text-align: left; vertical-align: top; }
+#guideBody th { background: var(--hg); }
+#guideBody code { background: var(--hg); border-radius: 4px; padding: 0 0.25em; font-size: 0.92em; }
+#guideBody pre { background: var(--hg); border-radius: 8px; padding: 0.6rem 0.8rem; overflow-x: auto; }
 #guideBody pre code { padding: 0; }
-#guideBody a { color: var(--blue); }
+#guideBody a { color: var(--akzent-text); }
 
 /* Sperrzeit ohne „Weiter“: Balken bleibt voll, solange vorgelesen wird, und läuft dann ab */
 #lockBar {
-  position: fixed; left: 0; bottom: 0; height: 8px; width: 100%;
-  background: rgba(255, 255, 255, 0.75); z-index: 65; pointer-events: none;
+  position: fixed; left: 0; bottom: 0; height: 10px; width: 100%;
+  background: var(--dunkelblau); z-index: 65; pointer-events: none;
   transform-origin: left; transform: scaleX(0);
 }
 #lockBar.run { animation: lockrun linear both; }
 @keyframes lockrun { from { transform: scaleX(1); } to { transform: scaleX(0); } }
-#btnLearn.learning { background: var(--yellow); border-color: #b08a00; color: #333; }
+#btnLearn.learning { background: var(--gelb); border-color: var(--dunkelblau); color: var(--dunkelblau); }
 
 /* Mehrere iPads */
-#tabDot, #syncDot { border-radius: 50%; background: #f0a020; }
+#tabDot, #syncDot { border-radius: 50%; background: var(--orange); }
 #tabDot { position: absolute; top: 0.45rem; right: 0.5rem; width: 10px; height: 10px; }
 #syncDot {
   position: fixed; top: calc(1rem + env(safe-area-inset-top)); right: calc(1rem + env(safe-area-inset-right));
-  width: 14px; height: 14px; border: 2px solid rgba(255, 255, 255, 0.8);
+  width: 16px; height: 16px; border: 2px solid var(--dunkelblau);
   pointer-events: none; z-index: 70;
 }
-#tabDot.on, #syncDot.on { background: #3ddc5a; }
+#tabDot.on, #syncDot.on { background: var(--gruen); }
 #codeBig {
-  font-size: 1.8rem; font-weight: 800; letter-spacing: 0.12em; text-align: center;
-  padding: 0.5rem; border-radius: 12px; background: #f6f8fa; user-select: text; -webkit-user-select: text;
+  font-size: 1.8rem; font-weight: 700; letter-spacing: 0.12em; text-align: center;
+  padding: 0.5rem; border-radius: 12px; background: var(--hg); user-select: text; -webkit-user-select: text;
 }
-.bigbtn { width: 100%; padding: 14px 16px; font-size: 1.05rem; }
+.bigbtn { width: 100%; font-size: 1.1rem; }
 #joinInput {
-  flex: 1; min-width: 10rem; padding: 10px 12px; border-radius: 10px;
-  border: 2px solid #ccc; font-size: 1.1rem; letter-spacing: 0.08em;
+  flex: 1; min-width: 10rem; min-height: 48px; padding: 8px 12px; border-radius: 10px;
+  border: 2px solid var(--rand); background: var(--karte); color: var(--text); font-size: 1.1rem; letter-spacing: 0.08em;
   -webkit-user-select: text; user-select: text;
 }
-#joinError { color: #b22222; }
+#joinError { color: var(--hinweis-text); }
 #boardLink { word-break: break-all; user-select: text; -webkit-user-select: text; }
 .qr-box { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
 .qr { width: min(260px, 70vw); background: #fff; padding: 6px; border-radius: 10px; }
@@ -371,36 +391,28 @@ select { padding: 9px 12px; border-radius: 10px; border: 2px solid #ccc; backgro
 
 /* Tafel-Ansicht für Beamer und Smartboard */
 #screenBoard {
-  background: #1d2433; color: #fff; justify-content: flex-start;
+  background: var(--hg); color: var(--text); justify-content: flex-start;
   padding: calc(1.2rem + env(safe-area-inset-top)) 1rem 7rem;
 }
-#btnBoardFs {
+#btnBoardFs, #btnFs {
   position: fixed;
-  right: calc(0.8rem + env(safe-area-inset-right)); bottom: calc(0.8rem + env(safe-area-inset-bottom));
-  width: clamp(44px, 8vw, 56px); height: clamp(44px, 8vw, 56px); padding: 0;
+  width: clamp(48px, 8vw, 56px); height: clamp(48px, 8vw, 56px); padding: 0;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 12px; background: rgba(0, 0, 0, 0.25);
-  color: rgba(255, 255, 255, 0.85); border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--rundung);
   z-index: 60;
-  -webkit-tap-highlight-color: transparent;
+}
+#btnBoardFs {
+  right: calc(0.8rem + env(safe-area-inset-right)); bottom: calc(0.8rem + env(safe-area-inset-bottom));
 }
 /* Vollbild ein/aus oben links auf dem iPad: klein und unauffällig, damit Kinder ihn nicht für das Würfeln halten */
 #btnFs {
-  position: fixed;
   left: calc(0.8rem + env(safe-area-inset-left)); top: calc(0.8rem + env(safe-area-inset-top));
-  width: clamp(44px, 8vw, 56px); height: clamp(44px, 8vw, 56px); padding: 0;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 12px; background: rgba(0, 0, 0, 0.25);
-  color: rgba(255, 255, 255, 0.85); border: 2px solid rgba(255, 255, 255, 0.3);
-  z-index: 60;
-  -webkit-tap-highlight-color: transparent;
 }
 #btnFs svg, #btnBoardFs svg {
-  width: 1.4em; height: 1.4em; flex: none;
+  width: 60%; height: 60%; flex: none;
   fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round;
 }
-#btnFs svg, #btnBoardFs svg { width: 60%; height: 60%; }
-#boardCount { font-size: clamp(1rem, 2.4vw, 1.8rem); opacity: 0.8; align-self: flex-start; }
+#boardCount { font-size: clamp(1rem, 2.4vw, 1.8rem); color: var(--leise); align-self: flex-start; }
 /* Obere Hälfte: Aufgabe (unten bündig), untere Hälfte: Punktebild und Ergebnis.
    Feste Aufteilung, damit die Aufgabe beim Aufdecken stehen bleibt. */
 #boardMain { flex: 1; min-height: 0; width: 100%; display: grid; grid-template-rows: 1fr 1fr; }
@@ -412,22 +424,25 @@ select { padding: 9px 12px; border-radius: 10px; border: 2px solid #ccc; backgro
 #boardExtras .dots, #boardExtras .result { pointer-events: auto; cursor: pointer; }
 #boardExtras .frame { --d: calc(clamp(10px, 2.6vmin, 30px) * var(--k, 1)); }
 #boardExtras .array { --d: clamp(7px, 1.9vmin, 22px); }
-/* Ergebnis als großes Pop-up über der Tafel */
+/* Ergebnis als großes Pop-up über der Tafel (Hintergrund = Farbe des iPads) */
 #resultPop {
-  position: fixed; inset: 0; z-index: 65; background: rgba(0, 0, 0, 0.6);
+  position: fixed; inset: 0; z-index: 65; background: var(--schleier);
   display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
 #resultPop[hidden] { display: none; }
 .pop-box {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.1em;
   width: min(92vw, 1100px); min-height: min(80vh, 640px); padding: 3vh 3vw; border-radius: 40px;
-  font-size: min(10vw, 17vh); line-height: 1; box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.35);
+  font-size: min(10vw, 17vh); line-height: 1; color: var(--dunkelblau);
+  box-shadow: 0 0 0 6px var(--weiss);
 }
-.pop-task { display: flex; align-items: center; gap: 0.18em; font-size: 0.6em; opacity: 0.85; }
-.pop-task .op { color: var(--yellow); }
-.pop-res { font-size: 2.3em; font-weight: 800; color: var(--yellow); }
+.pop-task { display: flex; align-items: center; gap: 0.18em; font-size: 0.6em; }
+.pop-res {
+  font-size: 2.3em; font-weight: 700; color: var(--dunkelblau);
+  background: var(--weiss); border-radius: 0.15em; padding: 0 0.25em; margin-top: 0.1em;
+}
 #dotsPop {
-  position: fixed; inset: 0; z-index: 64; background: rgba(0, 0, 0, 0.6);
+  position: fixed; inset: 0; z-index: 64; background: var(--schleier);
   display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
 #dotsPop[hidden] { display: none; }
@@ -435,16 +450,14 @@ select { padding: 9px 12px; border-radius: 10px; border: 2px solid #ccc; backgro
 #dotsPop .dots { gap: 3vmin; }
 #dotsPop .frame { --d: calc(clamp(16px, 5vmin, 56px) * var(--k, 1)); }
 #dotsPop .array { --d: clamp(12px, 3.6vmin, 40px); }
-#dotsPop .result-btn { font-size: clamp(1.2rem, 3vw, 2rem); padding: 0.7em 1.6em; background: rgba(255, 255, 255, 0.2); }
+#dotsPop .result-btn { font-size: clamp(1.2rem, 3vw, 2rem); padding: 0.5em 1.6em; }
 /* „Alle Ergebnisse“: klein, rechts neben dem Zahnrad */
 #btnBoardList {
   position: fixed; z-index: 60;
   left: calc(1rem + env(safe-area-inset-left) + clamp(64px, 14vw, 84px) + 0.6rem);
-  bottom: calc(1rem + env(safe-area-inset-bottom) + (clamp(64px, 14vw, 84px) - clamp(44px, 8vw, 56px)) / 2);
-  height: clamp(44px, 8vw, 56px); padding: 0 1rem; border-radius: 12px;
-  background: rgba(0, 0, 0, 0.25); color: rgba(255, 255, 255, 0.85);
-  border: 2px solid rgba(255, 255, 255, 0.3); font-weight: 700; font-size: clamp(0.85rem, 2vw, 1rem);
-  -webkit-tap-highlight-color: transparent;
+  bottom: calc(1rem + env(safe-area-inset-bottom) + (clamp(64px, 14vw, 84px) - clamp(48px, 8vw, 56px)) / 2);
+  height: clamp(48px, 8vw, 56px); padding: 0 1rem; border-radius: var(--rundung);
+  font-weight: 700; font-size: clamp(0.95rem, 2vw, 1.1rem);
 }
 #btnBoardList[hidden] { display: none; }
 #boardLast {
@@ -452,27 +465,26 @@ select { padding: 9px 12px; border-radius: 10px; border: 2px solid #ccc; backgro
   font-size: min(14vw, 26vh); line-height: 1; white-space: nowrap;
 }
 #boardLast > span {
-  display: flex; align-items: center; gap: 0.18em;
+  display: flex; align-items: center; gap: 0.18em; color: var(--dunkelblau);
   border-radius: 0.12em; padding: 0.04em 0.2em;
 }
-#boardLast .op { color: var(--yellow); }
 #boardLast .op.mul { font-size: 1.05em; line-height: 0.5; }
 #boardLast.pop { animation: pop 0.5s ease-out; }
 @keyframes pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 #boardList[hidden] { display: none; }
 #boardList { cursor: pointer; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; max-width: 100%; }
 #boardList div {
-  background: rgba(255, 255, 255, 0.15); border-radius: 12px;
+  color: var(--dunkelblau); border-radius: 12px;
   padding: 0.2rem 0.6rem; font-size: clamp(1.3rem, 3vw, 2.4rem); white-space: nowrap;
 }
 #boardList.many div { font-size: clamp(1rem, 2.1vw, 1.7rem); padding: 0.1rem 0.45rem; }
 #boardList.many { gap: 0.4rem; }
-#boardList div.last { box-shadow: 0 0 0 4px var(--yellow); }
+#boardList div.last { box-shadow: 0 0 0 3px var(--hg), 0 0 0 7px var(--text); }
 
 @media (max-width: 520px) {
   #colorRow { gap: 0.4rem; }
-  #colorRow button { width: 2.5rem; height: 2.5rem; border-width: 3px; }
-  #drawerTabs button { font-size: 0.62rem; }
+  #colorRow button { width: 2.6rem; height: 2.6rem; border-width: 3px; }
+  #drawerTabs button { font-size: 0.66rem; }
   .setrow .seg, .setrow .ctl { flex-basis: 100%; }
   .sound-list { grid-template-columns: repeat(2, 1fr); }
   #keySeg { display: grid; grid-template-columns: repeat(2, 1fr); }
@@ -480,58 +492,66 @@ select { padding: 9px 12px; border-radius: 10px; border: 2px solid #ccc; backgro
 }
 
 dialog {
-  border: none; border-radius: 20px; padding: 20px;
+  border: none; border-radius: var(--rundung-gross); padding: 20px;
   max-width: min(460px, calc(100vw - 32px));
-  color: var(--text);
+  background: var(--karte); color: var(--text);
 }
-dialog::backdrop { background: rgb(0 0 0 / 0.5); }
-dialog p { margin: 0 0 16px; font-size: 1.1rem; }
+dialog::backdrop { background: var(--schleier); }
+dialog p { margin: 0 0 16px; font-size: 1.15rem; }
 .dlg-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
 
 /* ---------- Druckseite ---------- */
-body.page { background: var(--panel); }
+body.page { background: var(--hg); }
 .top {
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px;
-  padding: 12px 16px; background: var(--blue); color: #fff;
+  padding: 12px 16px; background: var(--hellblau); color: var(--dunkelblau);
 }
-.top h1 { font-size: 1.3rem; font-weight: 900; margin: 0; }
-.top .back { color: #fff; font-weight: 700; text-decoration: none; padding: 8px 12px; border-radius: 10px; background: rgba(255, 255, 255, 0.18); }
+.top h1 { font-size: var(--gr-2); font-weight: 700; margin: 0; display: flex; align-items: center; gap: 0.4em; }
+.top .back {
+  color: var(--dunkelblau); font-weight: 700; text-decoration: none;
+  min-height: 48px; display: inline-flex; align-items: center;
+  padding: 0 14px; border-radius: 10px; background: var(--weiss);
+}
 main { max-width: 1100px; margin: 0 auto; padding: 16px; }
-.panel { background: #fff; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+.panel { background: var(--karte); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
 .panel .info { margin: 0; }
 .panel .seg { max-width: 420px; }
 .panel .seg button { font-size: 1.05rem; font-weight: 700; }
 .controls { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
 .controls label { display: flex; align-items: center; gap: 8px; }
 .check { display: flex; align-items: center; gap: 0.5rem; }
-.check input { width: 1.4rem; height: 1.4rem; flex: none; }
-.controls input[type="number"] { width: 5em; padding: 9px 10px; border-radius: 10px; border: 2px solid #ccc; }
+.check input { width: 1.4rem; height: 1.4rem; flex: none; accent-color: var(--akzent-text); }
+.controls input[type="number"] {
+  width: 5em; min-height: 48px; padding: 8px 10px; border-radius: 10px;
+  border: 2px solid var(--rand); background: var(--karte); color: var(--text);
+}
 
+/* Karten zum Drucken: immer dunkel auf weißem Papier, auch im Dunkelmodus */
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-.bingo-card { container-type: inline-size; background: #fff; color: #111; border: 3px solid #222; border-radius: 14px; padding: 14px; break-inside: avoid; }
-.bingo-card .title { font-weight: 800; font-size: 1.2rem; text-align: center; }
-.bingo-card .sub { text-align: center; font-size: 0.9rem; color: #555; margin-bottom: 8px; }
-.card-grid { display: grid; grid-template-columns: repeat(var(--n), 1fr); border: 2px solid #222; }
+.bingo-card { container-type: inline-size; background: #fff; color: #0D2B4E; border: 3px solid #0D2B4E; border-radius: 14px; padding: 14px; break-inside: avoid; }
+.bingo-card .title { font-weight: 700; font-size: 1.2rem; text-align: center; }
+.bingo-card .sub { text-align: center; font-size: 0.9rem; color: #4A5E74; margin-bottom: 8px; }
+.card-grid { display: grid; grid-template-columns: repeat(var(--n), 1fr); border: 2px solid #0D2B4E; }
 .card-grid div {
   aspect-ratio: 1;
   display: flex; align-items: center; justify-content: center;
-  border: 1px solid #222;
+  border: 1px solid #0D2B4E;
   font-size: calc(8.5rem / var(--n));
   font-size: calc(46cqw / var(--n)); /* passt sich der Kästchengröße an */
   line-height: 1;
 }
 
 .cards.lotto { grid-template-columns: 1fr; gap: 16px; }
-.lotto-sheet { container-type: inline-size; background: #fff; color: #111; border: 3px solid #222; padding: 2.4cqw 3cqw 3cqw; break-inside: avoid; }
+.lotto-sheet { container-type: inline-size; background: #fff; color: #0D2B4E; border: 3px solid #0D2B4E; padding: 2.4cqw 3cqw 3cqw; break-inside: avoid; }
 .lotto-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin-bottom: 2cqw; }
-.lotto-title { font-weight: 800; font-size: max(1.1rem, 3.4cqw); }
-.lotto-title .line { display: inline-block; width: 18em; max-width: 45cqw; border-bottom: 2px solid #222; height: 1em; vertical-align: baseline; }
-.lotto-sub { font-size: max(0.75rem, 1.7cqw); color: #555; }
+.lotto-title { font-weight: 700; font-size: max(1.1rem, 3.4cqw); }
+.lotto-title .line { display: inline-block; width: 18em; max-width: 45cqw; border-bottom: 2px solid #0D2B4E; height: 1em; vertical-align: baseline; }
+.lotto-sub { font-size: max(0.75rem, 1.7cqw); color: #4A5E74; }
 .lotto-grid { display: grid; grid-template-columns: repeat(var(--cols), 1fr); gap: 1.4cqw; }
 .lotto-grid div {
   aspect-ratio: 1.45;
   display: flex; align-items: center; justify-content: center;
-  border: 2px solid #222;
+  border: 2px solid #0D2B4E;
   font-size: calc(40cqw / var(--cols));
   line-height: 1;
 }
@@ -554,38 +574,38 @@ main { max-width: 1100px; margin: 0 auto; padding: 16px; }
 #tafelPanel { display: flex; gap: 0.6rem; }
 #tafelPanel[hidden] { display: none; }
 #tafelBtns button {
-  padding: 0.7rem 1rem; border-radius: 12px; font-size: clamp(0.9rem, 2.2vw, 1.15rem); font-weight: 700;
-  background: rgba(0, 0, 0, 0.25); color: rgba(255, 255, 255, 0.9); border: 2px solid rgba(255, 255, 255, 0.35);
+  min-height: 52px; padding: 0 1rem; border-radius: var(--rundung);
+  font-size: clamp(0.95rem, 2.2vw, 1.15rem); font-weight: 700;
+  background: var(--weiss); color: var(--dunkelblau); border: 3px solid var(--dunkelblau);
   -webkit-tap-highlight-color: transparent;
 }
 #tafelBtns button[hidden] { display: none; }
-#tafelBtns #tafelPanel button { background: rgba(0, 0, 0, 0.45); }
 #tafelBtns.offline { opacity: 0.45; }
-#tafelBtns button.open { border-color: #fff; }
-#tafelBtns button.on { background: var(--yellow); color: #123a6b; border-color: var(--yellow); }
+#tafelBtns button.open { box-shadow: 0 0 0 3px var(--weiss); }
+#tafelBtns button.on { background: var(--gelb); }
 
-/* Niveau wählen (erster Start, ⚙️ → Aufgaben) */
+/* Niveau wählen (erster Start, Zahnrad → Aufgaben) */
 #levels {
-  position: fixed; inset: 0; z-index: 220; background: rgba(0, 0, 0, 0.5);
+  position: fixed; inset: 0; z-index: 220; background: var(--schleier);
   display: flex; align-items: center; justify-content: center;
   padding: calc(0.8rem + env(safe-area-inset-top)) 0.8rem calc(0.8rem + env(safe-area-inset-bottom));
 }
 #levels[hidden] { display: none; }
 #levelsInner {
-  width: 100%; max-width: 900px; max-height: 100%; overflow-y: auto; background: #fff; color: #222;
+  width: 100%; max-width: 900px; max-height: 100%; overflow-y: auto; background: var(--karte); color: var(--text);
   border-radius: 18px; padding: 1.2rem 1.2rem 1rem;
 }
-#levelsInner h2 { margin: 0; font-size: clamp(1.3rem, 3.6vw, 1.8rem); font-weight: 800; }
+#levelsInner h2 { margin: 0; font-size: clamp(1.3rem, 3.6vw, 1.8rem); font-weight: 700; }
 #levelsInner .tiny { margin: 0.3rem 0 1rem; }
 #levelGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0.7rem; }
 .lvl {
   display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem; text-align: left;
-  padding: 0.7rem 0.9rem; border-radius: 14px; background: #f3f5f8; border: 3px solid transparent; color: #222;
+  padding: 0.7rem 0.9rem; border-radius: 14px; background: var(--hg); border: 3px solid transparent; color: var(--text);
 }
-.lvl.on { border-color: var(--blue); background: #e4eefb; }
-.lvl-ex { font-size: 1.7rem; font-weight: 800; color: var(--blue); }
-.lvl-name { font-weight: 700; font-size: 1rem; }
-.lvl-n { font-size: 0.85rem; color: #667; }
+.lvl.on { border-color: var(--akzent-text); background: var(--auswahl); }
+.lvl-ex { font-size: 1.7rem; font-weight: 700; color: var(--akzent-text); }
+.lvl-name { font-weight: 700; font-size: 1.05rem; }
+.lvl-n { font-size: 0.9rem; color: var(--leise); }
 #levelFoot { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.2rem; margin-top: 1.1rem; }
-#levelFoot .sbtn { font-size: 1.1rem; padding: 0.8rem 1.4rem; }
-#levelFoot a { color: var(--blue); font-weight: 700; }
+#levelFoot .sbtn { font-size: 1.1rem; padding: 0 1.4rem; }
+#levelFoot a { color: var(--akzent-text); font-weight: 700; }

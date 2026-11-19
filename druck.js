@@ -81,7 +81,7 @@ function setKind(k) {
 const ex = S.excluded.filter((r) => pool.results.includes(r));
 $('#printInfo').innerHTML = `Aus den <b>${pool.topf.length} Zahlen im Topf</b>: ${describe(S)}`
   + (ex.length ? ` · herausgenommen: ${ex.join(', ')}` : '')
-  + '<br><span class="tiny">Ändern über ⚙️ im Würfel.</span>';
+  + '<br><span class="tiny">Ändern über das Zahnrad im Würfel.</span>';
 
 $('#printKind').addEventListener('click', (e) => {
   const b = e.target.closest('[data-kind]');

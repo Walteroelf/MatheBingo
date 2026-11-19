@@ -4,7 +4,8 @@
 
 // Abstände der Würfel-Bilder in ms: erst schnell, dann langsamer
 const ROLL_MS = [28, 54, 82, 112, 144, 178, 214, 252, 292, 334, 378, 424];
-const CONFETTI_COLORS = ['#f0c020', '#ffffff', '#4dabf7', '#ff6b6b', '#7bd389'];
+// Konfetti in den Farben der Olympia-72-Palette (siehe design.css)
+const CONFETTI_COLORS = ['#4DB2E6', '#46A84A', '#A6D27A', '#FFD100', '#F39200', '#B9C1C8', '#FFFFFF'];
 
 // Allererster Start auf diesem Gerät: noch nichts gespeichert (vor jedem save() feststellen)
 let firstRun = false;
@@ -380,15 +381,15 @@ function showDone(title, hint) {
   $('#btnWeiter').hidden = false;
 }
 
-const showAllDone = () => showDone('Alle Aufgaben wurden gewürfelt! 🎉', net.code
-  ? 'Neues Spiel über ⚙️ → Spiel → Neues Spiel.'
+const showAllDone = () => showDone('Alle Aufgaben wurden gewürfelt!', net.code
+  ? 'Neues Spiel über das Zahnrad → Spiel → Neues Spiel.'
   : 'Drücke „Weiter“, um neu zu starten.');
 
 async function roll() {
   if (state.rolling || net.boardMode) return;
   initAudio();   // im Tipp-Ereignis, danach kurz auf den Ton warten (audioReady)
   if (!pool.topf.length) {
-    showDone('Keine Zahlen im Topf.', 'Über ⚙️ unten links Zahlen in den Topf legen.');
+    showDone('Keine Zahlen im Topf.', 'Über das Zahnrad unten links Zahlen in den Topf legen.');
     return;
   }
   if (!leftInTopf().length) { showAllDone(); return; }
@@ -604,7 +605,7 @@ function setBoardList(on) {
 function renderBoard() {
   const list = visibleHistory();
   const last = list[list.length - 1] || null;
-  $('#boardCount').textContent = net.code ? countText() : 'Nicht verbunden: ⚙️ → Verbinden';
+  $('#boardCount').textContent = net.code ? countText() : 'Nicht verbunden: Zahnrad → Verbinden';
   const lastEl = $('#boardLast');
   lastEl.innerHTML = last ? `<span style="background:${colorOf(last)}">${taskHtml(last)}</span>` : '';
   if (last && last !== boardShownLast && !$('#screenBoard').hidden) {
@@ -730,7 +731,7 @@ function renderSwitch() {
   learnBtn.classList.toggle('on', !learning && !fixed.includes(S.switchKey));
   learnBtn.textContent = learning ? 'Drücken …' : 'Anlernen';
   $('#keyInfo').textContent = learning ? 'Jetzt den Taster einmal drücken.'
-    : S.switchKey === 'mouse' ? 'Ein Klick irgendwo auf dem Bildschirm würfelt. „Weiter“ und ⚙️ reagieren nicht auf den Taster.'
+    : S.switchKey === 'mouse' ? 'Ein Klick irgendwo auf dem Bildschirm würfelt. „Weiter“ und das Zahnrad reagieren nicht auf den Taster.'
       : fixed.includes(S.switchKey) ? '' : `Angelernt: ${keyLabel(S.switchKey)}`;
   $('#keyRow').hidden = S.trigger === 'tap';
   $('#optWeiter').checked = S.weiter;
@@ -909,7 +910,7 @@ async function keepAwake() {
 }
 
 // ---------- Niveau wählen ----------
-// Erster Start und ⚙️ → Aufgaben → „Alle Niveaus ansehen“: Karten von leicht nach schwer.
+// Erster Start und Zahnrad → Aufgaben → „Alle Niveaus ansehen“: Karten von leicht nach schwer.
 
 let levelPick = 0;       // Index in PRESETS
 let levelFirst = false;  // erster Start: es gibt noch nichts, was man abbrechen könnte
@@ -962,8 +963,8 @@ function renderDrawer() {
   // Spiel: gewürfelte Aufgaben
   $('#drawnCount').textContent = `${doneCount()} von ${totalCount()}`;
   $('#drawnHint').textContent = state.drawnSort === 'size'
-    ? 'Nach Ergebnis sortiert, zum Prüfen bei „Bingo!“. Die neueste ist gelb umrandet.'
-    : 'In der Reihenfolge, in der sie gewürfelt wurden. Die neueste ist gelb umrandet.';
+    ? 'Nach Ergebnis sortiert, zum Prüfen bei „Bingo!“. Die neueste ist dunkel umrandet.'
+    : 'In der Reihenfolge, in der sie gewürfelt wurden. Die neueste ist dunkel umrandet.';
   $('#btnSort').textContent = state.drawnSort === 'size' ? 'In Reihenfolge zeigen' : 'Nach Größe sortieren';
   const box = $('#drawnTasks');
   const drawn = visibleHistory();
@@ -1035,7 +1036,7 @@ const isFullscreen = () => !!(document.fullscreenElement || document.webkitFulls
 const isHomeApp = () => navigator.standalone === true ||
   !!(window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches);
 
-// Vollbild ein und aus: Knopf oben links auf dem iPad, unten rechts auf der Tafel, dazu ⚙️ → Dieses iPad.
+// Vollbild ein und aus: Knopf oben links auf dem iPad, unten rechts auf der Tafel, dazu Zahnrad → Dieses iPad.
 // Vom Home-Bildschirm gibt es keine Browser-Leiste, darum dort keine Knöpfe.
 const FS_ICONS = {
   on: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg>',
