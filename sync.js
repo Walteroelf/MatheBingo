@@ -440,7 +440,7 @@ function bindSync() {
   $('#btnCopyBoard').addEventListener('click', (e) => {
     const btn = e.currentTarget;
     const done = (ok) => {
-      btn.textContent = ok ? 'Kopiert ✓' : 'Bitte Link markieren';
+      btn.textContent = ok ? 'Kopiert' : 'Bitte Link markieren';
       setTimeout(() => { btn.textContent = 'Link kopieren'; }, 1500);
     };
     if (navigator.clipboard) navigator.clipboard.writeText(boardUrl()).then(() => done(true), () => done(false));

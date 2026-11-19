@@ -345,6 +345,7 @@ function showScreen(name) {
   $('#screenTask').hidden = name !== 'task';
   $('#screenDone').hidden = name !== 'done';
   $('#screenBoard').hidden = name !== 'board';
+  if (name !== 'board') $('#dotsPop').hidden = $('#resultPop').hidden = true;
   renderFullscreen();
   renderTafelBtns();
 }

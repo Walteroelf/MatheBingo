@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/icon-180.png">
   <link rel="stylesheet" href="design.css?v=1">
-  <link rel="stylesheet" href="style.css?v=41">
+  <link rel="stylesheet" href="style.css?v=43">
 </head>
 <body class="game">
 <!-- Eigene Linien-Symbole (statt Emojis), siehe DESIGN.md -->
@@ -67,9 +67,11 @@
   <button id="btnBoardList" class="schwebe" hidden>Alle Ergebnisse</button>
   <div id="boardList" class="schrift" title="Antippen zum Verstecken" hidden></div>
   <button id="btnBoardFs" class="schwebe" hidden></button>
-  <div id="dotsPop" class="schrift" hidden title="Antippen zum Schließen"></div>
-  <div id="resultPop" class="schrift" hidden title="Antippen zum Schließen"></div>
 </div>
+
+<!-- Pop-ups der Tafel: außerhalb von #screenBoard, damit sie auch Zahnrad und Knöpfe verdecken -->
+<div id="dotsPop" class="schrift" hidden title="Antippen zum Schließen"></div>
+<div id="resultPop" class="schrift" hidden title="Antippen zum Schließen"></div>
 
 <div id="tafelBtns" hidden>
   <div id="tafelPanel" hidden>
@@ -397,10 +399,10 @@
 </dialog>
 
 <script src="core.js?v=28"></script>
-<script src="sounds.js?v=18"></script>
-<script src="sync.js?v=8"></script>
+<script src="sounds.js?v=19"></script>
+<script src="sync.js?v=9"></script>
 <script src="guide.js?v=1"></script>
-<script src="app.js?v=45"></script>
+<script src="app.js?v=46"></script>
 <script>
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>

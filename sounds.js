@@ -7,12 +7,12 @@
 //   speechDelay: so viele Sekunden nach dem Abschluss beginnt die Ansage
 
 const SOUND_LIST = [
-  { key: 'trommel', name: '🥁 Trommelwirbel' },
-  { key: 'tusch', name: '🎺 Tusch' },
-  { key: 'gluecksrad', name: '🎡 Glücksrad' },
-  { key: 'xylophon', name: '🎵 Xylophon' },
-  { key: 'zauber', name: '✨ Zauberstab' },
-  { key: 'aus', name: '🔇 Kein Klang' },
+  { key: 'trommel', name: 'Trommelwirbel' },
+  { key: 'tusch', name: 'Tusch' },
+  { key: 'gluecksrad', name: 'Glücksrad' },
+  { key: 'xylophon', name: 'Xylophon' },
+  { key: 'zauber', name: 'Zauberstab' },
+  { key: 'aus', name: 'Kein Klang' },
 ];
 
 let noiseCache = null;
