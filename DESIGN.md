@@ -22,6 +22,17 @@ Die Werte stehen in `design.css`. Diese Datei ist in allen Apps gleich. App-Eige
 | Weiß | `--weiss` | #FFFFFF | Hintergrund, Karten | Dunkelblau (14,3 : 1) |
 | Dunkelblau | `--dunkelblau` | #0D2B4E | Schrift statt Schwarz | – |
 
+### Fachfarben
+
+| Fach | Variable | Wert | Schrift darauf |
+|---|---|---|---|
+| Deutsch | `--fach-deutsch` | #EF6B45 (warmes Zinnoberrot) | Dunkelblau (4,7 : 1) |
+| Mathe | `--fach-mathe` | = Hellblau | Dunkelblau (6,0 : 1) |
+
+Deutsch ist an der Schule Rot. Echtes Signalrot passt nicht zu Olympia 72, darum ein warmes Zinnoberrot.
+Eine Fach-App setzt `--app-akzent` auf ihre Fachfarbe. Dann sind Startbildschirm, Hauptknöpfe und Auswahl in dieser Farbe.
+In einer Deutsch-App fällt Orange als Gerätefarbe weg, weil es dem Zinnoberrot zu ähnlich ist.
+
 Farbige Schrift auf Weiß: `--gruen-text` #1E6B2A (6,6 : 1), `--orange-text` #9A4F00 (6,0 : 1).
 
 ## Die Regeln
@@ -36,7 +47,7 @@ Farbige Schrift auf Weiß: `--gruen-text` #1E6B2A (6,6 : 1), `--orange-text` #9A
 
 Für Flächen und Text gibt es Rollen, die im Dunkelmodus automatisch wechseln:
 `--hg` (Seite), `--karte`, `--flaeche-2`, `--auswahl`, `--text`, `--leise`, `--linie`, `--rand`, `--akzent-text`, `--hinweis-text`.
-Im Dunkelmodus ist der Hintergrund #0B1A2C und die Schrift #E8F1F8. Links und Akzente werden dort Hellblau.
+Im Dunkelmodus ist der Hintergrund ein mittleres Blau (#1D4F80) und die Schrift #E8F1F8. Links und Akzente werden dort ein aufgehelltes Hellblau (#B5E2FC), damit sie auch auf diesem Blau 4,5 : 1 erreichen. Für grüne und orange Schrift gibt es `--gruen-schrift` und `--orange-schrift`, die im Dunkelmodus heller werden.
 Farbflächen (z. B. eine Gerätefarbe) bleiben gleich und behalten dunkelblaue Schrift.
 
 ## Schrift
@@ -49,7 +60,7 @@ Farbflächen (z. B. eine Gerätefarbe) bleiben gleich und behalten dunkelblaue S
 ## Bedienung
 
 - Knöpfe mindestens **56 px** hoch (`--knopf-hoehe`), kleine Knöpfe mindestens 48 px. Rundung 12 px. Flach, ohne Schatten.
-- Hauptknopf Hellblau, leiser Knopf Weiß mit Rand, hervorgehoben Gelb, Weiter Grün.
+- Hauptknopf in `--app-akzent` (Hellblau oder Fachfarbe), leiser Knopf Weiß mit Rand, hervorgehoben Gelb, Weiter Grün.
 - Knöpfe über einer bunten Spielfläche: Weiß mit dunkelblauem Rand.
 - **Fokus-Rahmen** für Taster und Tastatur: Gelb innen, Dunkelblau außen. Nie entfernen.
 - Abstände im 8er-Raster: `--a-1` bis `--a-4` (8, 16, 24, 32 px).

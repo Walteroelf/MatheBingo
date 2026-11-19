@@ -3,7 +3,7 @@
    Farben angelehnt an Olympia München 1972 (Otl Aicher):
    sieben Farben plus Weiß, kein Rot, kein Schwarz. Regeln: DESIGN.md
    Diese Datei ist in allen Apps gleich. App-eigenes gehört in style.css.
-   Version 1
+   Version 3 (Dunkelmodus in Mittelblau)
    ========================================================================== */
 
 :root {
@@ -18,9 +18,19 @@
   --weiss:       #FFFFFF;
   --dunkelblau:  #0D2B4E;  /* Schrift statt Schwarz, auf jeder Farbfläche */
 
+  /* Fachfarben als Signal im Stundenplan. Nur als Fläche mit dunkelblauer Schrift.
+     Deutsch ist ein warmes Zinnoberrot, kein Signalrot (4,7 : 1 mit Dunkelblau). */
+  --fach-deutsch: #EF6B45;
+  --fach-mathe:   var(--hellblau);
+
+  /* Akzent der App: Hauptknöpfe, Auswahl. Standard Hellblau, eine App kann ihre Fachfarbe setzen. */
+  --app-akzent:  var(--hellblau);
+
   /* dunklere Töne für farbige Schrift auf Weiß */
   --gruen-text:  #1E6B2A;
   --orange-text: #9A4F00;
+  --gruen-schrift: var(--gruen-text);    /* im Dunkelmodus heller */
+  --orange-schrift: var(--orange-text);
 
   /* Rollen (wechseln im Dunkelmodus) */
   --hg:          #EEF5FA;  /* Seitenhintergrund */
@@ -58,16 +68,18 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --hg:          #0B1A2C;
-    --karte:       #13263D;
-    --flaeche-2:   #1B3350;
-    --auswahl:     #18395A;
+    --hg:          #1D4F80;  /* Mittelblau, Text 7,4 : 1 */
+    --karte:       #23598D;
+    --flaeche-2:   #2A6498;
+    --auswahl:     #2F6CA3;
     --text:        #E8F1F8;
-    --leise:       #A9BCCF;
-    --linie:       #24405F;
-    --rand:        #6F86A0;
-    --akzent-text: var(--hellblau);
-    --hinweis-text: var(--orange);
+    --leise:       #D6E7F5;
+    --linie:       #3A80BC;
+    --rand:        #B4D2EC;
+    --akzent-text: #B5E2FC;  /* Hellblau, aufgehellt, damit Schrift auf Mittelblau 4,5 : 1 erreicht */
+    --hinweis-text: #FFC266; /* Orange, aufgehellt */
+    --gruen-schrift: #BFE39A;
+    --orange-schrift: #FFC266;
   }
 }
 
@@ -101,7 +113,7 @@ a { color: var(--akzent-text); }
   padding: 0 var(--a-3);
   border: var(--rand-breite) solid transparent;
   border-radius: var(--rundung);
-  background: var(--hellblau); color: var(--dunkelblau);
+  background: var(--app-akzent); color: var(--dunkelblau);
   font-weight: 700; text-decoration: none;
 }
 .knopf.leise   { background: var(--karte); color: var(--text); border-color: var(--rand); }
