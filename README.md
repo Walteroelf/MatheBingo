@@ -1,7 +1,7 @@
 # Mathe-Bingo
 
 Ein Rechen-Würfel mit Sprachausgabe für Mathe-Bingo und Mathe-Lotto im Unterricht.
-Aufgebaut wie das ABC-Bingo, in Mathe-Blau. Läuft im Browser auf iPad, Smartboard oder Laptop,
+Aufgebaut wie das ABC-Bingo, in den Farben von Olympia 1972 (siehe DESIGN.md). Läuft im Browser auf iPad, Smartboard oder Laptop,
 ohne Installation und ohne Anmeldung: https://walteroelf.github.io/MatheBingo/
 
 ## Würfeln
@@ -28,7 +28,7 @@ ohne Installation und ohne Anmeldung: https://walteroelf.github.io/MatheBingo/
 Aufgebaut wie beim ABC-Bingo, mit sechs Reitern. Der zuletzt geöffnete Reiter wird gemerkt.
 
 - **🎲 Spiel**
-  - *Gewürfelte Aufgaben* (x von y): neueste gelb umrandet, „Letzte zurücknehmen“, „Neues Spiel“,
+  - *Gewürfelte Aufgaben* (x von y): neueste dunkel umrandet, „Letzte zurücknehmen“, „Neues Spiel“,
     „Nach Größe sortieren“ zum Prüfen bei „Bingo!“.
   - *Zahlen im Topf*: wie die Buchstaben beim ABC-Bingo. Antippen nimmt eine Zahl heraus oder legt sie zurück;
     „Alle“, „Keine“, „Ohne 0“. Bei Plus und Minus liegt die 0 im Topf; ohne 0 fallen auch Aufgaben wie 3 + 0 weg.
@@ -191,7 +191,8 @@ Versionsgeschichte auf GitHub erhalten.
 - `lib/`: MQTT.js 5.10.1 und qrcode-generator 1.4.4 (beide MIT, siehe `lib/README.md`),
   werden erst beim Verbinden geladen
 - `core.js`: gemeinsame Grundlage (Aufgaben, Zahlen-Topf, Speichern)
-- `style.css`: Gestaltung
+- `design.css`: gemeinsames Design aller Unterrichts-Apps (Farben, Schrift, Knöpfe, Fokus), Regeln in `DESIGN.md`
+- `style.css`: Gestaltung dieser App
 - `audio/`: Ansagen mit der Stimme von Jeuwre (105 kleine m4a-Dateien, CC BY-SA 4.0)
 - `tools/jeuwre_audio.py`: lädt und bearbeitet die Ansagen
 - `sw.js`, `manifest.webmanifest`, `icons/`: Home-Bildschirm-App und Offline-Speicher.

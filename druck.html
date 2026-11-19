@@ -3,16 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#1f5fa8">
+  <meta name="theme-color" content="#4DB2E6">
   <title>Mathe-Bingo · Ausdrucke</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/icon-180.png">
-  <link rel="stylesheet" href="style.css?v=17">
+  <link rel="stylesheet" href="design.css?v=1">
+  <link rel="stylesheet" href="style.css?v=41">
 </head>
 <body class="page">
   <header class="top no-print">
     <a class="back" href="./">← Zurück zum Würfel</a>
-    <h1>🖨️ Bingokarten und Lottoscheine</h1>
+    <h1><svg class="symbol" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9V3.5h10V9"/><rect x="3.5" y="9" width="17" height="8" rx="2"/><path d="M7 14h10v6.5H7z"/></svg> Bingokarten und Lottoscheine</h1>
   </header>
 
   <main>
@@ -36,7 +37,7 @@
       </div>
       <div class="btnrow">
         <button id="cardGen" class="sbtn">Erstellen</button>
-        <button id="cardPrint" class="sbtn light" disabled>🖨️ Drucken</button>
+        <button id="cardPrint" class="sbtn light" disabled><svg class="symbol" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9V3.5h10V9"/><rect x="3.5" y="9" width="17" height="8" rx="2"/><path d="M7 14h10v6.5H7z"/></svg> Drucken</button>
       </div>
       <p class="tiny" id="cardStatus"></p>
     </section>
@@ -44,7 +45,7 @@
     <div id="cards" class="cards"></div>
   </main>
 
-  <script src="core.js?v=27"></script>
-  <script src="druck.js?v=17"></script>
+  <script src="core.js?v=28"></script>
+  <script src="druck.js?v=18"></script>
 </body>
 </html>

@@ -23,18 +23,20 @@ const DEFAULTS = {
   keepAwake: true,         // Bildschirm anlassen (kein Ruhezustand), damit auch der Ton nicht einschläft
   weiter: true,            // „Weiter“-Knopf nach jeder Aufgabe
   lockSec: 5,              // Sperrzeit ohne „Weiter“
-  settingsTab: 'spiel',   // zuletzt geöffneter Reiter in ⚙️
+  settingsTab: 'spiel',   // zuletzt geöffneter Reiter in den Einstellungen
 };
 
-// Farben der iPads wie beim ABC-Bingo, etwas dunkler, damit Rechenzeichen und Ergebnis in Gelb lesbar bleiben.
-// Blau ist das bisherige Dunkelblau der Aufgabe.
+// Farben der iPads aus der Olympia-72-Palette (siehe design.css und DESIGN.md).
+// Auf allen sechs steht die Aufgabe in Dunkelblau (mindestens 4,7 : 1).
+// Die Schlüssel bleiben die alten, damit iPads mit älterem Stand sich weiter verstehen
+// und gespeicherte Einstellungen gültig bleiben: lila ist jetzt Gelb, tuerkis Hellgrün, pink Silber.
 const COLORS = {
-  blau:    { hex: '#123a6b', name: 'Blau' },
-  gruen:   { hex: '#2a7d2e', name: 'Grün' },
-  orange:  { hex: '#b8560f', name: 'Orange' },
-  lila:    { hex: '#7b3fa0', name: 'Lila' },
-  tuerkis: { hex: '#12857f', name: 'Türkis' },
-  pink:    { hex: '#c2357a', name: 'Pink' },
+  blau:    { hex: '#4DB2E6', name: 'Hellblau' },
+  gruen:   { hex: '#46A84A', name: 'Grün' },
+  orange:  { hex: '#F39200', name: 'Orange' },
+  lila:    { hex: '#FFD100', name: 'Gelb' },
+  tuerkis: { hex: '#A6D27A', name: 'Hellgrün' },
+  pink:    { hex: '#B9C1C8', name: 'Silber' },
 };
 const colorOf = (t) => (COLORS[t && t.c] || COLORS.blau).hex;
 
